@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VoidQuest!</title>
+  <style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background: #1a1a1a;
+        
+
+    }
+
+    #container {
+        
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        
+
+    }
+
+    #gameCanvas {
+        background: #000000;
+        border: 4px solid #444;
+        image-rendering: pixelated;
+        float: none;
+
+        
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const tileSize = 45;
+
+    // === Tiles ===
+    const tileImages = {
+      grass: new Image(),
+      coblestone: new Image(),
+      tree: new Image(),
+      brick: new Image(),
+      plank: new Image(),
+      fence: new Image(),
+      table: new Image(),
+      door: new Image()
+    };
+
+    tileImages.grass.src = 'images/grassTile.png';
+    tileImages.tree.src = 'images/treeTile.png';
+    tileImages.brick.src = 'images/brickTile.png';
+    tileImages.plank.src = 'images/plankTile.png';
+
+    tileImages.door.src = 'images/doorTile.png';
+    tileImages.fence.src = 'images/fenceTile.png';
+    tileImages.table.src = 'images/tableTile.png';
+
+    tileImages.coblestone.src = 'images/coblestoneTile.png';
+
+    const tileMapping = {
+      'G': 'grass',
+      'C': 'coblestone',
+      'T': 'tree',
+      'B': 'brick',
+      'P': 'plank',
+      'F': 'fence',
+      'a': 'table',
+      'D': 'door'
+    };
+
+    const nonWalkableTiles = ['tree', 'brick', 'fence'];
+
+    // === Karakter ===
+    const characterImages = {
+      up: new Image(),
+      down: new Image(),
+      left: new Image(),
+      right: new Image(),
+    };
+
+    characterImages.up.src = 'images/pixelmannUp.png';
+    characterImages.down.src = 'images/pixelmannDown.png';
+    characterImages.left.src = 'images/pixelmannLeft.png';
+    characterImages.right.src = 'images/pixelmannRight.png';
+
+    const character = {
+      x: 0,
+      y: 0,
+      direction: 'down'
+    };
+
+    const keys = {
+      w: false,
+      a: false,
+      s: false,
+      d: false
+    };
+
+    const doorMap = {
+        0: { '2,9': { targetLevel: 1, targetX: 10, targetY: 2 } },
+        1: { '10,1': { targetLevel: 0, targetX: 3, targetY: 10 } }
+    };
+
+    // === Nivåer ===
+    const levels = [
+        //LEVEL START
+      {
+        layout: [
+            'TTTTTTTTTTTTTTTTTTTTTTTT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGTTGGGGGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGGGTGGTGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGBBGGGGGGGGGGGGGGGGGGGT',
+            'TBBBBGTTGGGGGGGGGGGGGGGT',
+            'TBBBBTTTTTTGGGGGGGGGGGGT',
+            'TBDBBFFFFFGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TGGGGGGGGGGGGGGGGGGGGGGT',
+            'TTTTTTTTTTTTTTTTTTTTTTTT'
+            
+        ],
+        startX: 12,
+        startY: 10,
+        background: 'grass'
+      },
+        //LEVEL: HUS1
+      {
+        layout: [
+            'BBBBBBBBBBBB',
+            'BBBBBBBBBBDB',
+            'BPPPPPPPPPPB',
+            'BPPPPPPPPPPB',
+            'BPPPPPPPPPPB',
+            'BPPPPPPPPPPB',
+            'BPPPPPPPPPPB',
+            'BPPPPPPPPPPB'
+        ],
+        startX: 3,
+        startY: 3,
+        background: 'plank'
+      }
+    ];
+
+    let currentLevel = 0;
+    let map = [];
+    let mapWidth = 0;
+    let mapHeight = 0;
+
+    const viewWidth = 50;  // hvor mange ruter vises horisontalt
+    const viewHeight = 50;  // hvor mange ruter vises vertikalt
+
+    function getCameraOffset() {
+        let offsetX = character.x - Math.floor(viewWidth / 2);
+        let offsetY = character.y - Math.floor(viewHeight / 2);
+
+        offsetX = Math.max(0, Math.min(offsetX, mapWidth - viewWidth));
+        offsetY = Math.max(0, Math.min(offsetY, mapHeight - viewHeight));
+
+        return { offsetX, offsetY };
+    }
+
+    canvas.width = viewWidth * tileSize;
+    canvas.height = viewHeight * tileSize;
+
+    function loadLevel(levelIndex, startX = null, startY = null) {
+        const level = levels[levelIndex];
+        currentLevel = levelIndex;
+
+        map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
+        mapHeight = map.length;
+        mapWidth = map[0].length;
+
+        canvas.width = mapWidth * tileSize;
+        canvas.height = mapHeight * tileSize;
+
+        currentBackground = level.background || 'grass';
+
+        character.x = startX !== null ? startX : level.startX;
+        character.y = startY !== null ? startY : level.startY;
+
+        gameLoop();
+    }
+
+    function drawMap() {
+        const { offsetX, offsetY } = getCameraOffset();
+
+        for (let y = 0; y < viewHeight; y++) {
+            for (let x = 0; x < viewWidth; x++) {
+                const mapX = x + offsetX;
+                const mapY = y + offsetY;
+
+                if (mapY >= mapHeight || mapX >= mapWidth) continue;
+
+                const tileType = map[mapY][mapX];
+                ctx.drawImage(tileImages.grass, x * tileSize, y * tileSize, tileSize, tileSize);
+
+                if (tileType !== 'grass') {
+                    const img = tileImages[tileType];
+                    if (img.complete) {
+                        ctx.drawImage(img, x * tileSize, y * tileSize, tileSize, tileSize);
+                    }
+                }
+            }
+        }
+    }
+
+    function drawCharacter() {
+        const { offsetX, offsetY } = getCameraOffset();
+
+        const screenX = (character.x - offsetX) * tileSize;
+        const screenY = (character.y - offsetY) * tileSize;
+
+        const img = characterImages[character.direction];
+        ctx.drawImage(img, screenX, screenY, tileSize, tileSize);
+    }
+
+    function canMoveTo(x, y) {
+      if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) return false;
+      const tile = map[y][x];
+      return !nonWalkableTiles.includes(tile);
+    }
+
+    function update() {
+      if (keys.w && canMoveTo(character.x, character.y - 1)) {
+        character.y--;
+        character.direction = 'up';
+      }
+      if (keys.s && canMoveTo(character.x, character.y + 1)) {
+        character.y++;
+        character.direction = 'down';
+      }
+      if (keys.a && canMoveTo(character.x - 1, character.y)) {
+        character.x--;
+        character.direction = 'left';
+      }
+      if (keys.d && canMoveTo(character.x + 1, character.y)) {
+        character.x++;
+        character.direction = 'right';
+      }
+
+      const currentTile = map[character.y][character.x];
+      if (currentTile === 'door') {
+        const key = `${character.x},${character.y}`;
+        const door = doorMap[currentLevel]?.[key];
+
+            if (door) {
+                loadLevel(door.targetLevel, door.targetX, door.targetY);
+            }
+        }
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawMap();
+      drawCharacter();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key in keys) {
+        keys[e.key] = true;
+        update();
+        gameLoop();
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key in keys) {
+        keys[e.key] = false;
+      }
+    });
+
+    // Start spillet
+    loadLevel(0);
+  </script>
+</body>
+</html>
