@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Top-Down Game</title>
+  <script src="npc.js"></script>
   <style>
     body {
       margin: 0;
@@ -11,7 +12,6 @@
       justify-content: center;
       align-items: center;
       background: #000000;
-      position: relative;
     }
 
     #gameCanvas {
@@ -20,48 +20,21 @@
       image-rendering: pixelated;
     }
 
-    #dialogBox {
-      display: none;
-      position: absolute;
-      bottom: 20px;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 10px;
-      border: 2px solid white;
-      max-width: 400px;
-      font-family: sans-serif;
-      z-index: 10;
-    }
-
-    button {
-      margin-top: 5px;
+    #fishingBox button {
+      margin: 5px;
       padding: 5px 10px;
-      background: #333;
-      color: white;
-      border: 1px solid white;
+      border: none;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div id="dialogBox"></div>
+  <div id="inventory" style="display:none; position:absolute; top:50px; left:50px; background:#222; padding:10px; border:2px solid #555; z-index:15;"></div>
 
-  <div id="questLog" style="
-        display: none;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.9);
-        color: white;
-        padding: 15px;
-        border: 2px solid white;
-        max-width: 300px;
-        font-family: sans-serif;
-        z-index: 11;
-    ">
-    <h3>Questlogg</h3>
-    <ul id="questList" style="padding-left: 20px;"></ul>
+  <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
+    <button onclick="closeMenu()" style="font-size:24px; padding:10px 20px;">Fortsett</button>
+    <button onclick="saveGame()" style="font-size:24px; padding:10px 20px;">Lagre spill</button>
   </div>
 
   <script>
@@ -69,7 +42,9 @@
     const ctx = canvas.getContext('2d');
     const tileSize = 40;
 
-    // === BILDER ===
+    let menuOpen = false;
+
+    // === Tiles ===
     const tileImages = {
       grass: new Image(),
       coblestone: new Image(),
@@ -78,7 +53,8 @@
       plank: new Image(),
       fence: new Image(),
       table: new Image(),
-      door: new Image()
+      door: new Image(),
+      water: new Image()
     };
 
     tileImages.grass.src = 'images/grassTile.png';
@@ -89,6 +65,7 @@
     tileImages.fence.src = 'images/fenceTile.png';
     tileImages.table.src = 'images/tableTile.png';
     tileImages.coblestone.src = 'images/coblestoneTile.png';
+    tileImages.water.src = 'images/waterTile.png';
 
     const tileMapping = {
       'G': 'grass',
@@ -98,16 +75,17 @@
       'P': 'plank',
       'F': 'fence',
       't': 'table',
-      'D': 'door'
+      'D': 'door',
+      'W': 'water'
     };
 
-    const nonWalkableTiles = ['tree', 'brick', 'fence', 'table'];
+    const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water'];
 
     const characterImages = {
       up: new Image(),
       down: new Image(),
       left: new Image(),
-      right: new Image()
+      right: new Image(),
     };
 
     characterImages.up.src = 'images/pixelmannUp.png';
@@ -116,15 +94,13 @@
     characterImages.right.src = 'images/pixelmannRight.png';
 
     const character = {
-      x: 0,
-      y: 0,
-      pixelX: 0,
-      pixelY: 0,
+      x: 0, y: 0,
+      pixelX: 0, pixelY: 0,
       direction: 'down',
       moving: false
     };
 
-    const playerQuests = [];
+    const keys = { w: false, a: false, s: false, d: false };
 
     const doorMap = {
       0: { '2,9': { targetLevel: 1, targetX: 10, targetY: 2 } },
@@ -143,9 +119,9 @@
           'TGBBGGGGGGGCGGGGGGGGGGGT',
           'TBBBBGTTGGGCGGGGGGGGGGGT',
           'TBBBBTTTTTTCGGGGGGGGGGGT',
-          'TBDBBFFFFFCCGGGGGGGGGGGT',
-          'TCCCCCCCCCCGGGGGGGGGGGGT',
-          'TTTTTTTTTTTTTTTTTTTTTTTT'
+          'TBDBBFFFFFCCGGGGGGGGWWWW',
+          'TCCCCCCCCCCGGGGGGGGWWWWW',
+          'TTTTTTTTTTTTTTTTTTWWWWWW'
         ],
         startX: 4,
         startY: 10,
@@ -168,45 +144,37 @@
       }
     ];
 
-    const npcs = {
-      0: [
-        {
-          x: 7,
-          y: 2,
-          name: "Gammel mann",
-          dialog: [
-            "Hei, eventyrer!",
-            "Kan du hjelpe meg å finne den forsvunne katten min?",
-            "Den løp inn i huset nord for her."
-          ],
-          choices: ["Ja, jeg hjelper!", "Nei, jeg er opptatt."],
-          hasQuest: true,
-          questGiven: false
-        }
-      ],
-      1: []
-    };
+    let currentLevel = 0, map = [], mapWidth = 0, mapHeight = 0;
+    let isFishing = false;
+    let fishingBox = null;
+    let fishTimeout = null;
+    let biteTimeout = null;
+    let currentFish = null;
+    let fishCaught = false;
 
-    let currentLevel = 0;
-    let map = [];
-    let mapWidth = 0;
-    let mapHeight = 0;
-    let currentBackground = 'grass';
+    let inventory = [];
+    let inventoryOpen = false;
 
     function loadLevel(levelIndex, startX = null, startY = null) {
-      const level = levels[levelIndex];
-      currentLevel = levelIndex;
-      map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
-      mapHeight = map.length;
-      mapWidth = map[0].length;
-      canvas.width = mapWidth * tileSize;
-      canvas.height = mapHeight * tileSize;
-      currentBackground = level.background || 'grass';
-      character.x = startX !== null ? startX : level.startX;
-      character.y = startY !== null ? startY : level.startY;
-      character.pixelX = character.x * tileSize;
-      character.pixelY = character.y * tileSize;
-      gameLoop();
+        const level = levels[levelIndex];
+        currentLevel = levelIndex;
+
+        map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
+        mapHeight = map.length;
+        mapWidth = map[0].length;
+
+        canvas.width = mapWidth * tileSize;
+        canvas.height = mapHeight * tileSize;
+
+        currentBackground = level.background || 'grass';
+
+        character.x = startX !== null ? startX : level.startX;
+        character.y = startY !== null ? startY : level.startY;
+
+        character.pixelX = character.x * tileSize;
+        character.pixelY = character.y * tileSize;
+
+        gameLoop();
     }
 
     function drawMap() {
@@ -214,11 +182,8 @@
         for (let x = 0; x < mapWidth; x++) {
           const tileType = map[y][x];
           ctx.drawImage(tileImages[currentBackground], x * tileSize, y * tileSize, tileSize, tileSize);
-          if (tileType !== currentBackground) {
-            const img = tileImages[tileType];
-            if (img.complete) {
-              ctx.drawImage(img, x * tileSize, y * tileSize, tileSize, tileSize);
-            }
+          if (tileType !== 'grass') {
+            ctx.drawImage(tileImages[tileType], x * tileSize, y * tileSize, tileSize, tileSize);
           }
         }
       }
@@ -229,69 +194,44 @@
       ctx.drawImage(img, character.pixelX, character.pixelY, tileSize, tileSize);
     }
 
-    function drawNPCs() {
-      const levelNpcs = npcs[currentLevel] || [];
-      levelNpcs.forEach(npc => {
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
-      });
-    }
-
     function canMoveTo(x, y) {
       if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) return false;
-      const tile = map[y][x];
-      return !nonWalkableTiles.includes(tile);
+      return !nonWalkableTiles.includes(map[y][x]);
     }
 
     function moveCharacter(dx, dy) {
       if (character.moving) return;
+
       const newX = character.x + dx;
       const newY = character.y + dy;
       if (!canMoveTo(newX, newY)) return;
-      character.direction = dx === -1 ? 'left' :
-                            dx === 1 ? 'right' :
-                            dy === -1 ? 'up' : 'down';
+
+      character.direction = dx === -1 ? 'left' : dx === 1 ? 'right' : dy === -1 ? 'up' : 'down';
       character.moving = true;
       character.x = newX;
       character.y = newY;
 
       const targetX = character.x * tileSize;
       const targetY = character.y * tileSize;
-      const speed = 4;
+      const speed = 2;
 
       function animate() {
         let doneX = false, doneY = false;
         if (character.pixelX < targetX) {
           character.pixelX += speed;
-          if (character.pixelX >= targetX) {
-            character.pixelX = targetX;
-            doneX = true;
-          }
+          if (character.pixelX >= targetX) { character.pixelX = targetX; doneX = true; }
         } else if (character.pixelX > targetX) {
           character.pixelX -= speed;
-          if (character.pixelX <= targetX) {
-            character.pixelX = targetX;
-            doneX = true;
-          }
-        } else {
-          doneX = true;
-        }
+          if (character.pixelX <= targetX) { character.pixelX = targetX; doneX = true; }
+        } else { doneX = true; }
 
         if (character.pixelY < targetY) {
           character.pixelY += speed;
-          if (character.pixelY >= targetY) {
-            character.pixelY = targetY;
-            doneY = true;
-          }
+          if (character.pixelY >= targetY) { character.pixelY = targetY; doneY = true; }
         } else if (character.pixelY > targetY) {
           character.pixelY -= speed;
-          if (character.pixelY <= targetY) {
-            character.pixelY = targetY;
-            doneY = true;
-          }
-        } else {
-          doneY = true;
-        }
+          if (character.pixelY <= targetY) { character.pixelY = targetY; doneY = true; }
+        } else { doneY = true; }
 
         gameLoop();
 
@@ -299,13 +239,11 @@
           requestAnimationFrame(animate);
         } else {
           character.moving = false;
-          const currentTile = map[character.y][character.x];
-          if (currentTile === 'door') {
+          const tile = map[character.y][character.x];
+          if (tile === 'door') {
             const key = `${character.x},${character.y}`;
             const door = doorMap[currentLevel]?.[key];
-            if (door) {
-              loadLevel(door.targetLevel, door.targetX, door.targetY);
-            }
+            if (door) loadLevel(door.targetLevel, door.targetX, door.targetY);
           }
         }
       }
@@ -313,114 +251,203 @@
       requestAnimationFrame(animate);
     }
 
-    function updateQuestLog() {
-        const list = document.getElementById("questList");
-        list.innerHTML = "";
+    function tryInteract() {
+      if (character.moving || isFishing) return;
+      let tx = character.x, ty = character.y;
+      if (character.direction === 'up') ty -= 1;
+      if (character.direction === 'down') ty += 1;
+      if (character.direction === 'left') tx -= 1;
+      if (character.direction === 'right') tx += 1;
+      const tile = map[ty]?.[tx];
+      if (tile === 'water') startFishing();
+    }
 
-        playerQuests.forEach(quest => {
-            const li = document.createElement("li");
-            li.innerHTML = `<strong>${quest.name}</strong><br>Status: ${quest.status}`;
-            list.appendChild(li);
-        });
+    function startFishing() {
+      isFishing = true;
+      fishCaught = false;
+      showFishingBox("Fisker...");
+      const wait = Math.floor(Math.random() * 10000) + 5000;
+      fishTimeout = setTimeout(fishGotBite, wait);
+    }
+
+    function showFishingBox(text) {
+      if (!fishingBox) {
+        fishingBox = document.createElement('div');
+        fishingBox.id = 'fishingBox';
+        fishingBox.style.position = 'absolute';
+        fishingBox.style.bottom = '50px';
+        fishingBox.style.left = '50%';
+        fishingBox.style.transform = 'translateX(-50%)';
+        fishingBox.style.background = '#333';
+        fishingBox.style.color = '#fff';
+        fishingBox.style.padding = '10px';
+        fishingBox.style.border = '2px solid #aaa';
+        fishingBox.style.fontFamily = 'monospace';
+        fishingBox.style.zIndex = '10';
+        document.body.appendChild(fishingBox);
+      }
+      fishingBox.innerHTML = `${text}<br><button onclick="cancelFishing()">Avbryt</button>`;
+    }
+
+    function hideFishingBox() {
+      if (fishingBox) {
+        document.body.removeChild(fishingBox);
+        fishingBox = null;
+      }
+    }
+
+    function cancelFishing() {
+      clearTimeout(fishTimeout);
+      clearTimeout(biteTimeout);
+      hideFishingBox();
+      isFishing = false;
+    }
+
+    function fishGotBite() {
+      currentFish = getRandomFish();
+      const rarity = currentFish.rarity;
+
+      const prompt = `
+        <div style="margin-bottom: 10px;">
+          <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
+          <div>${currentFish.name}</div>
+        </div>
+        <div style="margin-bottom: 10px;">NAPP! Trykk riktig knapp:</div>
+        <button style="background:gray;" onclick="tryCatchFish('common')">Grå</button>
+        <button style="background:blue;" onclick="tryCatchFish('rare')">Blå</button>
+        <button style="background:gold;" onclick="tryCatchFish('legendary')">Gull</button>
+        <br><br><button onclick="cancelFishing()">Avbryt</button>
+      `;
+      fishingBox.innerHTML = prompt;
+
+      biteTimeout = setTimeout(() => {
+        if (!fishCaught) {
+          showFishingBox("Fisken stakk av!");
+          setTimeout(cancelFishing, 2000);
+        }
+      }, 3000);
+    }
+
+    function tryCatchFish(choice) {
+      if (currentFish && currentFish.rarity === choice) {
+        showFishingBox(`Du fanget en ${currentFish.name}!`);
+        addToInventory(currentFish);
+      } else {
+        showFishingBox("Bom! Du mistet fisken.");
+      }
+      fishCaught = true;
+      setTimeout(cancelFishing, 2000);
+    }
+
+    function getRandomFish() {
+      const roll = Math.random() * 100;
+
+      if (roll < 78) {
+        return { name: "Grå fisk", rarity: "common", image: "images/commonFish.png" };
+      } else if (roll < 98) {
+        return { name: "Blå fisk", rarity: "rare", image: "images/rareFish.png" };
+      } else {
+        return { name: "Gull fisk", rarity: "legendary", image: "images/legendaryFish.png" };
+      }
+    }
+
+    function addToInventory(fish) {
+      let item = inventory.find(i => i.name === fish.name);
+      if (item) {
+        item.count += 1;
+      } else {
+        inventory.push({ ...fish, count: 1 });
+      }
+      if (inventoryOpen) renderInventory();
+    }
+
+    function renderInventory() {
+      const inv = document.getElementById('inventory');
+      inv.innerHTML = "<h3>Inventory</h3>";
+      const grid = document.createElement('div');
+      grid.style.display = 'grid';
+      grid.style.gridTemplateColumns = 'repeat(5, 64px)';
+      grid.style.gap = '8px';
+
+      inventory.forEach(item => {
+        const cell = document.createElement('div');
+        cell.style.width = '64px';
+        cell.style.height = '64px';
+        cell.style.background = '#111';
+        cell.style.border = '1px solid #666';
+        cell.style.display = 'flex';
+        cell.style.flexDirection = 'column';
+        cell.style.alignItems = 'center';
+        cell.style.justifyContent = 'center';
+        cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
+        grid.appendChild(cell);
+      });
+
+      inv.appendChild(grid);
+    }
+
+    function toggleInventory() {
+      inventoryOpen = !inventoryOpen;
+      document.getElementById('inventory').style.display = inventoryOpen ? 'block' : 'none';
+      if (inventoryOpen) renderInventory();
     }
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawMap();
-      drawNPCs();
       drawCharacter();
     }
 
-    // === DIALOGSYSTEM ===
-    let currentDialog = null;
-    let dialogLine = 0;
-
-    function getNearbyNPC() {
-      const levelNpcs = npcs[currentLevel] || [];
-      return levelNpcs.find(npc => {
-        const dx = Math.abs(npc.x - character.x);
-        const dy = Math.abs(npc.y - character.y);
-        return (dx + dy === 1);
-      });
-    }
-
-    function startDialog(npc) {
-      currentDialog = npc;
-      dialogLine = 0;
-      showNextLine();
-    }
-
-    function showNextLine() {
-      const box = document.getElementById("dialogBox");
-      const lines = currentDialog.dialog;
-      if (dialogLine < lines.length) {
-        box.innerHTML = `<p><strong>${currentDialog.name}:</strong> ${lines[dialogLine]}</p>`;
-        box.style.display = "block";
-        dialogLine++;
-      } else {
-        showChoices();
-      }
-    }
-
-    function showChoices() {
-      const box = document.getElementById("dialogBox");
-      box.innerHTML = currentDialog.choices.map(choice => 
-        `<button onclick="choose('${choice}')">${choice}</button>`
-      ).join("<br>");
-    }
-
-    window.choose = function(choice) {
-      const box = document.getElementById("dialogBox");
-      if (choice === "Ja, jeg hjelper!") {
-        currentDialog.questGiven = true;
-        
-        playerQuests.push({
-            name: `${currentDialog.name} sitt oppdrag`,
-            status: "Aktiv"
-        });
-
-        box.innerHTML = `<p>Du godtok oppdraget!</p>`;
-      } else {
-        box.innerHTML = `<p>Du avslo oppdraget.</p>`;
-      }
-      setTimeout(() => {
-        box.style.display = "none";
-        currentDialog = null;
-      }, 2000);
-    };
-
-    // === INPUT ===
     document.addEventListener('keydown', (e) => {
       if (character.moving) return;
-
       switch (e.key) {
         case 'w': moveCharacter(0, -1); break;
         case 's': moveCharacter(0, 1); break;
         case 'a': moveCharacter(-1, 0); break;
         case 'd': moveCharacter(1, 0); break;
-        case 'e':
-            if (currentDialog) {
-                showNextLine(); // fortsett dialogen
-            } else {
-                const npc = getNearbyNPC();
-                if (npc) startDialog(npc);
-            }
-            break;
-        
-        case 'q':
-            const questLog = document.getElementById("questLog");
-            if (questLog.style.display === "none") {
-                updateQuestLog();
-                questLog.style.display = "block";
-            } else {
-                questLog.style.display = "none";
-            }
-            break;
-        }
+        case 'e': tryInteract(); break;
+        case 'i': toggleInventory(); break;
+      }
     });
 
-    // === START ===
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
+
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      document.getElementById('gameMenu').style.display = menuOpen ? 'flex' : 'none';
+    }
+
+    function closeMenu() {
+      menuOpen = false;
+      document.getElementById('gameMenu').style.display = 'none';
+    }
+
+    function saveGame() {
+      localStorage.setItem('inventory', JSON.stringify(inventory));
+      alert("Spillet er lagret!");
+    }
+
+    function loadGame() {
+      const saved = localStorage.getItem('inventory');
+      if (saved) {
+        inventory = JSON.parse(saved);
+        renderInventory();
+      }
+    }
+
+    // Prevent movement/inventory while menu is open or fishing
+    document.addEventListener('keydown', (e) => {
+      if (menuOpen || isFishing) return;
+      // Your existing movement + inventory toggle logic here
+    });
+
     loadLevel(0);
+    loadGame();
   </script>
 </body>
 </html>
