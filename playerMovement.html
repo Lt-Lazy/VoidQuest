@@ -29,8 +29,11 @@
   </style>
 </head>
 <body>
+
   <canvas id="gameCanvas"></canvas>
   <div id="inventory" style="display:none; position:absolute; top:50px; left:50px; background:#222; padding:10px; border:2px solid #555; z-index:15;"></div>
+  <div id="shopBox" style="display:none; position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px; border:2px solid #aaa; font-family:monospace; z-index:10;"></div>
+
 
   <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
     <button onclick="closeMenu()" style="font-size:24px; padding:10px 20px;">Fortsett</button>
@@ -54,7 +57,8 @@
       fence: new Image(),
       table: new Image(),
       door: new Image(),
-      water: new Image()
+      water: new Image(),
+      npcShop: new Image()
     };
 
     tileImages.grass.src = 'images/grassTile.png';
@@ -66,6 +70,7 @@
     tileImages.table.src = 'images/tableTile.png';
     tileImages.coblestone.src = 'images/coblestoneTile.png';
     tileImages.water.src = 'images/waterTile.png';
+    tileImages.npcShop.src = 'images/npcShopTile.png';
 
     const tileMapping = {
       'G': 'grass',
@@ -76,7 +81,8 @@
       'F': 'fence',
       't': 'table',
       'D': 'door',
-      'W': 'water'
+      'W': 'water',
+      'N': 'npcShop'
     };
 
     const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water'];
@@ -131,7 +137,7 @@
         layout: [
           'BBBBBBBBBBBB',
           'BBBBBBBBBBDB',
-          'BPPPPPPPPPPB',
+          'BPNPPPPPPPPB',
           'BtttPPPPPPPB',
           'BPPPPPPPPPPB',
           'BPPPPPPPPPPB',
@@ -145,6 +151,8 @@
     ];
 
     let currentLevel = 0, map = [], mapWidth = 0, mapHeight = 0;
+    let currentBackground = 'grass';
+
     let isFishing = false;
     let fishingBox = null;
     let fishTimeout = null;
@@ -154,6 +162,7 @@
 
     let inventory = [];
     let inventoryOpen = false;
+    let gold = 0;
 
     function loadLevel(levelIndex, startX = null, startY = null) {
         const level = levels[levelIndex];
@@ -260,6 +269,7 @@
       if (character.direction === 'right') tx += 1;
       const tile = map[ty]?.[tx];
       if (tile === 'water') startFishing();
+      else if (tile === 'npcShop') openShop();
     }
 
     function startFishing() {
@@ -313,9 +323,9 @@
           <div>${currentFish.name}</div>
         </div>
         <div style="margin-bottom: 10px;">NAPP! Trykk riktig knapp:</div>
-        <button style="background:gray;" onclick="tryCatchFish('common')">Grå</button>
-        <button style="background:blue;" onclick="tryCatchFish('rare')">Blå</button>
-        <button style="background:gold;" onclick="tryCatchFish('legendary')">Gull</button>
+        <button style="background:gray;" onclick="tryCatchFish('common')">Common</button>
+        <button style="background:blue;" onclick="tryCatchFish('rare')">Rare</button>
+        <button style="background:gold;" onclick="tryCatchFish('legendary')">Legendary</button>
         <br><br><button onclick="cancelFishing()">Avbryt</button>
       `;
       fishingBox.innerHTML = prompt;
@@ -343,11 +353,11 @@
       const roll = Math.random() * 100;
 
       if (roll < 78) {
-        return { name: "Grå fisk", rarity: "common", image: "images/commonFish.png" };
+        return { name: "Common fisk", rarity: "common", image: "images/commonFish.png" };
       } else if (roll < 98) {
-        return { name: "Blå fisk", rarity: "rare", image: "images/rareFish.png" };
+        return { name: "Rare fisk", rarity: "rare", image: "images/rareFish.png" };
       } else {
-        return { name: "Gull fisk", rarity: "legendary", image: "images/legendaryFish.png" };
+        return { name: "Legendary fisk", rarity: "legendary", image: "images/legendaryFish.png" };
       }
     }
 
@@ -361,9 +371,56 @@
       if (inventoryOpen) renderInventory();
     }
 
+    function openShop() {
+      const shopBox = document.getElementById('shopBox');
+      let shopHTML = `<h3>Butikk</h3><p>Selg fisken din for gull</p>`;
+
+      const sellOptions = [
+        { rarity: 'common', label: 'Common fisk', price: 5 },
+        { rarity: 'rare', label: 'Rare fisk', price: 30 },
+        { rarity: 'legendary', label: 'Legendary fisk', price: 1000 }
+      ];
+
+      let hasFish = false;
+
+      sellOptions.forEach(option => {
+        const item = inventory.find(i => i.rarity === option.rarity);
+        if (item && item.count > 0) {
+          hasFish = true;
+          shopHTML += `<button onclick="sellFish('${option.rarity}', ${option.price})">Selg ${option.label} (${option.price} gull)</button><br>`;
+        }
+      });
+
+      if (!hasFish) {
+        shopHTML += `<p>Du har ingen fisk å selge.</p>`;
+      }
+
+      shopHTML += `<br><button onclick="closeShop()">Lukk</button>`;
+
+      shopBox.innerHTML = shopHTML;
+      shopBox.style.display = 'block';
+    }
+
+    function closeShop() {
+      document.getElementById('shopBox').style.display = 'none';
+    }
+
+    function sellFish(rarity, price) {
+      const itemIndex = inventory.findIndex(i => i.rarity === rarity);
+      if (itemIndex !== -1) {
+        inventory[itemIndex].count--;
+        gold += price;
+        if (inventory[itemIndex].count <= 0) {
+          inventory.splice(itemIndex, 1);
+        }
+        renderInventory();
+      }
+    }
+
+
     function renderInventory() {
       const inv = document.getElementById('inventory');
-      inv.innerHTML = "<h3>Inventory</h3>";
+      inv.innerHTML = `<h3>Inventory</h3><p>Gull: ${gold}</p>`;
       const grid = document.createElement('div');
       grid.style.display = 'grid';
       grid.style.gridTemplateColumns = 'repeat(5, 64px)';
@@ -428,15 +485,45 @@
     }
 
     function saveGame() {
-      localStorage.setItem('inventory', JSON.stringify(inventory));
+      const saveData = {
+        inventory: inventory,
+        level: currentLevel,
+        position: {
+          x: character.x,
+          y: character.y,
+          direction: character.direction
+        },
+        gold: gold
+      };
+
+      localStorage.setItem('voidquest_save', JSON.stringify(saveData));
       alert("Spillet er lagret!");
     }
 
     function loadGame() {
-      const saved = localStorage.getItem('inventory');
-      if (saved) {
-        inventory = JSON.parse(saved);
-        renderInventory();
+      try {
+        const saved = localStorage.getItem('voidquest_save');
+        if (saved) {
+          const data = JSON.parse(saved);
+          inventory = data.inventory || [];
+
+          gold = data.gold || 0;
+          const level = data.level ?? 0;
+          const x = data.position?.x ?? levels[level].startX;
+          const y = data.position?.y ?? levels[level].startY;
+          const dir = data.position?.direction ?? 'down';
+
+          character.direction = dir;
+
+          loadLevel(level, x, y);
+          renderInventory();
+        } else {
+          // Ingen lagring funnet – start fra default
+          loadLevel(0);
+        }
+      } catch (e) {
+        console.error("Feil ved lasting av lagring:", e);
+        loadLevel(0);
       }
     }
 
