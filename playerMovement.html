@@ -110,18 +110,18 @@
     const levels = [
       {
         layout: [
-          'TTTTTTTTTTTTTTTTTTTTTTTT',
-          'TGGGGGGGGGGGGGGGGGGGGGGT',
-          'TGTTGGGGGGGGGGGGGGGGGGGT',
-          'TGGGGGGGGGGCGGGGGGGGGGGT',
-          'TGGGTGGTGGGCGGGGGGGGGGGT',
-          'TGGGGGGGGGGCGGGGGGGGGGGT',
-          'TGBBGGGGGGGCGGGGGGGGGGGT',
-          'TBBBBGTTGGGCGGGGGGGGGGGT',
-          'TBBBBTTTTTTCGGGGGGGGGGGT',
-          'TBDBBFFFFFCCGGGGGGGGWWWW',
-          'TCCCCCCCCCCGGGGGGGGWWWWW',
-          'TTTTTTTTTTTTTTTTTTWWWWWW'
+          'GGGGGGGGGGGGGGGGGGGGGGGG',
+          'GGGGGGGGGGGGGGGGGGGGGGGG',
+          'GGTTGGGGGGGGGGGGGGGGGGGG',
+          'GGGGGGGGGGGGGGGGGGGGGGGG',
+          'GGGGTGGTGGGGGGGGGGGGGGGG',
+          'GGGGGGGGGGGGGGGGGGGGGGGG',
+          'GGBBGGGGGGGGGGGGGGGGGGGG',
+          'GBBBBGTTGGGGGGGGGGGGGGGG',
+          'GBBBBTTTTTTGGGGGGGGGCCCC',
+          'GBDBBFFFFFGGGGGGGGGCWWWW',
+          'GGGGGGGGGGGGGGGGGGCWWWWW',
+          'GGGGGGGGGGGGGGGGGCWWWWWW'
         ],
         startX: 4,
         startY: 10,
@@ -138,8 +138,8 @@
           'BPPPPPPPPPPB',
           'BPPPPPPPPPPB'
         ],
-        startX: 3,
-        startY: 3,
+        startX: 5,
+        startY: 5,
         background: 'plank'
       }
     ];
@@ -446,7 +446,7 @@
       // Your existing movement + inventory toggle logic here
     });
 
-    loadLevel(0);
+    loadLevel(1);
     loadGame();
   </script>
 </body>
