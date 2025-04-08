@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Top-Down Game</title>
+  <link rel="icon" type="image/png" href="images/skuggosk.png">
   
   <style>
     body {
@@ -38,6 +39,16 @@
   <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
     <button onclick="closeMenu()" style="font-size:24px; padding:10px 20px;">Fortsett</button>
     <button onclick="saveGame()" style="font-size:24px; padding:10px 20px;">Lagre spill</button>
+    <button onclick="toggleSettings()" style="font-size:24px; padding:10px 20px;">Innstillinger</button>
+  </div>
+
+  <!-- Innstillinger -->
+  <div id="settingsMenu" style="display:none; position:absolute; top:10%; left:50%; transform:translateX(-50%); background:#222; color:white; padding:20px; border:2px solid #888; z-index:21;">
+    <h3>Innstillinger</h3>
+    <label for="volumeSlider">Masterlyd:</label>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" onchange="updateVolume(this.value)">
+    <br><br>
+    <button onclick="toggleSettings()">Lukk</button>
   </div>
 
   <script>
@@ -105,6 +116,26 @@
     characterImages.left.src = 'images/pixelmannLeft.png';
     characterImages.right.src = 'images/pixelmannRight.png';
 
+    const fishPools = {
+      0: [ // Utenfor
+        { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
+        { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 30 },
+        // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
+      ],
+      2: [ // Cave
+        { name: "Deep Void Lure", rarity: "legendary", image: "images/deepVoidLure.png", chance: 20, price: 1000 },
+        { name: "Skuggosk", rarity: "rare", image: "images/skuggosk.png", chance: 80, price: 45 }
+      ]
+    };
+
+    const raritySettings = {
+      common: { time: 8000, color: "gray", border: "#999" },
+      rare: { time: 5000, color: "blue", border: "#3af" },
+      legendary: { time: 2000, color: "gold", border: "gold" }
+    };
+
+    let trophies = []; // Navn på fiskene du har fanget før
+
     const character = {
       x: 0, y: 0,
       pixelX: 0, pixelY: 0,
@@ -115,20 +146,25 @@
     const keys = { w: false, a: false, s: false, d: false };
 
     const doorMap = {
-      0: {
-        '2,9': { targetLevel: 1, targetX: 10, targetY: 2 },     // TIL HUS
-        '22,3': { targetLevel: 2, targetX: 5, targetY: 1 }      // TIL CAVE
+      0: { //SPENNINGSBYEN
+        '2,9': { targetLevel: 1, targetX: 10, targetY: 2 }, // TIL HUS
+        '22,3': { targetLevel: 2, targetX: 5, targetY: 1 }  // TIL CAVE
       },
-      1: {
-        '10,1': { targetLevel: 0, targetX: 3, targetY: 10 }     // TIL UTE
+      1: { //HUS HUB SPENNINGSBYEN
+        '10,1': { targetLevel: 0, targetX: 2, targetY: 10 }, // TIL UTE 
+        '7,1': { targetLevel: 3, targetX: 7, targetY: 6 } // TIL TROFEROM
       },
-      2: {
-        '5,0': { targetLevel: 0, targetX: 22, targetY: 4 }      // TIL UTE
+      2: { //CAVE1 SPENNINGSBYEN
+        '5,0': { targetLevel: 0, targetX: 22, targetY: 4 }  // TIL UTE 
+      },
+      3: { //TROFEROM HUS HUB SPENNINGSBYEN
+        '7,7': { targetLevel: 1, targetX: 7, targetY: 2 }  // TIL HUS HUB
       }
     };
 
     const levels = [
       {
+        //Spenningsbyen
         layout: [
           'GGGGGGGGGGGGGGGGGGsCCCCC',
           'GGGGGGGGGGGGGGGGGGGsCCCC',
@@ -148,9 +184,10 @@
         background: 'grass'
       },
       {
+        //HUS HUB
         layout: [
           'BBBBBBBBBBBB',
-          'BBBBBBBBBBDB',
+          'BBBBBBBDBBDB',
           'BPNPPPPPPPPB',
           'BtttPPPPPPPB',
           'BPPPPPPPPPPB',
@@ -163,6 +200,7 @@
         background: 'plank'
       },
       {
+        // CAVE1 SPENNINGSBYEN
         layout: [
           'CCsssDssCsWW',
           'CsCssCCsCCsW',
@@ -176,8 +214,65 @@
         startX: 5,
         startY: 5,
         background: 'coblestone'
+      },
+      {
+        // HUS HUB TROFE ROM
+        layout: [
+          'BPPPPPPPPPPB',
+          'BPPPPPPPPPPB',
+          'BPPPPPPPPPPB',
+          'BPPPPPPPPPPB',
+          'BPPPPPPPPPPB',
+          'BPPPPPPPPPPB',
+          'BPPPPPPPPPPB',
+          'BBBBBBBDBBBB'
+        ],
+        startX: 5,
+        startY: 5,
+        background: 'plank'
       }
     ];
+
+    // ========= LYD =========
+    const sounds = {
+      music: {
+        0: new Audio("musikk/introVoidQuestMusic.wav"),
+        //1: new Audio("audio/music_house.mp3"),
+        //2: new Audio("audio/music_cave.mp3")
+      },
+      sfx: {
+        startFishing: new Audio("lyder/kasteFiskeStang.wav"),
+        gotBite: new Audio("lyder/fiskNapper.wav"),
+        catchSuccess: new Audio("lyder/fangetFisk.wav"),
+        catchFail: new Audio("lyder/mistetFisk.wav")
+      }
+    };
+
+    let masterVolume = 0.5;
+
+    function toggleSettings() {
+      const settings = document.getElementById('settingsMenu');
+      settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function updateVolume(value) {
+      masterVolume = parseFloat(value);
+
+      // Juster volum på alle lyder og musikk
+      Object.values(sounds.music).forEach(audio => {
+        audio.volume = masterVolume;
+      });
+
+      Object.values(sounds.sfx).forEach(audio => {
+        audio.volume = masterVolume;
+      });
+
+      // Lagre volumvalg i localStorage
+      localStorage.setItem('voidquest_volume', masterVolume);
+    }
+
+    // ========= LYD FERDIG =========
+    let currentMusic = null;
 
     let currentLevel = 0, map = [], mapWidth = 0, mapHeight = 0;
     let currentBackground = 'grass';
@@ -194,25 +289,47 @@
     let gold = 0;
 
     function loadLevel(levelIndex, startX = null, startY = null) {
-        const level = levels[levelIndex];
-        currentLevel = levelIndex;
+      const level = levels[levelIndex];
+      currentLevel = levelIndex;
 
-        map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
-        mapHeight = map.length;
-        mapWidth = map[0].length;
+      if (currentMusic) {
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
+      }
 
-        canvas.width = mapWidth * tileSize;
-        canvas.height = mapHeight * tileSize;
+      currentMusic = sounds.music[levelIndex];
+      if (currentMusic) {
+        currentMusic.loop = true;
+        currentMusic.volume = 0.5;
+        currentMusic.play();
+      }
 
-        currentBackground = level.background || 'grass';
+      map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
+      mapHeight = map.length;
+      mapWidth = map[0].length;
 
-        character.x = startX !== null ? startX : level.startX;
-        character.y = startY !== null ? startY : level.startY;
+      canvas.width = mapWidth * tileSize;
+      canvas.height = mapHeight * tileSize;
 
-        character.pixelX = character.x * tileSize;
-        character.pixelY = character.y * tileSize;
+      currentBackground = level.background || 'grass';
 
-        gameLoop();
+      character.x = startX !== null ? startX : level.startX;
+      character.y = startY !== null ? startY : level.startY;
+
+      character.pixelX = character.x * tileSize;
+      character.pixelY = character.y * tileSize;
+
+      gameLoop();
+      // Fjern tidligere trofévisning hvis den finnes
+      const existingTrophy = document.getElementById("trophyRoom");
+      if (existingTrophy) existingTrophy.remove();
+
+      // Vis troférom hvis vi er i rom 3
+      if (levelIndex === 3) {
+        setTimeout(() => {
+          renderTrophyRoom();
+        }, 100);
+      }
     }
 
     function drawMap() {
@@ -289,6 +406,16 @@
       requestAnimationFrame(animate);
     }
 
+    function getAllUniqueFish() {
+      const allFish = Object.values(fishPools).flat();
+      const seen = {};
+      return allFish.filter(f => {
+        if (seen[f.name]) return false;
+        seen[f.name] = true;
+        return true;
+      });
+    }
+
     function tryInteract() {
       if (character.moving || isFishing) return;
       let tx = character.x, ty = character.y;
@@ -303,6 +430,9 @@
 
     function startFishing() {
       isFishing = true;
+
+      if (sounds.sfx.startFishing) sounds.sfx.startFishing.play();
+
       fishCaught = false;
       showFishingBox("Fisker...");
       const wait = Math.floor(Math.random() * 10000) + 5000;
@@ -345,49 +475,87 @@
     function fishGotBite() {
       currentFish = getRandomFish();
       const rarity = currentFish.rarity;
+      const settings = raritySettings[rarity] || { time: 4000, color: "white" };
+      const totalTime = settings.time;
+      const color = settings.color;
 
       const prompt = `
         <div style="margin-bottom: 10px;">
-          <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
+          <div style="border: 2px solid ${color}; padding: 4px; display:inline-block;">
+            <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
+          </div>
           <div>${currentFish.name}</div>
         </div>
         <div style="margin-bottom: 10px;">NAPP! Trykk riktig knapp:</div>
         <button style="background:gray;" onclick="tryCatchFish('common')">Common</button>
         <button style="background:blue;" onclick="tryCatchFish('rare')">Rare</button>
         <button style="background:gold;" onclick="tryCatchFish('legendary')">Legendary</button>
-        <br><br><button onclick="cancelFishing()">Avbryt</button>
+        <div id="biteTimerBar" style="width: 100%; height: 15px; background: #222; margin-top: 10px; position: relative;">
+          <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: ${color}; transition: width 0.1s linear;"></div>
+        </div>
+        
       `;
+
+      if (sounds.sfx.gotBite) sounds.sfx.gotBite.play();
+
       fishingBox.innerHTML = prompt;
 
-      biteTimeout = setTimeout(() => {
-        if (!fishCaught) {
-          showFishingBox("Fisken stakk av!");
-          setTimeout(cancelFishing, 2000);
+      const fill = document.getElementById("biteTimerFill");
+      let elapsed = 0;
+      const interval = 50;
+
+      const countdown = setInterval(() => {
+        if (fishCaught) {
+          clearInterval(countdown);
+          return;
         }
-      }, 3000);
+
+        elapsed += interval;
+        const progress = Math.max(0, 1 - (elapsed / totalTime));
+        fill.style.width = (progress * 100) + "%";
+
+        if (elapsed >= totalTime) {
+          clearInterval(countdown);
+          showFishingBox("Fisken stakk av!");
+          if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+          setTimeout(cancelFishing, 1200);
+        }
+      }, interval);
     }
 
     function tryCatchFish(choice) {
       if (currentFish && currentFish.rarity === choice) {
         showFishingBox(`Du fanget en ${currentFish.name}!`);
+        if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
         addToInventory(currentFish);
       } else {
         showFishingBox("Bom! Du mistet fisken.");
+        if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
       }
       fishCaught = true;
       setTimeout(cancelFishing, 2000);
     }
 
     function getRandomFish() {
-      const roll = Math.random() * 100;
+      const pool = fishPools[currentLevel] || [];
 
-      if (roll < 78) {
-        return { name: "Common fisk", rarity: "common", image: "images/commonFish.png" };
-      } else if (roll < 98) {
-        return { name: "Rare fisk", rarity: "rare", image: "images/rareFish.png" };
-      } else {
-        return { name: "Legendary fisk", rarity: "legendary", image: "images/legendaryFish.png" };
+      const totalChance = pool.reduce((sum, fish) => sum + fish.chance, 0);
+      const roll = Math.random() * totalChance;
+      let sum = 0;
+
+      for (const fish of pool) {
+        sum += fish.chance;
+        if (roll < sum) {
+          return {
+            name: fish.name,
+            rarity: fish.rarity,
+            image: fish.image,
+            price: fish.price
+          };
+        }
       }
+
+      return { name: "???", rarity: "common", image: "images/defaultFish.png", price: 0 };
     }
 
     function addToInventory(fish) {
@@ -397,26 +565,27 @@
       } else {
         inventory.push({ ...fish, count: 1 });
       }
+
+      // Legg til i trophies hvis det er første gang du fanger denne
+      if (!trophies.includes(fish.name)) {
+        trophies.push(fish.name);
+      }
+
       if (inventoryOpen) renderInventory();
     }
 
     function openShop() {
       const shopBox = document.getElementById('shopBox');
-      let shopHTML = `<h3>Butikk</h3><p>Selg fisken din for gull</p>`;
-
-      const sellOptions = [
-        { rarity: 'common', label: 'Common fisk', price: 5 },
-        { rarity: 'rare', label: 'Rare fisk', price: 30 },
-        { rarity: 'legendary', label: 'Legendary fisk', price: 1000 }
-      ];
-
+      let shopHTML = `<h3 style="font-family: Cursive;">Butikk</h3><p>Selg fisken din for gull</p>`;
       let hasFish = false;
 
-      sellOptions.forEach(option => {
-        const item = inventory.find(i => i.rarity === option.rarity);
-        if (item && item.count > 0) {
+      inventory.forEach(item => {
+        const allFish = Object.values(fishPools).flat();
+        const fishInfo = allFish.find(f => f.name === item.name);
+
+        if (fishInfo) {
           hasFish = true;
-          shopHTML += `<button onclick="sellFish('${option.rarity}', ${option.price})">Selg ${option.label} (${option.price} gull)</button><br>`;
+          shopHTML += `<button onclick="sellFish('${item.name}', ${fishInfo.price})">Selg ${item.name} (${fishInfo.price} gull)</button><br>`;
         }
       });
 
@@ -425,7 +594,6 @@
       }
 
       shopHTML += `<br><button onclick="closeShop()">Lukk</button>`;
-
       shopBox.innerHTML = shopHTML;
       shopBox.style.display = 'block';
     }
@@ -434,8 +602,8 @@
       document.getElementById('shopBox').style.display = 'none';
     }
 
-    function sellFish(rarity, price) {
-      const itemIndex = inventory.findIndex(i => i.rarity === rarity);
+    function sellFish(fishName, price) {
+      const itemIndex = inventory.findIndex(i => i.name === fishName);
       if (itemIndex !== -1) {
         inventory[itemIndex].count--;
         gold += price;
@@ -443,24 +611,91 @@
           inventory.splice(itemIndex, 1);
         }
         renderInventory();
+        openShop(); // Refresh shop UI
       }
+    }
+
+    function renderTrophyRoom() {
+      if (currentLevel !== 3) return;
+
+      const allFish = getAllUniqueFish();
+
+      const trophyDiv = document.createElement("div");
+      trophyDiv.style.position = "absolute";
+      trophyDiv.style.top = "50px";
+      trophyDiv.style.left = "50%";
+      trophyDiv.style.transform = "translateX(-50%)";
+      trophyDiv.style.background = "#111";
+      trophyDiv.style.border = "2px solid #888";
+      trophyDiv.style.padding = "20px";
+      trophyDiv.style.zIndex = "15";
+      trophyDiv.style.color = "white";
+      trophyDiv.style.fontFamily = "monospace";
+
+      trophyDiv.id = "trophyRoom";
+
+      const grid = document.createElement("div");
+      grid.style.display = "grid";
+      grid.style.gridTemplateColumns = "repeat(6, 64px)";
+      grid.style.gap = "12px";
+
+      allFish.forEach(fish => {
+        const hasCaught = trophies.includes(fish.name);
+
+        const cell = document.createElement("div");
+        cell.style.width = "64px";
+        cell.style.height = "64px";
+        cell.style.background = "#222";
+        const rarity = raritySettings[fish.rarity];
+        const borderColor = hasCaught && rarity ? rarity.border : "#444";
+        cell.style.border = `2px solid ${borderColor}`;
+        cell.style.display = "flex";
+        cell.style.alignItems = "center";
+        cell.style.justifyContent = "center";
+
+        const img = document.createElement("img");
+        img.src = fish.image;
+        img.width = 48;
+        img.height = 48;
+        if (!hasCaught) {
+          img.style.filter = "grayscale(100%) brightness(50%)";
+          img.title = "???";
+        } else {
+          img.title = fish.name;
+        }
+
+        cell.appendChild(img);
+        grid.appendChild(cell);
+      });
+
+      const title = document.createElement("h3");
+      const caught = trophies.length;
+      const total = allFish.length;
+      title.innerText = `Troféer: ${caught} av ${total}`;
+      trophyDiv.appendChild(title);
+
+      trophyDiv.appendChild(grid);
+      document.body.appendChild(trophyDiv);
     }
 
 
     function renderInventory() {
       const inv = document.getElementById('inventory');
-      inv.innerHTML = `<h3>Inventory</h3><p>Gull: ${gold}</p>`;
+      inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory</h3><p style="color:gold;font-family: Cursive;">Gull: ${gold}</p>`;
       const grid = document.createElement('div');
       grid.style.display = 'grid';
       grid.style.gridTemplateColumns = 'repeat(5, 64px)';
       grid.style.gap = '8px';
 
       inventory.forEach(item => {
-        const cell = document.createElement('div');
+        const cell = document.createElement('div'); // ← Dette manglet
+        const rarity = raritySettings[item.rarity];
+        const borderColor = rarity ? rarity.border : "#666";
+
         cell.style.width = '64px';
         cell.style.height = '64px';
         cell.style.background = '#111';
-        cell.style.border = '1px solid #666';
+        cell.style.border = `2px solid ${borderColor}`;
         cell.style.display = 'flex';
         cell.style.flexDirection = 'column';
         cell.style.alignItems = 'center';
@@ -516,6 +751,7 @@
     function saveGame() {
       const saveData = {
         inventory: inventory,
+        trophies: trophies, 
         level: currentLevel,
         position: {
           x: character.x,
@@ -535,8 +771,17 @@
         if (saved) {
           const data = JSON.parse(saved);
           inventory = data.inventory || [];
+          trophies = data.trophies || [];
 
           gold = data.gold || 0;
+
+          // Last volum hvis det finnes
+          const savedVolume = localStorage.getItem('voidquest_volume');
+          if (savedVolume !== null) {
+            document.getElementById("volumeSlider").value = savedVolume;
+            updateVolume(savedVolume);
+          }
+
           const level = data.level ?? 0;
           const x = data.position?.x ?? levels[level].startX;
           const y = data.position?.y ?? levels[level].startY;

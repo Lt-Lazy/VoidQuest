@@ -1,0 +1,867 @@
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const tileSize = 40;
+
+let menuOpen = false;
+
+// === Tiles ===
+const tileImages = {
+  grass: new Image(),
+  coblestone: new Image(),
+  tree: new Image(),
+  brick: new Image(),
+  plank: new Image(),
+  fence: new Image(),
+  table: new Image(),
+  door: new Image(),
+  water: new Image(),
+  sand: new Image(),
+  stoneSingle: new Image(),
+  voidgate: new Image(),
+  npcShop: new Image()
+};
+
+tileImages.grass.src = 'images/grassTile.png';
+tileImages.tree.src = 'images/treeTile.png';
+tileImages.brick.src = 'images/brickTile.png';
+tileImages.plank.src = 'images/plankTile.png';
+tileImages.door.src = 'images/doorTile.png';
+tileImages.fence.src = 'images/fenceTile.png';
+tileImages.table.src = 'images/tableTile.png';
+tileImages.coblestone.src = 'images/coblestoneTile.png';
+tileImages.water.src = 'images/waterTile.png';
+tileImages.npcShop.src = 'images/npcShopTile.png';
+tileImages.sand.src = 'images/sandTile.png';
+tileImages.stoneSingle.src = 'images/stoneSingleTile.png';
+tileImages.voidgate.src = 'images/voidgateTile.png';
+
+const tileMapping = {
+  'G': 'grass',
+  'C': 'coblestone',
+  'T': 'tree',
+  'B': 'brick',
+  'P': 'plank',
+  'F': 'fence',
+  't': 'table',
+  'D': 'door',
+  'W': 'water',
+  'S': 'sand',
+  's': 'stoneSingle',
+  'N': 'npcShop',
+  'V': 'voidgate',
+};
+
+const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle'];
+
+const characterImages = {
+  up: new Image(),
+  down: new Image(),
+  left: new Image(),
+  right: new Image(),
+};
+
+characterImages.up.src = 'images/pixelmannUp.png';
+characterImages.down.src = 'images/pixelmanndown.png';
+characterImages.left.src = 'images/pixelmannLeft.png';
+characterImages.right.src = 'images/pixelmannRight.png';
+
+const fishPools = {
+  0: [ // Utenfor
+    { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 30 },
+    // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
+  ],
+  2: [ // Cave
+    { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 10 },
+    { name: "Deep Void Lure", rarity: "legendary", image: "images/deepVoidLure.png", chance: 10, price: 1000 },
+    { name: "Skuggosk", rarity: "rare", image: "images/skuggosk.png", chance: 80, price: 60 }
+  ]
+};
+
+const raritySettings = {
+  common: { time: 8000, color: "gray", border: "#999" },
+  rare: { time: 5000, color: "blue", border: "#3af" },
+  legendary: { time: 2000, color: "gold", border: "gold" }
+};
+
+let trophies = []; // Navn på fiskene du har fanget før
+
+const character = {
+  x: 0, y: 0,
+  pixelX: 0, pixelY: 0,
+  direction: 'down',
+  moving: false
+};
+
+const keys = { w: false, a: false, s: false, d: false };
+
+const doorMap = {
+  0: { //SPENNINGSBYEN
+    '2,9': { targetLevel: 1, targetX: 10, targetY: 2 }, // TIL HUS
+    '22,3': { targetLevel: 2, targetX: 5, targetY: 1 },  // TIL CAVE
+    '23,5': { targetLevel: 4, targetX: 1, targetY: 3 }  // TIL STI-1
+  },
+  1: { //HUS HUB SPENNINGSBYEN
+    '10,1': { targetLevel: 0, targetX: 2, targetY: 10 }, // TIL UTE 
+    '7,1': { targetLevel: 3, targetX: 7, targetY: 6 } // TIL TROFEROM
+  },
+  2: { //CAVE1 SPENNINGSBYEN
+    '5,0': { targetLevel: 0, targetX: 22, targetY: 4 }  // TIL UTE 
+  },
+  3: { //TROFEROM HUS HUB SPENNINGSBYEN
+    '7,7': { targetLevel: 1, targetX: 7, targetY: 2 }  // TIL HUS HUB
+  },
+  4: { //STI-1
+    '0,3': { targetLevel: 0, targetX: 22, targetY: 5 }  // TIL HUS HUB
+  }
+};
+
+const levels = [
+  {
+    //Spenningsbyen
+    layout: [
+      'TTTTTTTTTTTTTTTTTTsCCCBC',
+      'TGGGGGGGGGGGGGGGGGGsCBBB',
+      'TGTTGGGGGGGGGGGGGGGsCPPP',
+      'TGGGGGGGGGGGGGGGGGGGsPDP',
+      'TGGGTGGTGGGGGGGGGGGGGsGs',
+      'TGGGGGGGGGGGGGGGGGGGGGGV',
+      'TGBBGGGGGGGGGGGGGGGGGGGT',
+      'TBBBBGTTGGGGGGGGGGGGGGGT',
+      'TBBBBTTTTTTGGGGGGGGGSSSS',
+      'TBDBBFFFFFGGGGGGGGGSWWWW',
+      'TGGGGGGGGGGGGGGGGGSWWWWW',
+      'TTTTTTTTTTTTTTTTTSWWWWWW'
+    ],
+    startX: 4,
+    startY: 10,
+    background: 'grass'
+  },
+  {
+    //HUS HUB
+    layout: [
+      'BBBBBBBBBBBB',
+      'BBBBBBBDBBDB',
+      'BPNPPPPPPPPB',
+      'BtttPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'plank'
+  },
+  {
+    // CAVE1 SPENNINGSBYEN
+    layout: [
+      'CCsssDssCsWW',
+      'CsCssCCsCCsW',
+      'CsCCCCCCCCCC',
+      'CCCsCCCCCCsC',
+      'CsCsssCCCCsC',
+      'CCCCsCCssCsC',
+      'CCCCsCCCCCsC',
+      'CCCCsCCCCCCC'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'coblestone'
+  },
+  {
+    // HUS HUB TROFE ROM
+    layout: [
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BPPPPPPPPPPB',
+      'BBBBBBBDBBBB'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'plank'
+  },
+  {
+    // STI-1
+    layout: [
+      'TTTTTTTTTTTTTTTTTTTTTTTT',
+      'TGGGGGGGGGGGGGGGGGGGGGGG',
+      'TGGGGGGGGGGGGGGGGGGGGGGG',
+      'VGGGGGGGGGGGGGGGGGGGGGGG',
+      'TGGGGGGGGGGGGGGGGGGGGGGG',
+      'TGGGGGGGGGGGGGGGGGGGGGGG',
+      'TTTTTTTTTTTTTTTTTTTTTTTT'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'grass'
+  }
+];
+
+// ========= LYD =========
+const sounds = {
+  music: {
+    0: new Audio("musikk/introVoidQuestMusic.wav"),
+    //1: new Audio("audio/music_house.mp3"),
+    //2: new Audio("audio/music_cave.mp3")
+  },
+  sfx: {
+    startFishing: new Audio("lyder/kasteFiskeStang.wav"),
+    gotBite: new Audio("lyder/fiskNapper.wav"),
+    catchSuccess: new Audio("lyder/fangetFisk.wav"),
+    catchFail: new Audio("lyder/mistetFisk.wav")
+  }
+};
+
+let masterVolume = 0.5;
+
+function toggleSettings() {
+  const settings = document.getElementById('settingsMenu');
+  settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+}
+
+function updateVolume(value) {
+  masterVolume = parseFloat(value);
+
+  // Juster volum på alle lyder og musikk
+  Object.values(sounds.music).forEach(audio => {
+    audio.volume = masterVolume;
+  });
+
+  Object.values(sounds.sfx).forEach(audio => {
+    audio.volume = masterVolume;
+  });
+
+  // Lagre volumvalg i localStorage
+  localStorage.setItem('voidquest_volume', masterVolume);
+}
+
+// ========= LYD FERDIG =========
+let currentMusic = null;
+
+let currentLevel = 0, map = [], mapWidth = 0, mapHeight = 0;
+let currentBackground = 'grass';
+
+let isFishing = false;
+let fishingBox = null;
+let fishTimeout = null;
+let biteTimeout = null;
+let currentFish = null;
+let fishCaught = false;
+
+let inventory = [];
+let inventoryOpen = false;
+let gold = 0;
+
+function loadLevel(levelIndex, startX = null, startY = null) {
+  const levelNames = {
+    0: "Spenningsbyen",
+    1: "Hus-Hub",
+    2: "Cave-1",
+    3: "Troférom",
+    4: "Sti-1"
+  };
+  
+  const level = levels[levelIndex];
+  currentLevel = levelIndex;
+
+  const locationLabel = document.getElementById("locationLabel");
+  locationLabel.innerText = levelNames[levelIndex] || `Område ${levelIndex}`;
+
+  if (currentMusic) {
+    currentMusic.pause();
+    currentMusic.currentTime = 0;
+  }
+
+  currentMusic = sounds.music[levelIndex];
+  if (currentMusic) {
+    currentMusic.loop = true;
+    currentMusic.volume = 0.5;
+    currentMusic.play();
+  }
+
+  map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
+  mapHeight = map.length;
+  mapWidth = map[0].length;
+
+  canvas.width = mapWidth * tileSize;
+  canvas.height = mapHeight * tileSize;
+
+  currentBackground = level.background || 'grass';
+
+  character.x = startX !== null ? startX : level.startX;
+  character.y = startY !== null ? startY : level.startY;
+
+  character.pixelX = character.x * tileSize;
+  character.pixelY = character.y * tileSize;
+
+  gameLoop();
+  // Fjern tidligere trofévisning hvis den finnes
+  const existingTrophy = document.getElementById("trophyRoom");
+  if (existingTrophy) existingTrophy.remove();
+
+  // Vis troférom hvis vi er i rom 3
+  if (levelIndex === 3) {
+    setTimeout(() => {
+      renderTrophyRoom();
+    }, 100);
+  }
+}
+
+function drawMap() {
+  for (let y = 0; y < mapHeight; y++) {
+    for (let x = 0; x < mapWidth; x++) {
+      const tileType = map[y][x];
+      ctx.drawImage(tileImages[currentBackground], x * tileSize, y * tileSize, tileSize, tileSize);
+      if (tileType !== 'grass') {
+        ctx.drawImage(tileImages[tileType], x * tileSize, y * tileSize, tileSize, tileSize);
+      }
+    }
+  }
+}
+
+function drawCharacter() {
+  const img = characterImages[character.direction];
+  ctx.drawImage(img, character.pixelX, character.pixelY, tileSize, tileSize);
+}
+
+function canMoveTo(x, y) {
+  if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) return false;
+  return !nonWalkableTiles.includes(map[y][x]);
+}
+
+function moveCharacter(dx, dy) {
+  if (character.moving) return;
+
+  const newX = character.x + dx;
+  const newY = character.y + dy;
+  if (!canMoveTo(newX, newY)) return;
+
+  character.direction = dx === -1 ? 'left' : dx === 1 ? 'right' : dy === -1 ? 'up' : 'down';
+  character.moving = true;
+  character.x = newX;
+  character.y = newY;
+
+  const targetX = character.x * tileSize;
+  const targetY = character.y * tileSize;
+  const speed = 2;
+
+  function animate() {
+    let doneX = false, doneY = false;
+    if (character.pixelX < targetX) {
+      character.pixelX += speed;
+      if (character.pixelX >= targetX) { character.pixelX = targetX; doneX = true; }
+    } else if (character.pixelX > targetX) {
+      character.pixelX -= speed;
+      if (character.pixelX <= targetX) { character.pixelX = targetX; doneX = true; }
+    } else { doneX = true; }
+
+    if (character.pixelY < targetY) {
+      character.pixelY += speed;
+      if (character.pixelY >= targetY) { character.pixelY = targetY; doneY = true; }
+    } else if (character.pixelY > targetY) {
+      character.pixelY -= speed;
+      if (character.pixelY <= targetY) { character.pixelY = targetY; doneY = true; }
+    } else { doneY = true; }
+
+    gameLoop();
+
+    if (!doneX || !doneY) {
+      requestAnimationFrame(animate);
+    } else {
+      character.moving = false;
+      const tile = map[character.y][character.x];
+      if (tile === 'door' || tile === 'voidgate') {
+        const key = `${character.x},${character.y}`;
+        const door = doorMap[currentLevel]?.[key];
+        if (door) loadLevel(door.targetLevel, door.targetX, door.targetY);
+      }
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function getAllUniqueFish() {
+  const allFish = Object.values(fishPools).flat();
+  const seen = {};
+  return allFish.filter(f => {
+    if (seen[f.name]) return false;
+    seen[f.name] = true;
+    return true;
+  });
+}
+
+function tryInteract() {
+  if (character.moving || isFishing) return;
+  let tx = character.x, ty = character.y;
+  if (character.direction === 'up') ty -= 1;
+  if (character.direction === 'down') ty += 1;
+  if (character.direction === 'left') tx -= 1;
+  if (character.direction === 'right') tx += 1;
+  const tile = map[ty]?.[tx];
+  if (tile === 'water') startFishing();
+  else if (tile === 'npcShop') openShop();
+}
+
+function startFishing() {
+  isFishing = true;
+
+  if (sounds.sfx.startFishing) sounds.sfx.startFishing.play();
+
+  fishCaught = false;
+  showFishingBox("Fisker...");
+  const wait = Math.floor(Math.random() * 8000) + 2000;
+  fishTimeout = setTimeout(fishGotBite, wait);
+}
+
+function showFishingBox(text) {
+  if (!fishingBox) {
+    fishingBox = document.createElement('div');
+    fishingBox.id = 'fishingBox';
+    fishingBox.style.position = 'absolute';
+    fishingBox.style.bottom = '50px';
+    fishingBox.style.left = '50%';
+    fishingBox.style.transform = 'translateX(-50%)';
+    fishingBox.style.background = '#333';
+    fishingBox.style.color = '#fff';
+    fishingBox.style.padding = '10px';
+    fishingBox.style.border = '2px solid #aaa';
+    fishingBox.style.fontFamily = 'monospace';
+    fishingBox.style.zIndex = '10';
+    document.body.appendChild(fishingBox);
+  }
+  fishingBox.innerHTML = `${text}<br><button onclick="cancelFishing()">Avbryt</button>`;
+}
+
+function hideFishingBox() {
+  if (fishingBox) {
+    document.body.removeChild(fishingBox);
+    fishingBox = null;
+  }
+}
+
+function cancelFishing() {
+  clearTimeout(fishTimeout);
+  clearTimeout(biteTimeout);
+  hideFishingBox();
+  isFishing = false;
+}
+
+function fishGotBite() {
+  currentFish = getRandomFish();
+  const rarity = currentFish.rarity;
+  const settings = raritySettings[rarity] || { time: 4000, color: "white" };
+  const totalTime = settings.time;
+  const color = settings.color;
+
+  const prompt = `
+    <div style="margin-bottom: 10px;">
+      <div style="border: 2px solid ${color}; padding: 4px; display:inline-block;">
+        <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
+      </div>
+      <div>${currentFish.name}</div>
+    </div>
+    <div style="margin-bottom: 10px;">NAPP! Trykk riktig knapp:</div>
+    <button style="background:gray;" onclick="tryCatchFish('common')">Common</button>
+    <button style="background:blue;" onclick="tryCatchFish('rare')">Rare</button>
+    <button style="background:gold;" onclick="tryCatchFish('legendary')">Legendary</button>
+    <div id="biteTimerBar" style="width: 100%; height: 15px; background: #222; margin-top: 10px; position: relative;">
+      <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: ${color}; transition: width 0.1s linear;"></div>
+    </div>
+    
+  `;
+
+  if (sounds.sfx.gotBite) sounds.sfx.gotBite.play();
+
+  fishingBox.innerHTML = prompt;
+
+  const fill = document.getElementById("biteTimerFill");
+  let elapsed = 0;
+  const interval = 50;
+
+  const countdown = setInterval(() => {
+    if (fishCaught) {
+      clearInterval(countdown);
+      return;
+    }
+
+    elapsed += interval;
+    const progress = Math.max(0, 1 - (elapsed / totalTime));
+    fill.style.width = (progress * 100) + "%";
+
+    if (elapsed >= totalTime) {
+      clearInterval(countdown);
+      showFishingBox("Fisken stakk av!");
+      if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+      setTimeout(cancelFishing, 1200);
+    }
+  }, interval);
+}
+
+function tryCatchFish(choice) {
+  if (currentFish && currentFish.rarity === choice) {
+    showFishingBox(`Du fanget en ${currentFish.name}!`);
+    if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+    addToInventory(currentFish);
+  } else {
+    showFishingBox("Bom! Du mistet fisken.");
+    if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+  }
+  fishCaught = true;
+  setTimeout(cancelFishing, 2000);
+}
+
+function getRandomFish() {
+  const pool = fishPools[currentLevel] || [];
+
+  const totalChance = pool.reduce((sum, fish) => sum + fish.chance, 0);
+  const roll = Math.random() * totalChance;
+  let sum = 0;
+
+  for (const fish of pool) {
+    sum += fish.chance;
+    if (roll < sum) {
+      return {
+        name: fish.name,
+        rarity: fish.rarity,
+        image: fish.image,
+        price: fish.price
+      };
+    }
+  }
+
+  return { name: "???", rarity: "common", image: "images/defaultFish.png", price: 0 };
+}
+
+function addToInventory(fish) {
+  let item = inventory.find(i => i.name === fish.name);
+  if (item) {
+    item.count += 1;
+  } else {
+    inventory.push({ ...fish, count: 1 });
+  }
+
+  // Legg til i trophies hvis det er første gang du fanger denne
+  if (!trophies.includes(fish.name)) {
+    trophies.push(fish.name);
+  }
+
+  if (inventoryOpen) renderInventory();
+}
+
+function openShop() {
+  const shopBox = document.getElementById('shopBox');
+  let shopHTML = `<h3 style="font-family: Cursive;">Butikk</h3><p>Selg fisken din for gull</p>`;
+  let hasFish = false;
+
+  inventory.forEach(item => {
+    const allFish = Object.values(fishPools).flat();
+    const fishInfo = allFish.find(f => f.name === item.name);
+
+    if (fishInfo) {
+      hasFish = true;
+      shopHTML += `<button onclick="sellFish('${item.name}', ${fishInfo.price})">Selg ${item.name} (${fishInfo.price} gull)</button><br>`;
+    }
+  });
+
+  if (!hasFish) {
+    shopHTML += `<p>Du har ingen fisk å selge.</p>`;
+  }
+
+  shopHTML += `<br><button onclick="closeShop()">Lukk</button>`;
+  shopBox.innerHTML = shopHTML;
+  shopBox.style.display = 'block';
+}
+
+function closeShop() {
+  document.getElementById('shopBox').style.display = 'none';
+}
+
+function sellFish(fishName, price) {
+  const itemIndex = inventory.findIndex(i => i.name === fishName);
+  if (itemIndex !== -1) {
+    inventory[itemIndex].count--;
+    gold += price;
+    if (inventory[itemIndex].count <= 0) {
+      inventory.splice(itemIndex, 1);
+    }
+    renderInventory();
+    openShop(); // Refresh shop UI
+  }
+}
+
+function renderTrophyRoom() {
+  if (currentLevel !== 3) return;
+
+  const allFish = getAllUniqueFish();
+
+  const trophyDiv = document.createElement("div");
+  trophyDiv.style.position = "absolute";
+  trophyDiv.style.top = "50px";
+  trophyDiv.style.left = "50%";
+  trophyDiv.style.transform = "translateX(-50%)";
+  trophyDiv.style.background = "#111";
+  trophyDiv.style.border = "2px solid #888";
+  trophyDiv.style.padding = "20px";
+  trophyDiv.style.zIndex = "15";
+  trophyDiv.style.color = "white";
+  trophyDiv.style.fontFamily = "monospace";
+
+  trophyDiv.id = "trophyRoom";
+
+  const grid = document.createElement("div");
+  grid.style.display = "grid";
+  grid.style.gridTemplateColumns = "repeat(6, 64px)";
+  grid.style.gap = "12px";
+
+  allFish.forEach(fish => {
+    const hasCaught = trophies.includes(fish.name);
+
+    const cell = document.createElement("div");
+    cell.style.width = "64px";
+    cell.style.height = "64px";
+    cell.style.background = "#222";
+    const rarity = raritySettings[fish.rarity];
+    const borderColor = hasCaught && rarity ? rarity.border : "#444";
+    cell.style.border = `2px solid ${borderColor}`;
+    cell.style.display = "flex";
+    cell.style.alignItems = "center";
+    cell.style.justifyContent = "center";
+
+    const img = document.createElement("img");
+    img.src = fish.image;
+    img.width = 48;
+    img.height = 48;
+    if (!hasCaught) {
+      img.style.filter = "grayscale(100%) brightness(50%)";
+      img.title = "???";
+    } else {
+      img.title = fish.name;
+    }
+
+    cell.appendChild(img);
+    grid.appendChild(cell);
+  });
+
+  const title = document.createElement("h3");
+  const caught = trophies.length;
+  const total = allFish.length;
+  title.innerText = `Troféer: ${caught} av ${total}`;
+  trophyDiv.appendChild(title);
+
+  trophyDiv.appendChild(grid);
+  document.body.appendChild(trophyDiv);
+}
+
+// === Kart: Lokasjoner og visning ===
+const mapData = [
+  { name: "Spenningsbyen", x: 20, y: 20, type: "city", color: "dodgerblue" },
+  { name: "Sti-1", x: 35, y: 20, type: "road", color: "#8B4513" },
+  { name: "Sti-1", x: 50, y: 20, type: "road", color: "#8B4513" },
+  { name: "Sti-1", x: 65, y: 20, type: "road", color: "#8B4513" },
+  { name: "Sti-1", x: 80, y: 20, type: "road", color: "#8B4513" },
+  
+];
+
+let showMap = false;
+const mouse = { x: 0, y: 0 };
+let hoveredLocation = null;
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!showMap) return;
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+
+  gameLoop(); 
+});
+
+function renderWorldMap() {
+  const mapX = canvas.width - 200 - 20;
+  const mapY = 10;
+  const mapWidth = 200;
+  const mapHeight = 200;
+
+  ctx.fillStyle = "#111";
+  ctx.fillRect(mapX, mapY, mapWidth, mapHeight);
+  ctx.strokeStyle = "#888";
+  ctx.strokeRect(mapX, mapY, mapWidth, mapHeight);
+
+  hoveredLocation = null;
+
+  mapData.forEach(loc => {
+    const lx = mapX + loc.x;
+    const ly = mapY + loc.y;
+    const size = loc.type === "city" ? 10 : 6;
+    const shape = loc.type === "city" ? "rect" : "circle";
+
+    const isHovered = (
+      mouse.x >= lx - size && mouse.x <= lx + size &&
+      mouse.y >= ly - size && mouse.y <= ly + size
+    );
+
+    if (isHovered) hoveredLocation = loc.name;
+
+    ctx.fillStyle = loc.color;
+    if (shape === "rect") {
+      ctx.fillRect(lx - size / 2, ly - size / 2, size, size);
+    } else {
+      ctx.beginPath();
+      ctx.arc(lx, ly, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  if (hoveredLocation) {
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px monospace";
+    ctx.fillText(hoveredLocation, mapX + 5, mapY + mapHeight - 5);
+  }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "m") {
+    showMap = !showMap;
+    gameLoop();
+  }
+});
+
+// === Overstyr gameLoop med kart ===
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawMap();
+  drawCharacter();
+  if (showMap) renderWorldMap();
+}
+
+
+function renderInventory() {
+  const inv = document.getElementById('inventory');
+  inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory</h3><p style="color:gold;font-family: Cursive;">Gull: ${gold}</p>`;
+  const grid = document.createElement('div');
+  grid.style.display = 'grid';
+  grid.style.gridTemplateColumns = 'repeat(5, 64px)';
+  grid.style.gap = '8px';
+
+  inventory.forEach(item => {
+    const cell = document.createElement('div'); // ← Dette manglet
+    const rarity = raritySettings[item.rarity];
+    const borderColor = rarity ? rarity.border : "#666";
+
+    cell.style.width = '64px';
+    cell.style.height = '64px';
+    cell.style.background = '#111';
+    cell.style.border = `2px solid ${borderColor}`;
+    cell.style.display = 'flex';
+    cell.style.flexDirection = 'column';
+    cell.style.alignItems = 'center';
+    cell.style.justifyContent = 'center';
+    cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
+    grid.appendChild(cell);
+  });
+
+  inv.appendChild(grid);
+}
+
+function toggleInventory() {
+  inventoryOpen = !inventoryOpen;
+  document.getElementById('inventory').style.display = inventoryOpen ? 'block' : 'none';
+  if (inventoryOpen) renderInventory();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (character.moving) return;
+  switch (e.key) {
+    case 'w': moveCharacter(0, -1); break;
+    case 's': moveCharacter(0, 1); break;
+    case 'a': moveCharacter(-1, 0); break;
+    case 'd': moveCharacter(1, 0); break;
+    case 'e': tryInteract(); break;
+    case 'i': toggleInventory(); break;
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    toggleMenu();
+  }
+});
+
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  document.getElementById('gameMenu').style.display = menuOpen ? 'flex' : 'none';
+}
+
+function closeMenu() {
+  menuOpen = false;
+  document.getElementById('gameMenu').style.display = 'none';
+}
+
+function saveGame() {
+  const saveData = {
+    inventory: inventory,
+    trophies: trophies, 
+    level: currentLevel,
+    position: {
+      x: character.x,
+      y: character.y,
+      direction: character.direction
+    },
+    gold: gold
+  };
+
+  localStorage.setItem('voidquest_save', JSON.stringify(saveData));
+  alert("Spillet er lagret!");
+}
+
+function loadGame() {
+  try {
+    const saved = localStorage.getItem('voidquest_save');
+    if (saved) {
+      const data = JSON.parse(saved);
+      inventory = data.inventory || [];
+      trophies = data.trophies || [];
+
+      gold = data.gold || 0;
+
+      // Last volum hvis det finnes
+      const savedVolume = localStorage.getItem('voidquest_volume');
+      if (savedVolume !== null) {
+        document.getElementById("volumeSlider").value = savedVolume;
+        updateVolume(savedVolume);
+      }
+
+      const level = data.level ?? 0;
+      const x = data.position?.x ?? levels[level].startX;
+      const y = data.position?.y ?? levels[level].startY;
+      const dir = data.position?.direction ?? 'down';
+
+      character.direction = dir;
+
+      loadLevel(level, x, y);
+      renderInventory();
+    } else {
+      // Ingen lagring funnet – start fra default
+      loadLevel(0);
+    }
+  } catch (e) {
+    console.error("Feil ved lasting av lagring:", e);
+    loadLevel(0);
+  }
+}
+
+// Prevent movement/inventory while menu is open or fishing
+document.addEventListener('keydown', (e) => {
+  if (menuOpen || isFishing) return;
+  // Your existing movement + inventory toggle logic here
+});
+
+loadLevel(1);
+loadGame();
