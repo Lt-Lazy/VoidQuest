@@ -61,7 +61,7 @@ const characterImages = {
 };
 
 characterImages.up.src = 'images/pixelmannUp.png';
-characterImages.down.src = 'images/pixelmannDown.png';
+characterImages.down.src = 'images/pixelmanndown.png';
 characterImages.left.src = 'images/pixelmannLeft.png';
 characterImages.right.src = 'images/pixelmannRight.png';
 
@@ -388,7 +388,7 @@ function applyCharacterAppearance() {
 
   if (playerData.gender === 'male') {
     characterImages.up.src = 'images/pixelmannUp.png';
-    characterImages.down.src = 'images/pixelmannDown.png';
+    characterImages.down.src = 'images/pixelmanndown.png';
     characterImages.left.src = 'images/pixelmannLeft.png';
     characterImages.right.src = 'images/pixelmannRight.png';
   } else {
@@ -1073,7 +1073,7 @@ function showSaveSlotSelection(mode) {
     if (data) {
       const img = document.createElement("img");
       img.src = data.character.gender === "male"
-        ? "images/pixelmannDown.png"
+        ? "images/pixelmanndown.png"
         : "images/pixelwomanDown.png";
       img.width = 32;
       img.height = 32;
