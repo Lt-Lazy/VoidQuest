@@ -378,9 +378,11 @@ function finishCharacterCreation() {
   playerData.gender = gender;
   playerData.name = name;
 
-  // Nå: Ikke lagre enda – be spilleren velge slot
+  localStorage.setItem('voidquest_character', JSON.stringify(playerData));
   document.getElementById("charCreation").remove();
-  showSaveSlotSelection("create"); // Egen modus for å opprette ny karakter direkte
+
+  applyCharacterAppearance();
+  loadLevel(0);
 }
 
 function applyCharacterAppearance() {
@@ -396,6 +398,38 @@ function applyCharacterAppearance() {
     characterImages.down.src = 'images/pixelwomanDown.png';
     characterImages.left.src = 'images/pixelwomanLeft.png';
     characterImages.right.src = 'images/pixelwomanRight.png';
+  }
+}
+
+
+function loadCharacter() {
+  const savedChar = localStorage.getItem('voidquest_character');
+  if (!savedChar) {
+    showCharacterCreation();
+  } else {
+    playerData = JSON.parse(savedChar);
+    applyCharacterAppearance();
+  }
+}
+
+
+
+
+function loadCharacter() {
+  const savedChar = localStorage.getItem('voidquest_character');
+  if (!savedChar) {
+    showCharacterCreation();
+  } else {
+    playerData = JSON.parse(savedChar);
+    applyCharacterAppearance();
+  }
+}
+
+function resetCharacter() {
+  if (confirm("Er du sikker på at du vil slette karakteren og starte på nytt?")) {
+    localStorage.removeItem("voidquest_character");
+    localStorage.removeItem("voidquest_save");
+    location.reload();
   }
 }
 
@@ -883,16 +917,14 @@ function closeMenu() {
 function saveGame() {
   const saveData = {
     inventory: inventory,
-    trophies: trophies,
+    trophies: trophies, 
     level: currentLevel,
     position: {
       x: character.x,
       y: character.y,
       direction: character.direction
     },
-    gold: gold,
-    playerLevel: playerLevel,
-    playerXP: playerXP
+    gold: gold
   };
 
   localStorage.setItem('voidquest_save', JSON.stringify(saveData));
@@ -906,13 +938,143 @@ function loadGame() {
       const data = JSON.parse(saved);
       inventory = data.inventory || [];
       trophies = data.trophies || [];
+
       gold = data.gold || 0;
 
-      // Last nivå og XP
-      playerLevel = data.playerLevel || 1;
-      playerXP = data.playerXP || 0;
+      // Last volum hvis det finnes
+      const savedVolume = localStorage.getItem('voidquest_volume');
+      if (savedVolume !== null) {
+        document.getElementById("volumeSlider").value = savedVolume;
+        updateVolume(savedVolume);
+      }
 
-      xpToNextLevel = Math.floor(100 * Math.pow(1.25, playerLevel - 1)); // beregn riktig threshold
+      const level = data.level ?? 0;
+      const x = data.position?.x ?? levels[level].startX;
+      const y = data.position?.y ?? levels[level].startY;
+      const dir = data.position?.direction ?? 'down';
+
+      character.direction = dir;
+
+      loadLevel(level, x, y);
+      renderInventory();
+    } else {
+      // Ingen lagring funnet – start fra default
+      loadLevel(0);
+    }
+  } catch (e) {
+    console.error("Feil ved lasting av lagring:", e);
+    loadLevel(0);
+  }
+}
+
+// ============ MULTIPLE SAVE SYSTEM ============
+const MAX_SLOTS = 3;
+
+function showSaveSlotSelection(mode = 'load') {
+  const overlay = document.createElement("div");
+  overlay.id = "saveSlotMenu";
+  overlay.style.position = "absolute";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0,0,0,0.85)";
+  overlay.style.color = "white";
+  overlay.style.fontFamily = "monospace";
+  overlay.style.display = "flex";
+  overlay.style.flexDirection = "column";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.gap = "20px";
+  overlay.style.zIndex = 999;
+
+  const title = document.createElement("h2");
+  title.innerText = mode === 'save' ? "Velg lagringsplass" : mode === 'delete' ? "Slett en karakter" : "Velg karakter";
+  overlay.appendChild(title);
+
+  for (let i = 1; i <= MAX_SLOTS; i++) {
+    const slotKey = `voidquest_slot${i}`;
+    const charData = localStorage.getItem(slotKey + '_character');
+    const save = document.createElement("div");
+    save.style.border = "2px solid white";
+    save.style.padding = "10px";
+    save.style.minWidth = "250px";
+    save.style.background = "#222";
+
+    if (charData) {
+      const data = JSON.parse(charData);
+      const imgSrc = data.gender === 'male' ? 'images/pixelmannDown.png' : 'images/pixelwomanDown.png';
+      const saveData = JSON.parse(localStorage.getItem(slotKey + '_save') || '{}');
+      const trophyCount = (saveData.trophies?.length || 0);
+      const totalTrophies = getAllUniqueFish().length;
+
+      save.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="${imgSrc}" width="40" height="40">
+          <div>
+            <strong>${data.name}</strong><br>
+            ${trophyCount} av ${totalTrophies} troféer
+          </div>
+        </div>
+        <br>
+        <button onclick="handleSaveSlotAction('${slotKey}', '${mode}')">
+          ${mode === 'save' ? 'Lagre her' : mode === 'delete' ? 'Slett' : 'Spill'}</button>
+      `;
+    } else {
+      save.innerHTML = `
+        <strong>Slot ${i}</strong><br>
+        ${mode === 'save' ? '<button onclick="handleSaveSlotAction(\'' + slotKey + '\', \'save\')">Lagre ny karakter her</button>' :
+        mode === 'delete' ? '<em>Tom</em>' : '<button onclick="startNewCharacterInSlot(\'' + slotKey + '\')">Ny karakter</button>'}
+      `;
+    }
+
+    overlay.appendChild(save);
+  }
+
+  const closeBtn = document.createElement("button");
+  closeBtn.innerText = "Lukk";
+  closeBtn.onclick = () => overlay.remove();
+  overlay.appendChild(closeBtn);
+
+  document.body.appendChild(overlay);
+}
+
+function handleSaveSlotAction(slotKey, mode) {
+  if (mode === 'save') {
+    const saveData = {
+      inventory: inventory,
+      trophies: trophies,
+      level: currentLevel,
+      position: {
+        x: character.x,
+        y: character.y,
+        direction: character.direction
+      },
+      gold: gold
+    };
+    localStorage.setItem(slotKey + '_save', JSON.stringify(saveData));
+    localStorage.setItem(slotKey + '_character', JSON.stringify(playerData));
+    alert("Lagret til " + slotKey);
+    document.getElementById('saveSlotMenu').remove();
+  } else if (mode === 'delete') {
+    if (confirm("Er du sikker på at du vil slette denne karakteren?")) {
+      localStorage.removeItem(slotKey + '_save');
+      localStorage.removeItem(slotKey + '_character');
+      alert("Karakter slettet.");
+      document.getElementById('saveSlotMenu').remove();
+    }
+  } else if (mode === 'load') {
+    const charData = localStorage.getItem(slotKey + '_character');
+    const saveData = localStorage.getItem(slotKey + '_save');
+
+    if (charData && saveData) {
+      playerData = JSON.parse(charData);
+      applyCharacterAppearance();
+
+      const data = JSON.parse(saveData);
+      inventory = data.inventory || [];
+      trophies = data.trophies || [];
+      gold = data.gold || 0;
 
       const level = data.level ?? 0;
       const x = data.position?.x ?? levels[level].startX;
@@ -922,283 +1084,22 @@ function loadGame() {
       character.direction = dir;
       loadLevel(level, x, y);
       renderInventory();
-      updateXPUI(); // oppdater UI etter load
-    } else {
-      loadLevel(0);
+
+      document.getElementById('saveSlotMenu').remove();
     }
-  } catch (e) {
-    console.error("Feil ved lasting av lagring:", e);
-    loadLevel(0);
   }
 }
 
-// === XP & LEVEL SYSTEM ===
-let playerLevel = 1;
-let playerXP = 0;
-let xpToNextLevel = 100;
-
-// Hvor mye XP hver type fisk gir
-defineFishXP();
-function defineFishXP() {
-  const pool = Object.values(fishPools).flat();
-  pool.forEach(fish => {
-    if (!fish.xp) {
-      if (fish.rarity === "common") fish.xp = 10;
-      else if (fish.rarity === "rare") fish.xp = 25;
-      else if (fish.rarity === "legendary") fish.xp = 75;
-    }
-  });
-}
-
-function gainXP(amount) {
-  playerXP += amount;
-  if (playerXP >= xpToNextLevel) {
-    playerXP -= xpToNextLevel;
-    playerLevel++;
-    xpToNextLevel = Math.floor(xpToNextLevel * 1.25);
-    alert(`Du har gått opp til nivå ${playerLevel}!`);
-    if (sounds.sfx.levelUp) sounds.sfx.levelUp.play();
-  }
-  updateXPBar();
-}
-
-function updateXPBar() {
-  const bar = document.getElementById("xpBar");
-  const percent = Math.floor((playerXP / xpToNextLevel) * 100);
-  if (bar) {
-    bar.style.width = percent + "%";
-    bar.innerText = `XP: ${playerXP} / ${xpToNextLevel}`;
-  }
-}
-
-// === Legg til HTML XP-Bar et sted i DOM ===
-function createXPUI() {
-  const xpBarWrapper = document.createElement("div");
-  xpBarWrapper.style.position = "absolute";
-  xpBarWrapper.style.bottom = "50px";
-  xpBarWrapper.style.left = "50%";
-  xpBarWrapper.style.transform = "translateX(-50%)";
-  xpBarWrapper.style.width = "300px";
-  xpBarWrapper.style.background = "#222";
-  xpBarWrapper.style.border = "2px solid #888";
-  xpBarWrapper.style.color = "white";
-  xpBarWrapper.style.fontFamily = "monospace";
-  
-
-  const xpBar = document.createElement("div");
-  xpBar.id = "xpBar";
-  xpBar.style.height = "20px";
-  xpBar.style.width = "0%";
-  xpBar.style.background = "lime";
-  xpBar.style.textAlign = "center";
-  xpBar.style.fontSize = "14px";
-  xpBar.style.lineHeight = "20px";
-
-  xpBarWrapper.appendChild(xpBar);
-  document.body.appendChild(xpBarWrapper);
-  updateXPBar();
-}
-
-// === Spill av lyd for level up ===
-sounds.sfx.levelUp = new Audio("lyder/levelUp.wav");
-
-// === Legg til XP når du fanger fisk ===
-function addToInventory(fish) {
-  let item = inventory.find(i => i.name === fish.name);
-  if (item) {
-    item.count += 1;
-  } else {
-    inventory.push({ ...fish, count: 1 });
-  }
-  if (!trophies.includes(fish.name)) {
-    trophies.push(fish.name);
-  }
-  gainXP(fish.xp || 10); // Få XP basert på fisken
-  if (inventoryOpen) renderInventory();
-}
-
-// === Vis nivå i inventory ===
-function renderInventory() {
-  const inv = document.getElementById('inventory');
-  inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory (${playerData.name}) – Nivå ${playerLevel}</h3><p style="color:gold;font-family: Cursive;">Gull: ${gold}</p>`;
-
-}
-
-// === Start XP UI ved spillets start ===
-createXPUI();
-
-
-// ============ MULTIPLE SAVE SYSTEM ============
-const MAX_SLOTS = 3;
-
-function showSaveSlotSelection(mode) {
-  const slotMenu = document.createElement("div");
-  slotMenu.id = "slotMenu";
-  slotMenu.style.position = "absolute";
-  slotMenu.style.top = "0";
-  slotMenu.style.left = "0";
-  slotMenu.style.width = "100%";
-  slotMenu.style.height = "100%";
-  slotMenu.style.background = "rgba(0,0,0,0.85)";
-  slotMenu.style.zIndex = "50";
-  slotMenu.style.display = "flex";
-  slotMenu.style.flexDirection = "column";
-  slotMenu.style.alignItems = "center";
-  slotMenu.style.justifyContent = "center";
-  slotMenu.style.color = "white";
-  slotMenu.style.fontFamily = "monospace";
-
-  const title = document.createElement("h2");
-  title.innerText =
-    mode === "save" ? "Velg en lagreslot" :
-    mode === "load" ? "Velg en karakter" :
-    "Slett en karakter";
-  slotMenu.appendChild(title);
-
-  for (let i = 0; i < MAX_SLOTS; i++) {
-    const slotKey = `voidquest_slot_${i}`;
-    const data = JSON.parse(localStorage.getItem(slotKey) || "null");
-
-    const saveSlot = document.createElement("div");
-    saveSlot.style.border = "2px solid white";
-    saveSlot.style.padding = "10px";
-    saveSlot.style.margin = "10px";
-    saveSlot.style.cursor = "pointer";
-    saveSlot.style.width = "250px";
-    saveSlot.style.display = "flex";
-    saveSlot.style.alignItems = "center";
-    saveSlot.style.gap = "10px";
-    saveSlot.style.background = "#222";
-
-    if (data) {
-      const img = document.createElement("img");
-      img.src = data.character.gender === "male"
-        ? "images/pixelmannDown.png"
-        : "images/pixelwomanDown.png";
-      img.width = 32;
-      img.height = 32;
-
-      const text = document.createElement("div");
-      const caught = (data.trophies || []).length;
-      const total = getAllUniqueFish().length;
-      text.innerHTML = `<strong>${data.character.name}</strong><br>${caught} av ${total} troféer`;
-
-      saveSlot.appendChild(img);
-      saveSlot.appendChild(text);
-    } else {
-      saveSlot.innerHTML = "<em>Tom slot – klikk for å lage karakter</em>";
-      saveSlot.style.opacity = 0.7;
-    }
-
-    // === Klikk-handling ===
-    if (mode === "save") {
-      saveSlot.onclick = () => {
-        if (!playerData?.name || !playerData?.gender) {
-          alert("Du må lage en karakter først.");
-          return;
-        }
-      
-        const saveData = {
-          character: playerData,
-          inventory,
-          trophies,
-          gold,
-          level: currentLevel,
-          position: {
-            x: character.x,
-            y: character.y,
-            direction: character.direction
-          },
-          playerLevel,
-          playerXP,
-          xpToNextLevel
-        };
-      
-        localStorage.setItem(`voidquest_slot_${i}`, JSON.stringify(saveData));
-        localStorage.setItem("voidquest_active_slot", i);
-        alert(`Spillet ble lagret til slot ${i + 1}`);
-        slotMenu.remove();
-      };
-
-    } else if (mode === "load") {
-      saveSlot.onclick = () => {
-        if (!data) {
-          const confirmed = confirm("Denne sloten er tom. Vil du lage en ny karakter her?");
-          if (confirmed) {
-            localStorage.setItem("voidquest_active_slot", i);
-            slotMenu.remove();
-            showCharacterCreationWithSlot(`voidquest_slot_${i}`);
-          }
-          return;
-        }
-
-        // Last data
-        playerData = data.character;
-        applyCharacterAppearance();
-        inventory = data.inventory || [];
-        trophies = data.trophies || [];
-        gold = data.gold || 0;
-
-        playerLevel = data.playerLevel || 1;
-        playerXP = data.playerXP || 0;
-        xpToNextLevel = data.xpToNextLevel || 100;
-        updateXPBar();
-
-        const pos = data.position || { x: 0, y: 0, direction: "down" };
-
-        localStorage.setItem("voidquest_active_slot", i);
-        slotMenu.remove();
-
-        loadLevel(data.level || 0, pos.x, pos.y);
-        character.direction = pos.direction;
-        renderInventory();
-      };
-
-    } else if (mode === "delete") {
-      saveSlot.onclick = () => {
-        if (!data) {
-          alert("Sloten er allerede tom.");
-          return;
-        }
-
-        const confirmed = confirm(`Slett karakteren "${data.character.name}"?`);
-        if (confirmed) {
-          localStorage.removeItem(slotKey);
-          const active = parseInt(localStorage.getItem("voidquest_active_slot"));
-          if (active === i) {
-            localStorage.removeItem("voidquest_active_slot");
-            location.reload();
-          } else {
-            slotMenu.remove();
-          }
-        }
-      };
-    }
-
-    slotMenu.appendChild(saveSlot);
-  }
-
-  const cancel = document.createElement("button");
-  cancel.innerText = "Avbryt";
-  cancel.style.marginTop = "20px";
-  cancel.onclick = () => slotMenu.remove();
-  slotMenu.appendChild(cancel);
-
-  document.body.appendChild(slotMenu);
+function startNewCharacterInSlot(slotKey) {
+  localStorage.removeItem(slotKey + '_character');
+  localStorage.removeItem(slotKey + '_save');
+  showCharacterCreationWithSlot(slotKey);
 }
 
 function showCharacterCreationWithSlot(slotKey) {
   showCharacterCreation();
-  
-  // Vent til neste "tick" så DOM-innholdet er på plass
-  setTimeout(() => {
-    const button = document.querySelector("#charCreation button");
-    if (button) {
-      button.onclick = () => finishCharacterCreationToSlot(slotKey);
-    } else {
-      console.error("Fant ikke startknappen for karakteropprettelse!");
-    }
-  }, 0);
+  const button = document.querySelector("#charCreation button");
+  button.onclick = () => finishCharacterCreationToSlot(slotKey);
 }
 
 function finishCharacterCreationToSlot(slotKey) {
@@ -1228,33 +1129,6 @@ document.addEventListener('keydown', (e) => {
   // Your existing movement + inventory toggle logic here
 });
 
-
-// Startspill: sjekk om det finnes en aktiv slot med karakterdata
-const activeSlot = localStorage.getItem("voidquest_active_slot");
-if (activeSlot !== null) {
-  const slotKey = `voidquest_slot_${activeSlot}`;
-  const data = JSON.parse(localStorage.getItem(slotKey) || "{}");
-
-  if (data.character) {
-    playerData = data.character;
-    applyCharacterAppearance();
-
-    inventory = data.inventory || [];
-    trophies = data.trophies || [];
-    gold = data.gold || 0;
-
-    const level = data.level ?? 0;
-    const pos = data.position || { x: 0, y: 0, direction: 'down' };
-
-    character.direction = pos.direction;
-    loadLevel(level, pos.x, pos.y);
-    renderInventory();
-  } else {
-    // Hvis sloten finnes, men mangler karakterdata, start ny karakter
-    showCharacterCreation();
-  }
-} else {
-  // Ingen aktiv slot valgt – be spiller velge en
-  showSaveSlotSelection('load');
-}
-
+loadCharacter();
+loadLevel(1);
+loadGame();

@@ -46,7 +46,9 @@
 
   <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
     <button onclick="closeMenu()" style="font-size:24px; padding:10px 20px;">Fortsett</button>
-    <button onclick="saveGame()" style="font-size:24px; padding:10px 20px;">Lagre spill</button>
+    <button onclick="showSaveSlotSelection('save')" style="font-size:24px; padding:10px 20px;">Lagre spill</button>
+    <button onclick="showSaveSlotSelection('load')" style="font-size:24px; padding:10px 20px;">Karakterer</button>
+    <button onclick="showSaveSlotSelection('delete')" style="font-size:24px; padding:10px 20px;">Slett karakter</button>
     <button onclick="toggleSettings()" style="font-size:24px; padding:10px 20px;">Innstillinger</button>
   </div>
 
