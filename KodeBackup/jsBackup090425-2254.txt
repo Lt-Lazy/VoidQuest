@@ -69,29 +69,14 @@ characterImages.right.src = 'images/pixelmannRight.png';
 const fishPools = {
   0: [ // Utenfor
     { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 14 },
+    { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 30 },
     // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
   ],
   2: [ // Cave
     { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
     { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 10 },
-    { name: "Deep Void Lure", rarity: "legendary", image: "images/deepVoidLure.png", chance: 10, price: 218 },
-    { name: "Skuggosk", rarity: "rare", image: "images/skuggosk.png", chance: 80, price: 63 }
-  ]
-};
-
-const treeCreaturePools = {
-  0: [ // Level 0 – Spenningsbyen
-    { 
-      name: "Grey Mouse", rarity: "common", image: "images/mouseGrey.png", chance: 800, price: 16
-    },
-    { 
-      name: "Poisetle", rarity: "rare", image: "images/poisetle.png", chance: 80, price: 70 
-    }
-  ],
-
-  2: [ // Cave, kan være tomt
-    // legg til hvis ønskelig
+    { name: "Deep Void Lure", rarity: "legendary", image: "images/deepVoidLure.png", chance: 10, price: 1000 },
+    { name: "Skuggosk", rarity: "rare", image: "images/skuggosk.png", chance: 80, price: 60 }
   ]
 };
 
@@ -181,7 +166,7 @@ const doorMap = {
 
 const levels = [
   {
-    //Spenningsbyen "0"
+    //Spenningsbyen
     layout: [
       'TTTTTTTTTTTTTTTTTTsCCCBC',
       'TGGGGGGGGGGGGGGGGGGsCBBB',
@@ -201,7 +186,7 @@ const levels = [
     background: 'grass'
   },
   {
-    //HUS HUB "1"
+    //HUS HUB
     layout: [
       'BBBBBBBBBBBB',
       'BBBBBBBDBBDB',
@@ -217,7 +202,7 @@ const levels = [
     background: 'plank'
   },
   {
-    // DEEP VOID CAVE SPENNINGSBYEN "2"
+    // DEEP VOID CAVE SPENNINGSBYEN
     layout: [
       'CCsssVssCsWW',
       'CsCssCCsCCsW',
@@ -233,7 +218,7 @@ const levels = [
     background: 'coblestone'
   },
   {
-    // HUS HUB TROFE ROM "3"
+    // HUS HUB TROFE ROM
     layout: [
       'BPPPPPPPPPPB',
       'BPPPPPPPPPPB',
@@ -249,7 +234,7 @@ const levels = [
     background: 'plank'
   },
   {
-    // STI-1 "4"
+    // STI-1
     layout: [
       'TTTTTTTTTTTTTTTTTTTTTTTT',
       'TGGGGGGGGGGGGGGGGGGGGGGG',
@@ -536,36 +521,31 @@ function moveCharacter(dx, dy) {
   requestAnimationFrame(animate);
 }
 
-function getAllUniqueCreatures() {
-  const fish = Object.values(fishPools).flat();
-  const land = Object.values(treeCreaturePools).flat();
-  const all = [...fish, ...land];
-
+function getAllUniqueFish() {
+  const allFish = Object.values(fishPools).flat();
   const seen = {};
-  return all.filter(c => {
-    if (seen[c.name]) return false;
-    seen[c.name] = true;
+  return allFish.filter(f => {
+    if (seen[f.name]) return false;
+    seen[f.name] = true;
     return true;
   });
 }
+
 function tryInteract() {
   if (character.moving || isFishing) return;
-
   let tx = character.x, ty = character.y;
   if (character.direction === 'up') ty -= 1;
   if (character.direction === 'down') ty += 1;
   if (character.direction === 'left') tx -= 1;
   if (character.direction === 'right') tx += 1;
-
   const tile = map[ty]?.[tx];
-
+  if (tile === 'water' || 'tree') startFishing();
   const npc = npcs.find(n => n.level === currentLevel && n.x === tx && n.y === ty);
-  if (npc) return startNPCInteraction(npc);
-
-  if (tile === 'water') return startFishing();
-  if (tile === 'tree') return startTreeHunt(); // 👈 vårt nye system
-
-  if (tile === 'npcShop') return openShop();
+    if (npc) {
+      startNPCInteraction(npc);
+      return;
+    }
+  else if (tile === 'npcShop') openShop();
 }
 
 function startNPCInteraction(npc) {
@@ -610,76 +590,6 @@ function startNPCInteraction(npc) {
   document.body.appendChild(dialogBox);
 }
 
-function startTreeHunt() {
-  isFishing = true; // bruk samme flagg for nå
-
-  showFishingBox("Leter i treet...");
-  const wait = Math.floor(Math.random() * 8000) + 2000;
-  fishTimeout = setTimeout(treeCreatureAppears, wait);
-}
-
-function treeCreatureAppears() {
-  currentFish = getRandomTreeCreature();
-  const rarity = currentFish.rarity;
-  const settings = raritySettings[rarity] || { time: 4000, color: "white" };
-  const totalTime = settings.time;
-  const color = settings.color;
-
-  const prompt = `
-    <div style="margin-bottom: 10px;">
-      <div style="border: 2px solid ${color}; padding: 4px; display:inline-block;">
-        <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
-      </div>
-      <div>${currentFish.name}</div>
-    </div>
-    <div style="margin-bottom: 10px;">Noe beveger seg i treet! Trykk riktig knapp:</div>
-    <button style="background:gray;" onclick="tryCatchFish('common')">Common</button>
-    <button style="background:blue;" onclick="tryCatchFish('rare')">Rare</button>
-    <button style="background:gold;" onclick="tryCatchFish('legendary')">Legendary</button>
-    <div id="biteTimerBar" style="width: 100%; height: 15px; background: #222; margin-top: 10px; position: relative;">
-      <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: ${color}; transition: width 0.1s linear;"></div>
-    </div>
-  `;
-
-  fishingBox.innerHTML = prompt;
-
-  const fill = document.getElementById("biteTimerFill");
-  let elapsed = 0;
-  const interval = 50;
-
-  const countdown = setInterval(() => {
-    if (fishCaught) {
-      clearInterval(countdown);
-      return;
-    }
-
-    elapsed += interval;
-    const progress = Math.max(0, 1 - (elapsed / totalTime));
-    fill.style.width = (progress * 100) + "%";
-
-    if (elapsed >= totalTime) {
-      clearInterval(countdown);
-      showFishingBox("Skapningen forsvant!");
-      if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
-      setTimeout(cancelFishing, 1200);
-    }
-  }, interval);
-}
-
-function getRandomTreeCreature() {
-  const pool = treeCreaturePools[currentLevel] || [];
-
-  const totalChance = pool.reduce((sum, c) => sum + c.chance, 0);
-  const roll = Math.random() * totalChance;
-  let sum = 0;
-
-  for (const creature of pool) {
-    sum += creature.chance;
-    if (roll < sum) return creature;
-  }
-
-  return { name: "???", rarity: "common", image: "images/defaultTree.png", price: 0 };
-}
 
 function startFishing() {
   isFishing = true;
@@ -871,7 +781,7 @@ function sellFish(fishName, price) {
 function renderTrophyRoom() {
   if (currentLevel !== 3) return;
 
-  const allFish = getAllUniqueCreatures();
+  const allFish = getAllUniqueFish();
 
   const trophyDiv = document.createElement("div");
   trophyDiv.style.position = "absolute";
@@ -1281,7 +1191,7 @@ function showCharacterInfo() {
   box.style.zIndex = "30";
   box.style.textAlign = "center";
 
-  const total = getAllUniqueCreatures().length;
+  const total = getAllUniqueFish().length;
   const caught = trophies.length;
 
   const genderImage = playerData.gender === "male" ? "images/pixelmanndown.png" : "images/pixelwomanDown.png";
