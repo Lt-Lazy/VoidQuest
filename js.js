@@ -12,6 +12,7 @@ const mapData = [
   { name: "Sti-1", x: 50, y: 20, type: "road", color: "#8B4513" },
   { name: "Sti-1", x: 65, y: 20, type: "road", color: "#8B4513" },
   { name: "Sti-1", x: 80, y: 20, type: "road", color: "#8B4513" },
+  { name: "Yurborg", x: 95, y: 20, type: "city", color: "dodgerblue" },
   
 ];
 
@@ -21,6 +22,7 @@ const tileImages = {
   coblestone: new Image(),
   tree: new Image(),
   brick: new Image(),
+  roof: new Image(),
   plank: new Image(),
   fence: new Image(),
   table: new Image(),
@@ -35,6 +37,7 @@ const tileImages = {
 tileImages.grass.src = 'images/grassTile.png';
 tileImages.tree.src = 'images/treeTile.png';
 tileImages.brick.src = 'images/brickTile.png';
+tileImages.roof.src = 'images/roofTile.png';
 tileImages.plank.src = 'images/plankTile.png';
 tileImages.door.src = 'images/doorTile.png';
 tileImages.fence.src = 'images/fenceTile.png';
@@ -47,12 +50,14 @@ tileImages.campfire.src = 'images/campfireStill.png';
 tileImages.voidgate.src = 'images/voidgateTile.png';
 
 const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire'];
+const tilesAbovePlayer = ['roof', 'tree'];
 
 const tileMapping = {
   'G': 'grass',
   'C': 'coblestone',
   'T': 'tree',
   'B': 'brick',
+  'R': 'roof',
   'P': 'plank',
   'F': 'fence',
   'F': 'fence',
@@ -90,7 +95,16 @@ const fishPools = {
     { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 10 },
     { name: "Deep Void Lure", rarity: "legendary", image: "images/deepVoidLure.png", chance: 10, price: 218 },
     { name: "Skuggosk", rarity: "rare", image: "images/skuggosk.png", chance: 80, price: 39 }
-  ]
+  ],
+  4: [ // Sti-1
+    //{ name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
+  ],
+  5: [ // Yurborg
+    { name: "Krap", rarity: "common", image: "images/krap.png", chance: 800, price: 15 },
+    { name: "Blue Krap", rarity: "rare", image: "images/blueKrap.png", chance: 60, price: 57 },
+    { name: "Albino Krap", rarity: "legendary", image: "images/albinoKrap.png", chance: 9, price: 743 },
+
+  ],
 };
 
 const treeCreaturePools = {
@@ -101,9 +115,12 @@ const treeCreaturePools = {
 
   ],
 
-  2: [ // Cave, kan være tomt
-    // legg til hvis ønskelig
-  ]
+  5: [ // Yurborg
+    { name: "Grey Mouse", rarity: "common", image: "images/mouseGrey.png", chance: 900, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/poisetle.png", chance: 80, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/albinoMouse.png", chance: 50, price: 67},
+
+  ],
 };
 
 const raritySettings = {
@@ -111,18 +128,19 @@ const raritySettings = {
   uncommon: { time: 5000, color: "green", border: "green" },
   rare: { time: 2000, color: "blue", border: "blue" },
   legendary: { time: 1200, color: "gold", border: "gold" },
-  Mythical: { time: 1000, color: "purple", border: "purpe" }
+  Mythical: { time: 1000, color: "purple", border: "purpe" },
+  secret: { time: 2500, color: "pink", border: "pink" },
 };
 
 const npcs = [
   {
-    name: "Morgan the sailer",
-    image: "images/pixelmanndown.png",
+    name: "Morgan the sailor",
+    image: "images/morganSailorDown.png",
     x: 2,
     y: 2,
     level: 1,
     type: "shop",
-    dialog: ["I give a good coin for caught creatures!"]
+    dialog: ["I give a good coin in exchange of good fish!"]
   },
   {
     name: "Path Seeker Nodin",
@@ -144,13 +162,13 @@ const npcs = [
       "Be sure to keep track of your inventory by pressing i. I like to have it open almost always, the inventory shows important info.",
       "And ofcourse press TAB to se the menu.",
       "Dont forget to save often!",
-      "Last tip, you can zoom in and out after you liking for better experience.",
+      "Last tip, you can zoom in and out after your liking for better experience.",
       "I hope our path crosses, fellow Path Seeker...",
     ]
   },
   {
     name: "Nocturne",
-    image: "images/pixelmanndown.png",
+    image: "images/nocturneDown.png",
     x: 19,
     y: 3,
     level: 0,
@@ -177,10 +195,59 @@ const npcs = [
     y: 2,
     level: 0,
     type: "creature",
-    dialog: []
+    dialog: ["You are not supposed to be here...",
+      "And you are not supposed to know that i ca-",
+      "Eh? i feel the.. you.. are.."
+    ]
+  },
+  {
+    name: "Oleander the Hunter",
+    image: "images/oleanderDown.png",
+    x: 1,
+    y: 2,
+    level: 7,
+    type: "shop_land",
+    dialog: ["Dont touch my creatures!",
+      "Have you hunted any?"
+    ]
+  },
+  {
+    name: "Voidlore Merchant",
+    image: "images/voidloreMerchantRight.png",
+    x: 0,
+    y: 0,
+    level: 5,
+    type: "special_shop",
+    dialog: ["No one sells goods like mine!",
+      "Take a look."
+    ]
+  },
+  {
+    name: "Poisetle",
+    image: "images/poisetle.png",
+    x: 5,
+    y: 2,
+    level: 7,
+    type: "creature",
+    dialog: ["SSSsSsssSssSSS",
+      "SSssssSSSsss"
+    ]
   },
   // Legg til flere her!
 ];
+
+const npcShopItems = {
+  "Voidlore Merchant": [
+    {
+      name: "Dock Key",
+      image: "images/dockKey.png",
+      price: 1000,
+      description: "Unlocks fence to dock in Yurborg.",
+      once: true // Bare én gang per spiller
+    },
+    // Flere varer kan enkelt legges til her senere
+  ]
+};
 
 let trophies = []; // Navn på fiskene du har fanget før
 
@@ -192,6 +259,9 @@ const character = {
 };
 
 const keys = { w: false, a: false, s: false, d: false };
+
+// === Bruk: Legg til en locked door i doorMap slik: ===
+// '5,5': { targetLevel: 6, targetX: 1, targetY: 1, requires: "Void Key" }
 
 const doorMap = {
   0: { //SPENNINGSBYEN
@@ -210,7 +280,19 @@ const doorMap = {
     '7,7': { targetLevel: 1, targetX: 7, targetY: 2 }  // TIL HUS HUB
   },
   4: { //STI-1
-    '0,3': { targetLevel: 0, targetX: 22, targetY: 5 }  // TIL HUS HUB
+    '0,3': { targetLevel: 0, targetX: 22, targetY: 5 },  // TIL SPENNINGSBYEN
+    '23,3': { targetLevel: 5, targetX: 1, targetY: 5 }  // TIL YURBORG
+  },
+  5: { //YURBORG
+    '0,5': { targetLevel: 4, targetX: 22, targetY: 3 },  // TIL STI-1
+    '25,10': { targetLevel: 7, targetX: 7, targetY: 5 }, // TIL GATHERERS HUB 
+    //'5,5': { targetLevel: 0, targetX: 22, targetY: 5 }  // TIL CASINO-1
+  },
+  6: { //CASINO-1
+    '5,5': { targetLevel: 5, targetX: 5, targetY: 2 }  // TIL YURBORG
+  },
+  7: { //GATHERERS HUB YURBORG
+    '7,6': { targetLevel: 5, targetX: 25, targetY: 11 }  // TIL YURBORG
   }
 };
 
@@ -218,14 +300,14 @@ const levels = [
   {
     //Spenningsbyen "0"
     layout: [
-      'TTTTTTTTTTTTTTTTTTsCCCBC',
-      'TGGGGGGGGGGGGGGGGGGsCBBB',
-      'TGTTGGGGGGGGGGGGGGGsCPPP',
+      'TTTTTTTTTTTTTTTTTTsCCCCC',
+      'TGGGGGGGGGGGGGGGGGGsCRRR',
+      'TGGGGGGGGGGGGGGGGGGsCPPP',
       'TGGGGGGGGGGcGGGGGGGGsPDP',
-      'TGGGTGGTGGGGGGGGGGGGGsGs',
+      'TGGGGGGGGGGGGGGGGGGGGsGs',
       'TGGGGGGGGGGGGGGGGGGGGGGV',
-      'TGBBGGGGGGGGGGGGGGGGGGGT',
-      'TBBBBGTTGGGGGGGGGGGGGGGT',
+      'TRRRRGGGGGGGGGGGGGGGGGGT',
+      'TRRRRGTTGGGGGGGGGGGGGGGT',
       'TBBBBTTTTTTGGGGGGGGGSSSS',
       'TBDBBFFFFFGGGGGGGGGSWWWW',
       'TGGGGGGGGGGGGGGGGGSWWWWW',
@@ -236,7 +318,7 @@ const levels = [
     background: 'grass'
   },
   {
-    //HUS HUB "1"
+    //GATHERERS HUB "1"
     layout: [
       'BBBBBBBBBBBB',
       'BBBBBBBDBBDB',
@@ -287,18 +369,77 @@ const levels = [
     // STI-1 "4"
     layout: [
       'TTTTTTTTTTTTTTTTTTTTTTTT',
-      'TGGGGGGGGGGGGGGGGGGGGGGG',
-      'TGGGGGGGGGGGGGGGGGGGGGGG',
-      'VGGGGGGGGGGGGGGGGGGGGGGG',
-      'TGGGGGGGGGGGGGGGGGGGGGGG',
-      'TGGGGGGGGGGGGGGGGGGGGGGG',
+      'TGGGGGGGGGGGGGGGGGGGGGGT',
+      'TGGGGGGGGGGGGGGGGGGGGGGT',
+      'VGGGGGGGGGGGGGGGGGGGGGGV',
+      'TGGGGGGGGGGGGGGGGGGGGGGT',
+      'TGGGGGGGGGGGGGGGGGGGGGGT',
       'TTTTTTTTTTTTTTTTTTTTTTTT'
     ],
     startX: 5,
     startY: 5,
     background: 'grass'
-  }
+  },
+  {
+    //YURBORG "5"
+    layout: [
+      'G1GGGGGGGGGGGGGGGRRRRRRRRRRR',
+      'G1GGGGGGGGGGGGGGGRRRRRRRRRRR',
+      'GGGGGGGGGGGGGGGGGBBBBBBBBBBB',
+      'GGGGGGGGGGGGGGGGGBBBBBBBBBBB',
+      'GGGGGGGGGGGGGGGGGGGGGGGGGGGG',
+      'VGGGGGGGGGGGGGGGGGGGGGGGGGGG',
+      'GGGGGGGGGGGGGGGGGGGGGGGGGGGG',
+      'GGGGGGGGGGGGGGGGGGGGGGGRRRRR',
+      'GGGGGGGGGGGGGGGGGGGGGGGRRRRR',
+      'GGGGGGGGGGGGGGGGGGGGGGGBBBBB',
+      'TTTTGGGGGGGGGGGGGGGGGGGBBDBB',
+      'TTTTTTGGGGGGGGGGGGGGGGGGGGGG',
+      'TTTTTTTTGGGGGGGGGGGGGGGGGGGG',
+      'TTTTTTTTTTTTFTTTTTTTTTTTTTTT',
+      'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
+      'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
+      'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWWWWWWWWWWWWWW'
+    ],
+    startX: 4,
+    startY: 4,
+    background: 'grass'
+  },
+  {
+    // CASINO YURBORG "6"
+    layout: [
+      'BBBBBBBBBBBBBBBBBBBBBBBB',
+      'BBBBBBBBBBBBBBBBBBBBBBBB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPVPPPPPPPPPPPPPPPPPB'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'plank'
+  },
+  {
+    // GATHERERS HUB YURBORG "7"
+    layout: [
+      'BBBBBBBBBBBBBBB',
+      'BBBBBBBBBBBBBBB',
+      'BPPPPPPPPPPPPPB',
+      'B11PPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPB',
+      'BPPPPPPVPPPPPPB'
+    ],
+    startX: 3,
+    startY: 3,
+    background: 'plank'
+  },
+  
 ];
+
 
 // ================== QUESTER ==================
 
@@ -307,9 +448,13 @@ const levels = [
 // ========= LYD =========
 const sounds = {
   music: {
-    //0: new Audio("musikk/introVoidQuestMusic.wav"),
-    //1: new Audio("audio/music_house.mp3"),
-    //2: new Audio("audio/music_cave.mp3")
+    0: new Audio("musikk/introVoidQuestMusic.wav"),
+    //1: new Audio("musikk/music_house.mp3"),
+    //2: new Audio("musikk/music.wav"),
+    //3: new Audio("musikk/music.wav"),
+    //4: new Audio("musikk/sti1Musikk.wav"),
+    5: new Audio("musikk/yurborgMusic.wav"),
+
   },
   sfx: {
     startFishing: new Audio("lyder/kasteFiskeStang.wav"),
@@ -370,7 +515,10 @@ function loadLevel(levelIndex, startX = null, startY = null) {
     1: "Gatherers hub",
     2: "Deep-Void-Cave",
     3: "Trophyroom",
-    4: "Path-1"
+    4: "Path-1",
+    5: "Yurborg",
+    6: "Casino",
+    7: "Gatherers hub Yurborg",
   };
   
   const level = levels[levelIndex];
@@ -526,8 +674,15 @@ function applyCharacterAppearance() {
 
 // === Karakter tegning ===
 function drawCharacter() {
+  const tileUnderPlayer = map[character.y][character.x];
   const img = characterImages[character.direction];
+
+  if (tilesAbovePlayer.includes(tileUnderPlayer)) {
+    ctx.globalAlpha = 0.5; // Gjør spilleren halvveis gjennomsiktig
+  }
+
   ctx.drawImage(img, character.pixelX, character.pixelY, tileSize, tileSize);
+  ctx.globalAlpha = 1.0; // Tilbakestill for resten av canvas
 }
 
 function canMoveTo(x, y) {
@@ -579,7 +734,14 @@ function moveCharacter(dx, dy) {
       if (tile === 'door' || tile === 'voidgate') {
         const key = `${character.x},${character.y}`;
         const door = doorMap[currentLevel]?.[key];
-        if (door) loadLevel(door.targetLevel, door.targetX, door.targetY);
+        if (door) {
+          // Krever nøkkel for visse dører
+          if (door.requires && !hasItem(door.requires)) {
+            alert("You need the " + door.requires + " to enter this area.");
+            return;
+          }
+          loadLevel(door.targetLevel, door.targetX, door.targetY);
+        }
       }
     }
   }
@@ -610,11 +772,21 @@ function tryInteract() {
 
   const tile = map[ty]?.[tx];
 
+  // === Åpne låst gjerde hvis spiller har "Dock Key" ===
+  if (currentLevel === 5 && tx === 12 && ty === 13 && tile === 'fence') {
+    if (hasItem("Dock Key")) {
+      changeTile(currentLevel, 12, 13, 'G'); // Bytt til 'G' = grass
+    } else {
+      alert("Gjerdet er låst. Du trenger en Dock Key.");
+    }
+    return; // Stopp videre interaksjon
+  }
+
   const npc = npcs.find(n => n.level === currentLevel && n.x === tx && n.y === ty);
   if (npc) return startNPCInteraction(npc);
 
   if (tile === 'water') return startFishing();
-  if (tile === 'tree') return startTreeHunt(); // 👈 vårt nye system
+  if (tile === 'tree') return startTreeHunt(); 
 
   if (tile === 'npcShop') return openShop();
 }
@@ -651,9 +823,11 @@ function startNPCInteraction(npc) {
       if (dialogIndex >= npc.dialog.length) {
         document.body.removeChild(dialogBox);
         if (npc.type === "shop") {
-          openShop();
-        } else if (npc.type === "gatekeeper") {
-          checkForCaveKey();
+          openShop("water");
+        } else if (npc.type === "shop_land") {
+          openShop("land");
+        } else if (npc.type === "special_shop") {
+          openSpecialShop(npc.name); 
         }
       } else {
         renderDialog();
@@ -669,7 +843,7 @@ function startTreeHunt() {
   isFishing = true; // bruk samme flagg for nå
   fishCaught = false;
 
-  showFishingBox("Leter i treet...");
+  showFishingBox("Searching the tree...");
   const wait = Math.floor(Math.random() * 8000) + 2000;
   fishTimeout = setTimeout(treeCreatureAppears, wait);
 }
@@ -700,7 +874,7 @@ function startFishing() {
   if (sounds.sfx.startFishing) sounds.sfx.startFishing.play();
 
   fishCaught = false;
-  showFishingBox("Fisker...");
+  showFishingBox("Fishing...");
   const wait = Math.floor(Math.random() * 8000) + 2000;
   fishTimeout = setTimeout(fishGotBite, wait);
 }
@@ -761,7 +935,7 @@ function startCatchMinigame(creature, isWater) {
       </div>
       <div>${creature.name}</div>
     </div>
-    <div style="margin-bottom: 10px;">Trykk [Space] når linja er på streken!</div>
+    <div style="margin-bottom: 10px;">Press [Space] when the bar is on the line!</div>
     <div id="biteTimerBar" style="width: 100%; height: 20px; background: #222; margin-top: 10px; position: relative;">
       <div id="catchZone" style="position: absolute; top: 0; left: 45%; width: 10%; height: 100%; background: #fff2; border-left: 2px solid ${color}; border-right: 2px solid ${color}; z-index: 1;"></div>
       <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: ${color}; z-index: 2;"></div>
@@ -777,12 +951,12 @@ function startCatchMinigame(creature, isWater) {
       const progress = elapsed / totalTime;
       if (progress >= successZoneStart && progress <= successZoneEnd) {
         fishCaught = true;
-        showFishingBox(`Du fanget en ${creature.name}!`);
+        showFishingBox(`You caught a ${creature.name}!`);
         addToInventory(creature);
         if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
       } else {
         fishCaught = true;
-        showFishingBox("Du bommet! Skapningen stakk av.");
+        showFishingBox("Oh you failed! The creature fleed.");
         if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
       }
       document.removeEventListener("keydown", onKeyDown);
@@ -807,7 +981,7 @@ function startCatchMinigame(creature, isWater) {
     if (elapsed >= totalTime) {
       clearInterval(countdown);
       document.removeEventListener("keydown", onKeyDown);
-      showFishingBox("Du reagerte ikke i tide!");
+      showFishingBox("You didnt react in time!");
       if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
       setTimeout(cancelFishing, 1200);
     }
@@ -847,7 +1021,7 @@ function getRandomFish() {
     }
   }
 
-  return { name: "???", rarity: "common", image: "images/defaultFish.png", price: 0 };
+  return { name: "???", rarity: "", image: "images/defaultFish.png", price: 0 };
 }
 
 function addToInventory(fish) {
@@ -866,18 +1040,82 @@ function addToInventory(fish) {
   if (inventoryOpen) renderInventory();
 }
 
-function openShop() {
+//removeItem("Void Key"); hvis du skal bruke den til noe annet
+function removeItem(name) {
+  const index = inventory.findIndex(i => i.name === name);
+  if (index !== -1) {
+    inventory[index].count--;
+    if (inventory[index].count <= 0) {
+      inventory.splice(index, 1);
+    }
+    if (inventoryOpen) renderInventory();
+  }
+}
+
+function hasItem(name) {
+  return inventory.some(i => i.name === name);
+}
+
+function openSpecialShop(npcName) {
+  const shopBox = document.getElementById('shopBox');
+  const items = npcShopItems[npcName] || [];
+  const ownedItems = inventory.map(i => i.name);
+
+  let html = `<h3>${npcName}</h3><p>Choose wisely...</p>`;
+
+  const filtered = items.filter(item => !(item.once && ownedItems.includes(item.name)));
+
+  if (filtered.length === 0) {
+    html += `<p>You already own everything I have...</p>`;
+  } else {
+    filtered.forEach(item => {
+      html += `<div style="margin-bottom:10px;">
+        <img src="${item.image}" width="32" height="32"> <strong>${item.name}</strong><br>
+        <small>${item.description}</small><br>
+        <button onclick="buySpecialItem('${npcName}', '${item.name}', ${item.price})">
+          Buy for ${item.price} gold
+        </button>
+      </div>`;
+    });
+  }
+
+  html += `<br><button onclick="closeShop()">Leave</button>`;
+  shopBox.innerHTML = html;
+  shopBox.style.display = 'block';
+}
+
+function buySpecialItem(npcName, itemName, price) {
+  const item = npcShopItems[npcName].find(i => i.name === itemName);
+  if (!item) return;
+
+  if (gold < price) {
+    alert("You can't afford that.");
+    return;
+  }
+
+  gold -= price;
+  inventory.push({ ...item, count: 1 });
+  if (inventoryOpen) renderInventory();
+  saveGame();
+  openSpecialShop(npcName); // Refresh shop
+}
+
+let currentShopType = "water";
+
+function openShop(type = "water") {
+  currentShopType = type;
   const shopBox = document.getElementById('shopBox');
   let shopHTML = `<h3 style="font-family: Cursive;">Morgan</h3><p>This is my prices:</p>`;
   let hasFish = false;
 
   inventory.forEach(item => {
-    const allFish = Object.values(fishPools).flat();
-    const fishInfo = allFish.find(f => f.name === item.name);
-
-    if (fishInfo) {
+    const creaturePools = type === "water" ? fishPools : treeCreaturePools;
+    const allCreatures = Object.values(creaturePools).flat();
+    const creatureInfo = allCreatures.find(c => c.name === item.name);
+    
+    if (creatureInfo) {
       hasFish = true;
-      shopHTML += `<button onclick="sellFish('${item.name}', ${fishInfo.price})">Sell ${item.name} (${fishInfo.price} gold)</button><br>`;
+      shopHTML += `<button onclick="sellFish('${item.name}', ${creatureInfo.price})">Sell ${item.name} (${creatureInfo.price} gold)</button><br>`;
     }
   });
 
@@ -903,7 +1141,7 @@ function sellFish(fishName, price) {
       inventory.splice(itemIndex, 1);
     }
     renderInventory();
-    openShop(); // Refresh shop UI
+    openShop(currentShopType); // Refresh shop UI
   }
 }
 
@@ -1135,7 +1373,7 @@ function renderTrophyJournal() {
     .filter(creature => creature.rarity !== "secret" || trophies.includes(creature.name))
     .slice()
     .sort((a, b) => {
-      const order = { common: 1, rare: 2, legendary: 3, secret: 4 };
+      const order = { common: 1, rare: 2, legendary: 3, mythical: 4, secret: 5 };
       return (order[a.rarity] || 99) - (order[b.rarity] || 99);
     });
 
@@ -1173,7 +1411,7 @@ function renderTrophyJournal() {
   const caught = list.filter(c => trophies.includes(c.name)).length;
 
   const buttons = `
-    <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Vann</button>
+    <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
     <button onclick="currentTrophyType='land'; toggleTrophyJournal(); toggleTrophyJournal()">Land</button>
   `;
 
@@ -1263,6 +1501,8 @@ function defineFishXP() {
       if (fish.rarity === "common") fish.xp = 10;
       else if (fish.rarity === "rare") fish.xp = 25;
       else if (fish.rarity === "legendary") fish.xp = 75;
+      else if (fish.rarity === "mythical") fish.xp = 250;
+      else if (fish.rarity === "secret") fish.xp = 0;
     }
   });
 }
