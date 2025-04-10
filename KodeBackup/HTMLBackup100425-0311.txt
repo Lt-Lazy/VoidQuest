@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top-Down Game</title>
+  <link rel="icon" type="image/png" href="images/skuggosk.png">
+  
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000000;
+    }
+
+    #gameCanvas {
+      background: #252525;
+      border: 4px solid #444;
+      image-rendering: pixelated;
+    }
+
+    #fishingBox button {
+      margin: 5px;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="locationLabel" style="position: absolute; top: 20px; right: 20px; color: white; font-family: monospace; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 6px; border: 1px solid #888; z-index: 20;">
+    Laster...
+  </div>
+
+  <div id="inventory" style="display:none; position:absolute; top:50px; left:50px; background:#222; padding:10px; border:2px solid #555; z-index:15;"></div>
+  <div id="shopBox" style="display:none; position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px; border:2px solid #aaa; font-family:monospace; z-index:10;"></div>
+
+
+  <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
+    <button onclick="closeMenu()" style="font-size:24px; padding:10px 20px;">Fortsett</button>
+    <button onclick="saveGame()" style="font-size:24px; padding:10px 20px;">Lagre spill</button>
+    <button onclick="showCharacterInfo()" style="font-size:24px; padding:10px 20px;">Karakter</button>
+    <button onclick="toggleSettings()" style="font-size:24px; padding:10px 20px;">Innstillinger</button>
+  </div>
+
+  <!-- Innstillinger -->
+  <div id="settingsMenu" style="display:none; position:absolute; top:10%; left:50%; transform:translateX(-50%); background:#222; color:white; padding:20px; border:2px solid #888; z-index:21;">
+    <h3>Innstillinger</h3>
+    <label for="volumeSlider">Masterlyd:</label>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" onchange="updateVolume(this.value)">
+    <br><br>
+    <button onclick="toggleSettings()">Lukk</button>
+  </div>
+
+
+</body>
+<script src="js.js"></script>
+</html>

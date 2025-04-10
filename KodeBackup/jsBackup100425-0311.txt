@@ -107,11 +107,11 @@ const treeCreaturePools = {
 };
 
 const raritySettings = {
-  common: { time: 6000, color: "gray", border: "gray" },
-  uncommon: { time: 5000, color: "green", border: "green" },
-  rare: { time: 2000, color: "blue", border: "blue" },
-  legendary: { time: 1200, color: "gold", border: "gold" },
-  Mythical: { time: 1000, color: "purple", border: "purpe" }
+  common: { time: 8000, color: "gray", border: "gray" },
+  uncommon: { time: 7000, color: "green", border: "green" },
+  rare: { time: 5000, color: "blue", border: "blue" },
+  legendary: { time: 2000, color: "gold", border: "gold" },
+  Mythical: { time: 2000, color: "purple", border: "purpe" }
 };
 
 const npcs = [
@@ -676,7 +676,50 @@ function startTreeHunt() {
 
 function treeCreatureAppears() {
   currentFish = getRandomTreeCreature();
-  startCatchMinigame(currentFish, false); // false = er landdyr
+  const rarity = currentFish.rarity;
+  const settings = raritySettings[rarity] || { time: 4000, color: "white" };
+  const totalTime = settings.time;
+  const color = settings.color;
+
+  const prompt = `
+    <div style="margin-bottom: 10px;">
+      <div style="border: 2px solid ${color}; padding: 4px; display:inline-block;">
+        <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
+      </div>
+      <div>${currentFish.name}</div>
+    </div>
+    <div style="margin-bottom: 10px;">Something is moving! what rarity?</div>
+    <button style="background:gray;" onclick="tryCatchFish('common')">Common</button>
+    <button style="background:blue;" onclick="tryCatchFish('rare')">Rare</button>
+    <button style="background:gold;" onclick="tryCatchFish('legendary')">Legendary</button>
+    <div id="biteTimerBar" style="width: 100%; height: 15px; background: #222; margin-top: 10px; position: relative;">
+      <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: ${color}; transition: width 0.1s linear;"></div>
+    </div>
+  `;
+
+  fishingBox.innerHTML = prompt;
+
+  const fill = document.getElementById("biteTimerFill");
+  let elapsed = 0;
+  const interval = 50;
+
+  const countdown = setInterval(() => {
+    if (fishCaught) {
+      clearInterval(countdown);
+      return;
+    }
+
+    elapsed += interval;
+    const progress = Math.max(0, 1 - (elapsed / totalTime));
+    fill.style.width = (progress * 100) + "%";
+
+    if (elapsed >= totalTime) {
+      clearInterval(countdown);
+      showFishingBox("Skapningen forsvant!");
+      if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+      setTimeout(cancelFishing, 1200);
+    }
+  }, interval);
 }
 
 function getRandomTreeCreature() {
@@ -740,80 +783,54 @@ function cancelFishing() {
 
 function fishGotBite() {
   currentFish = getRandomFish();
-  if (sounds.sfx.gotBite) sounds.sfx.gotBite.play();
-
-  startCatchMinigame(currentFish, true); // true = er vann/fiske
-}
-
-function startCatchMinigame(creature, isWater) {
-  const settings = raritySettings[creature.rarity] || { time: 4000, color: "white" };
+  const rarity = currentFish.rarity;
+  const settings = raritySettings[rarity] || { time: 4000, color: "white" };
   const totalTime = settings.time;
   const color = settings.color;
 
-  fishCaught = false;
-  let successZoneStart = 0.45;
-  let successZoneEnd = 0.55;
-
-  fishingBox.innerHTML = `
+  const prompt = `
     <div style="margin-bottom: 10px;">
       <div style="border: 2px solid ${color}; padding: 4px; display:inline-block;">
-        <img src="${creature.image}" width="64" height="64" alt="${creature.name}">
+        <img src="${currentFish.image}" width="64" height="64" alt="${currentFish.name}">
       </div>
-      <div>${creature.name}</div>
+      <div>${currentFish.name}</div>
     </div>
-    <div style="margin-bottom: 10px;">Trykk [Space] når linja er på streken!</div>
-    <div id="biteTimerBar" style="width: 100%; height: 20px; background: #222; margin-top: 10px; position: relative;">
-      <div id="catchZone" style="position: absolute; top: 0; left: 45%; width: 10%; height: 100%; background: #fff2; border-left: 2px solid ${color}; border-right: 2px solid ${color}; z-index: 1;"></div>
-      <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: ${color}; z-index: 2;"></div>
+    <div style="margin-bottom: 10px;">NAPP! What rarity?</div>
+    <button style="background:gray;" onclick="tryCatchFish('common')">Common</button>
+    <button style="background:blue;" onclick="tryCatchFish('rare')">Rare</button>
+    <button style="background:gold;" onclick="tryCatchFish('legendary')">Legendary</button>
+    <div id="biteTimerBar" style="width: 100%; height: 15px; background: #222; margin-top: 10px; position: relative;">
+      <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: ${color}; transition: width 0.1s linear;"></div>
     </div>
+    
   `;
+
+  if (sounds.sfx.gotBite) sounds.sfx.gotBite.play();
+
+  fishingBox.innerHTML = prompt;
 
   const fill = document.getElementById("biteTimerFill");
   let elapsed = 0;
-  const interval = 20;
-
-  function onKeyDown(event) {
-    if (event.code === "Space" && !fishCaught) {
-      const progress = elapsed / totalTime;
-      if (progress >= successZoneStart && progress <= successZoneEnd) {
-        fishCaught = true;
-        showFishingBox(`Du fanget en ${creature.name}!`);
-        addToInventory(creature);
-        if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
-      } else {
-        fishCaught = true;
-        showFishingBox("Du bommet! Skapningen stakk av.");
-        if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
-      }
-      document.removeEventListener("keydown", onKeyDown);
-      clearInterval(countdown);
-      setTimeout(cancelFishing, 1500);
-    }
-  }
-
-  document.addEventListener("keydown", onKeyDown);
+  const interval = 50;
 
   const countdown = setInterval(() => {
     if (fishCaught) {
       clearInterval(countdown);
-      document.removeEventListener("keydown", onKeyDown);
       return;
     }
 
     elapsed += interval;
-    const progress = elapsed / totalTime;
+    const progress = Math.max(0, 1 - (elapsed / totalTime));
     fill.style.width = (progress * 100) + "%";
 
     if (elapsed >= totalTime) {
       clearInterval(countdown);
-      document.removeEventListener("keydown", onKeyDown);
-      showFishingBox("Du reagerte ikke i tide!");
+      showFishingBox("Fisken stakk av!");
       if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
       setTimeout(cancelFishing, 1200);
     }
   }, interval);
 }
-
 
 function tryCatchFish(choice) {
   if (currentFish && currentFish.rarity === choice) {
