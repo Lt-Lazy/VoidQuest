@@ -1992,7 +1992,7 @@ function showMainMenu() {
   menu.style.zIndex = 1000;
 
   menu.innerHTML = `
-    <img src="images/npc/voidloreMerchantRight.png" style="width:128px;height:auto;" />
+    <img src="images/npc/voidQuestLogo.png" style="width:128px;height:auto;" />
     <button style="padding: 20px 40px; font-size: 24px;" onclick="startCharacterCreationFromMenu()">Make Character</button>
     <button style="padding: 20px 40px; font-size: 24px;" onclick="showCredits()">Credits</button>
     <button style="padding: 20px 40px; font-size: 24px;" onclick="quitGame()">Quit</button>
