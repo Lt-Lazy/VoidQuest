@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoidQuest Wiki</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #111;
+      color: white;
+      margin: 0;
+      padding: 0 20px;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0;
+    }
+    header img {
+      width: 120px;
+      margin-bottom: 10px;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    nav button {
+      background: #333;
+      color: white;
+      border: 1px solid #888;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    section {
+      margin-bottom: 60px;
+      display: none;
+    }
+    section.active {
+      display: block;
+    }
+    h2 {
+      border-bottom: 1px solid #666;
+      padding-bottom: 5px;
+    }
+    .creature, .npc, .location {
+      display: inline-block;
+      width: 150px;
+      margin: 10px;
+      text-align: center;
+    }
+    .creature img, .npc img, .location img {
+      width: 64px;
+      height: 64px;
+      border: 2px solid #555;
+      background: #222;
+    }
+    input[type="text"] {
+      padding: 5px;
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      display: block;
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
+    <h1>VoidQuest Wiki</h1>
+    <p>Your guide to exploring the world of Voidlore</p>
+  </header>
+
+  <nav>
+    <button onclick="showSection('intro')">🧭 Intro</button>
+    <button onclick="showSection('creatures')">🐟 Creatures</button>
+    <button onclick="showSection('npcs')">🧑‍🌾 NPCs</button>
+    <button onclick="showSection('locations')">🗺️ Locations</button>
+    <button onclick="showSection('lore')">📜 Lore</button>
+    <button onclick="showSection('community')">Community</button>
+
+  </nav>
+
+  <input type="text" id="searchBox" placeholder="Search by name..." oninput="filterContent()">
+
+  <section id="intro" class="active">
+    <h2>What is VoidQuest?</h2>
+    <p>VoidQuest is a retro-style RPG filled with mysterious creatures, unique NPCs, and a world full of secrets.</p>
+    <p>This wiki provides an overview of everything from fish and monsters to locations, characters, and the story behind the game.</p>
+  </section>
+
+  <section id="creatures">
+    <h2>Creatures - only shows main form. Excludes rarity: "Mythical, secret"</h2>
+    <div class="creature" data-name="Grodr">
+      <img src="images/creatures/vann/grodr.png" alt="Grodr">
+      <div>Grodr<br><small>Lake creature</small></div>
+    </div>
+    <div class="creature" data-name="Poisetle">
+      <img src="images/creatures/land/poisetle.png" alt="Poisetle">
+      <div>Poisetle<br><small>Land creature</small></div>
+    </div>
+    <div class="creature" data-name="Grey Mouse">
+        <img src="images/creatures/land/mouseGrey.png" alt="Grey Mouse">
+        <div>Grey Mouse<br><small>Land creature</small></div>
+    </div>
+    <div class="creature" data-name="Grauder">
+        <img src="images/creatures/vann/grauder.png" alt="Grauder">
+        <div>Grauder<br><small>Lake creature</small></div>
+    </div>
+    <div class="creature" data-name="Krap">
+        <img src="images/creatures/vann/krap.png" alt="Krap">
+        <div>Krap<br><small>Ocean creature</small></div>
+    </div>
+    <div class="creature" data-name="Skuggosk">
+        <img src="images/creatures/vann/skuggosk.png" alt="Skuggosk">
+        <div>Skuggosk<br><small>Lake creature</small></div>
+    </div>
+    <div class="creature" data-name="Deep Void Lure">
+        <img src="images/creatures/vann/deepVoidLure.png" alt="Deep Void Lure">
+        <div>Deep Void Lure<br><small>Lake creature</small></div>
+    </div>
+    <!-- Add more creatures here -->
+  </section>
+
+  <section id="npcs">
+    <h2>NPCs</h2>
+    <div class="npc" data-name="Morgan the sailor">
+      <img src="images/npc/morganSailorDown.png" alt="Morgan">
+      <div>Morgan the Sailor</div>
+    </div>
+    <div class="npc" data-name="Voidlore Merchant">
+      <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
+      <div>Voidlore Merchant</div>
+    </div>
+  </section>
+
+  <section id="locations">
+    <h2>Locations</h2>
+    <div class="location" data-name="Spenningsbyen">
+      <img src="images/tiles/grassTile.png" alt="Spenningsbyen">
+      <div>Spenningsbyen</div>
+    </div>
+    <div class="location" data-name="Yurborg">
+      <img src="images/tiles/brickTile.png" alt="Yurborg">
+      <div>Yurborg</div>
+    </div>
+  </section>
+
+  <section id="community">
+    <h2>Secrets (rarity) found</h2>
+    <div class="creature" data-name="defaultFish">
+        <img src="images/creatures/land/defaultTree.png" alt="defaultTree">
+        <div>defaultTree<br><small>Error creature</small></div>
+    </div>
+    <p>Found by user: anonymous</p>
+    <p>Basis: Between two updates in the game the player was farming land creatures in Path-1.</p>
+    <p>The update rolled out to the playerbase before the creatures that could be farmed in Path-1 was ready.</p>
+    <p>Leaving a window of 5 minutes to get the default skin creature. This is an error type land creature.</p>
+    <p>And only shows when no creatures have been coded in a area where players can hunt land creatures.</p>
+
+  </section>
+
+  <section id="lore">
+    <h2>Lore</h2>
+    <p>...</p>
+  </section>
+
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function filterContent() {
+      const term = document.getElementById('searchBox').value.toLowerCase();
+      document.querySelectorAll('.creature, .npc, .location').forEach(el => {
+        const name = el.dataset.name.toLowerCase();
+        el.style.display = name.includes(term) ? 'inline-block' : 'none';
+      });
+    }
+  </script>
+
+</body>
+</html>

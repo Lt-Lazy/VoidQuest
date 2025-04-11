@@ -8,10 +8,10 @@ let menuOpen = false;
 // === Kart: Lokasjoner og visning ===
 const mapData = [
   { name: "Spenningsbyen", x: 20, y: 20, type: "city", color: "dodgerblue" },
-  { name: "Sti-1", x: 35, y: 20, type: "road", color: "#8B4513" },
-  { name: "Sti-1", x: 50, y: 20, type: "road", color: "#8B4513" },
-  { name: "Sti-1", x: 65, y: 20, type: "road", color: "#8B4513" },
-  { name: "Sti-1", x: 80, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 35, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 50, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 65, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 80, y: 20, type: "road", color: "#8B4513" },
   { name: "Yurborg", x: 95, y: 20, type: "city", color: "dodgerblue" },
   
 ];
@@ -34,20 +34,20 @@ const tileImages = {
   voidgate: new Image()
 };
 
-tileImages.grass.src = 'images/grassTile.png';
-tileImages.tree.src = 'images/treeTile.png';
-tileImages.brick.src = 'images/brickTile.png';
-tileImages.roof.src = 'images/roofTile.png';
-tileImages.plank.src = 'images/plankTile.png';
-tileImages.door.src = 'images/doorTile.png';
-tileImages.fence.src = 'images/fenceTile.png';
-tileImages.table.src = 'images/tableTile.png';
-tileImages.coblestone.src = 'images/coblestoneTile.png';
-tileImages.water.src = 'images/waterTile.png';
-tileImages.sand.src = 'images/sandTile.png';
-tileImages.stoneSingle.src = 'images/stoneSingleTile.png';
-tileImages.campfire.src = 'images/campfireStill.png';
-tileImages.voidgate.src = 'images/voidgateTile.png';
+tileImages.grass.src = 'images/tiles/grassTile.png';
+tileImages.tree.src = 'images/tiles/treeTile.png';
+tileImages.brick.src = 'images/tiles/brickTile.png';
+tileImages.roof.src = 'images/tiles/roofTile.png';
+tileImages.plank.src = 'images/tiles/plankTile.png';
+tileImages.door.src = 'images/tiles/doorTile.png';
+tileImages.fence.src = 'images/tiles/fenceTile.png';
+tileImages.table.src = 'images/tiles/tableTile.png';
+tileImages.coblestone.src = 'images/tiles/coblestoneTile.png';
+tileImages.water.src = 'images/tiles/waterTile.png';
+tileImages.sand.src = 'images/tiles/sandTile.png';
+tileImages.stoneSingle.src = 'images/tiles/stoneSingleTile.png';
+tileImages.campfire.src = 'images/tiles/campfireStill.png';
+tileImages.voidgate.src = 'images/tiles/voidgateTile.png';
 
 const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire'];
 const tilesAbovePlayer = ['roof', 'tree'];
@@ -77,48 +77,49 @@ const characterImages = {
   right: new Image(),
 };
 
-characterImages.up.src = 'images/pixelmannUp.png';
-characterImages.down.src = 'images/pixelmanndown.png';
-characterImages.left.src = 'images/pixelmannLeft.png';
-characterImages.right.src = 'images/pixelmannRight.png';
+characterImages.up.src = 'images/player/man/pixelmannUp.png';
+characterImages.down.src = 'images/player/man/pixelmanndown.png';
+characterImages.left.src = 'images/player/man/pixelmannLeft.png';
+characterImages.right.src = 'images/player/man/pixelmannRight.png';
 
 const fishPools = {
   0: [ // Utenfor
-    { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 14 },
-    { name: "Albino Grodr", rarity: "rare", image: "images/albinoGrodr.png", chance: 49, price: 74 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 800, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 500, price: 14 },
+    { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 49, price: 74 },
 
     // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
   ],
   2: [ // Cave
-    { name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/grauder.png", chance: 500, price: 10 },
-    { name: "Deep Void Lure", rarity: "legendary", image: "images/deepVoidLure.png", chance: 10, price: 218 },
-    { name: "Skuggosk", rarity: "rare", image: "images/skuggosk.png", chance: 80, price: 39 }
-  ],
-  4: [ // Sti-1
-    //{ name: "Grodr", rarity: "common", image: "images/grodr.png", chance: 800, price: 5 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 800, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 500, price: 10 },
+    { name: "Deep Void Lure", rarity: "legendary", image: "images/creatures/vann/deepVoidLure.png", chance: 10, price: 218 },
+    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 39 }
   ],
   5: [ // Yurborg
-    { name: "Krap", rarity: "common", image: "images/krap.png", chance: 800, price: 15 },
-    { name: "Blue Krap", rarity: "rare", image: "images/blueKrap.png", chance: 60, price: 57 },
-    { name: "Albino Krap", rarity: "legendary", image: "images/albinoKrap.png", chance: 9, price: 743 },
+    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 800, price: 15 },
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 60, price: 57 },
+    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 9, price: 743 },
 
   ],
 };
 
 const treeCreaturePools = {
   0: [ // Level 0 – Spenningsbyen
-    { name: "Grey Mouse", rarity: "common", image: "images/mouseGrey.png", chance: 900, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/poisetle.png", chance: 80, price: 46 },
-    { name: "Albino Mouse", rarity: "rare", image: "images/albinoMouse.png", chance: 50, price: 67},
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 900, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 80, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 50, price: 67},
 
   ],
-
+  4: [ // Sti-1
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 900, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 80, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 50, price: 67},
+  ],
   5: [ // Yurborg
-    { name: "Grey Mouse", rarity: "common", image: "images/mouseGrey.png", chance: 900, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/poisetle.png", chance: 80, price: 46 },
-    { name: "Albino Mouse", rarity: "rare", image: "images/albinoMouse.png", chance: 50, price: 67},
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 900, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 80, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 50, price: 67},
 
   ],
 };
@@ -135,7 +136,7 @@ const raritySettings = {
 const npcs = [
   {
     name: "Morgan the sailor",
-    image: "images/morganSailorDown.png",
+    image: "images/npc/morganSailorDown.png",
     x: 2,
     y: 2,
     level: 1,
@@ -144,7 +145,7 @@ const npcs = [
   },
   {
     name: "Path Seeker Nodin",
-    image: "images/pixelmanndown.png",
+    image: "images/player/man/pixelmanndown.png",
     x: 10,
     y: 6,
     level: 1,
@@ -168,7 +169,7 @@ const npcs = [
   },
   {
     name: "Nocturne",
-    image: "images/nocturneDown.png",
+    image: "images/npc/nocturneDown.png",
     x: 19,
     y: 3,
     level: 0,
@@ -190,7 +191,7 @@ const npcs = [
   },
   {
     name: "Deep Void Lure",
-    image: "images/deepVoidLure.png",
+    image: "images/creatures/vann/deepVoidLure.png",
     x: 22,
     y: 2,
     level: 0,
@@ -202,7 +203,7 @@ const npcs = [
   },
   {
     name: "Oleander the Hunter",
-    image: "images/oleanderDown.png",
+    image: "images/npc/oleanderDown.png",
     x: 1,
     y: 2,
     level: 7,
@@ -213,7 +214,7 @@ const npcs = [
   },
   {
     name: "Voidlore Merchant",
-    image: "images/voidloreMerchantRight.png",
+    image: "images/npc/voidloreMerchantRight.png",
     x: 0,
     y: 0,
     level: 5,
@@ -224,7 +225,7 @@ const npcs = [
   },
   {
     name: "Poisetle",
-    image: "images/poisetle.png",
+    image: "images/creatures/land/poisetle.png",
     x: 5,
     y: 2,
     level: 7,
@@ -240,8 +241,8 @@ const npcShopItems = {
   "Voidlore Merchant": [
     {
       name: "Dock Key",
-      image: "images/dockKey.png",
-      price: 1000,
+      image: "images/items/dockKey.png",
+      price: 10,
       description: "Unlocks fence to dock in Yurborg.",
       once: true // Bare én gang per spiller
     },
@@ -249,7 +250,7 @@ const npcShopItems = {
   ]
 };
 
-let trophies = []; // Navn på fiskene du har fanget før
+let trophies = {}; // Navn på fiskene du har fanget før
 
 const character = {
   x: 0, y: 0,
@@ -476,6 +477,20 @@ function toggleSettings() {
   settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
 }
 
+function confirmDeleteSave() {
+  const confirmDelete = confirm("Are you sure you want to delete your character save?");
+  if (confirmDelete) {
+    deleteSave();
+  }
+}
+
+function deleteSave() {
+  localStorage.removeItem('voidquest_save');
+  localStorage.removeItem('voidquest_volume');
+  alert("Your save has been deleted. The game will now restart.");
+  location.reload(); // Starter spillet på nytt
+}
+
 function updateVolume(value) {
   masterVolume = parseFloat(value);
 
@@ -620,15 +635,17 @@ function showCharacterCreation() {
   container.style.fontFamily = "monospace";
 
   container.innerHTML = `
-    <h2>Lag din karakter</h2>
-    <label>Kallenavn: <input id="charName" /></label><br>
-    <label>Kjønn:
+    <h2>Create your character</h2>
+    <label>Username: <input id="charName" /></label><br>
+    <label>Gender:
       <select id="charGender">
-        <option value="male">Mann</option>
-        <option value="female">Kvinne</option>
-      </select>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select> <br> <br>
+      <button onclick="finishCharacterCreation()">Start</button> 
+      <button onclick="showMainMenu();">Menu</button> 
+
     </label><br><br>
-    <button onclick="finishCharacterCreation()">Start spill</button>
   `;
 
   document.body.appendChild(container);
@@ -650,7 +667,7 @@ function finishCharacterCreation() {
   document.getElementById("charCreation").remove();
 
   // Start spillet fra level 0
-  loadLevel(0);
+  loadLevel(1);
 
   // Lagre umiddelbart
   saveGame();
@@ -660,15 +677,15 @@ function applyCharacterAppearance() {
   if (!playerData || !playerData.gender) return;
 
   if (playerData.gender === 'male') {
-    characterImages.up.src = 'images/pixelmannUp.png';
-    characterImages.down.src = 'images/pixelmanndown.png';
-    characterImages.left.src = 'images/pixelmannLeft.png';
-    characterImages.right.src = 'images/pixelmannRight.png';
+    characterImages.up.src = 'images/player/man/pixelmannUp.png';
+    characterImages.down.src = 'images/player/man/pixelmanndown.png';
+    characterImages.left.src = 'images/player/man/pixelmannLeft.png';
+    characterImages.right.src = 'images/player/man/pixelmannRight.png';
   } else {
-    characterImages.up.src = 'images/pixelwomanUp.png';
-    characterImages.down.src = 'images/pixelwomanDown.png';
-    characterImages.left.src = 'images/pixelwomanLeft.png';
-    characterImages.right.src = 'images/pixelwomanRight.png';
+    characterImages.up.src = 'images/player/woman/pixelwomanUp.png';
+    characterImages.down.src = 'images/player/woman/pixelwomanDown.png';
+    characterImages.left.src = 'images/player/woman/pixelwomanLeft.png';
+    characterImages.right.src = 'images/player/woman/pixelwomanRight.png';
   }
 }
 
@@ -865,7 +882,7 @@ function getRandomTreeCreature() {
     if (roll < sum) return creature;
   }
 
-  return { name: "???", rarity: "common", image: "images/defaultTree.png", price: 0 };
+  return { name: "???", rarity: "secret", image: "images/defaultTree.png", price: 0 };
 }
 
 function startFishing() {
@@ -1033,8 +1050,15 @@ function addToInventory(fish) {
   }
 
   // Legg til i trophies hvis det er første gang du fanger denne
-  if (!trophies.includes(fish.name)) {
-    trophies.push(fish.name);
+  if (!trophies[fish.name]) {
+    const now = new Date();
+    const formatted = now.getFullYear() + "-" +
+                      String(now.getMonth() + 1).padStart(2, '0') + "-" +
+                      String(now.getDate()).padStart(2, '0') + " " +
+                      String(now.getHours()).padStart(2, '0') + ":" +
+                      String(now.getMinutes()).padStart(2, '0');
+  
+    trophies[fish.name] = formatted;
   }
 
   if (inventoryOpen) renderInventory();
@@ -1105,7 +1129,7 @@ let currentShopType = "water";
 function openShop(type = "water") {
   currentShopType = type;
   const shopBox = document.getElementById('shopBox');
-  let shopHTML = `<h3 style="font-family: Cursive;">Morgan</h3><p>This is my prices:</p>`;
+  let shopHTML = `<h3 style="font-family: Cursive;"></h3><p>This is my prices:</p>`;
   let hasFish = false;
 
   inventory.forEach(item => {
@@ -1221,6 +1245,22 @@ function renderInventory() {
   const inv = document.getElementById('inventory');
   inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory (${playerData.name})</h3><p style="color:gold;font-family: Cursive;">Gold: ${gold}</p>`;  
   
+  let hoverInfoBox = document.getElementById("hoverInfoBox");
+  if (!hoverInfoBox) {
+    hoverInfoBox = document.createElement("div");
+    hoverInfoBox.id = "hoverInfoBox";
+    hoverInfoBox.style.position = "fixed";
+    hoverInfoBox.style.pointerEvents = "none";
+    hoverInfoBox.style.background = "#222";
+    hoverInfoBox.style.border = "1px solid #999";
+    hoverInfoBox.style.color = "white";
+    hoverInfoBox.style.padding = "8px";
+    hoverInfoBox.style.fontFamily = "monospace";
+    hoverInfoBox.style.zIndex = "1000";
+    hoverInfoBox.style.display = "none";
+    document.body.appendChild(hoverInfoBox);
+  }
+
   const grid = document.createElement('div');
   grid.style.display = 'grid';
   grid.style.gridTemplateColumns = 'repeat(5, 64px)';
@@ -1239,6 +1279,26 @@ function renderInventory() {
     cell.style.flexDirection = 'column';
     cell.style.alignItems = 'center';
     cell.style.justifyContent = 'center';
+
+    cell.onmousemove = (e) => {
+      const rarityData = raritySettings[item.rarity];
+      const rarityColor = rarityData ? rarityData.color : "#fff";
+      const caughtDate = trophies[item.name] || "Unknown";
+      hoverInfoBox.innerHTML = `
+        <strong style="color:${rarityColor}">${item.name}</strong><br>
+        <span>Rarity: <span style="color:${rarityColor}">${item.rarity}</span></span><br>
+        <span>Price: ${item.price} gold</span><br>
+        <span style="color:gray;">First caught: ${caughtDate}</span>
+      `;
+      hoverInfoBox.style.display = "block";
+      hoverInfoBox.style.left = (e.clientX + 15) + "px";
+      hoverInfoBox.style.top = (e.clientY + 15) + "px";
+    };
+
+    cell.onmouseleave = () => {
+      hoverInfoBox.style.display = "none";
+    };
+
     cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
     grid.appendChild(cell);
   });
@@ -1261,6 +1321,8 @@ document.addEventListener('keydown', (e) => {
     case 'd': moveCharacter(1, 0); break;
     case 'e': tryInteract(); break;
     case 'i': toggleInventory(); break;
+    case 'c': showCharacterInfo(); break;
+
   }
 });
 
@@ -1350,10 +1412,11 @@ function toggleTrophyJournal() {
   renderTrophyJournal();
 }
 
-function getUniqueCreaturesFromList(list) {
+function getUniqueCreaturesFromList(list, showSecrets = false) {
   const seen = new Set();
   return list.filter(creature => {
     if (seen.has(creature.name)) return false;
+    if (creature.rarity === "secret" && !showSecrets && !trophies[creature.name]) return false;
     seen.add(creature.name);
     return true;
   });
@@ -1362,15 +1425,15 @@ function getUniqueCreaturesFromList(list) {
 function renderTrophyJournal() {
   const rawFish = Object.values(fishPools).flat();
   const rawLand = Object.values(treeCreaturePools).flat();
-  const allFish = getUniqueCreaturesFromList(rawFish);
-  const allLand = getUniqueCreaturesFromList(rawLand);
+  const allFish = getUniqueCreaturesFromList(rawFish, true);
+  const allLand = getUniqueCreaturesFromList(rawLand, true);
 
   //Sorterer journal skapninger etter rarity
   //Og fultrerer ut secret rarity
   const fullList = currentTrophyType === "water" ? allFish : allLand;
 
   const list = fullList
-    .filter(creature => creature.rarity !== "secret" || trophies.includes(creature.name))
+    .filter(creature => creature.rarity !== "secret" || trophies[creature.name])
     .slice()
     .sort((a, b) => {
       const order = { common: 1, rare: 2, legendary: 3, mythical: 4, secret: 5 };
@@ -1408,7 +1471,7 @@ function renderTrophyJournal() {
   journal.style.fontFamily = "monospace";
   journal.style.textAlign = "center";
 
-  const caught = list.filter(c => trophies.includes(c.name)).length;
+  const caught = list.filter(c => trophies[c.name]).length;
 
   const buttons = `
     <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
@@ -1424,7 +1487,7 @@ function renderTrophyJournal() {
   grid.style.marginTop = "12px";
 
   list.forEach(creature => {
-    const hasCaught = trophies.includes(creature.name);
+    const hasCaught = trophies[creature.name];
 
     const cell = document.createElement("div");
     cell.style.width = "64px";
@@ -1445,8 +1508,11 @@ function renderTrophyJournal() {
     
       let html = `<strong style="color:${rarityColor}">${hasCaught ? creature.name : "???"}</strong><br>`;
       html += `<span>Rarity: <span style="color:${rarityColor}">${creature.rarity}</span></span><br>`;
-      html += hasCaught ? `Price: ${creature.price} gold` : "";
-    
+      if (hasCaught) {
+        const caughtDate = trophies[creature.name];
+        html += `Price: ${creature.price} gold<br>`;
+        html += `<span style="color:gray;">First caught: ${caughtDate}</span>`;
+      }
       hoverInfoBox.innerHTML = html;
       hoverInfoBox.style.display = "block";
       hoverInfoBox.style.left = (e.clientX + 15) + "px";
@@ -1566,9 +1632,15 @@ function addToInventory(fish) {
     item.count += 1;
   } else {
     inventory.push({ ...fish, count: 1 });
-  }
-  if (!trophies.includes(fish.name)) {
-    trophies.push(fish.name);
+  }if (!trophies[fish.name]) {
+    const now = new Date();
+    const formatted = now.getFullYear() + "-" +
+                      String(now.getMonth() + 1).padStart(2, '0') + "-" +
+                      String(now.getDate()).padStart(2, '0') + " " +
+                      String(now.getHours()).padStart(2, '0') + ":" +
+                      String(now.getMinutes()).padStart(2, '0');
+  
+    trophies[fish.name] = formatted;
   }
   gainXP(fish.xp || 10); // Få XP basert på fisken
   if (inventoryOpen) renderInventory();
@@ -1639,17 +1711,17 @@ function showCharacterInfo() {
   box.style.textAlign = "center";
 
   const total = getAllUniqueCreatures().length;
-  const caught = trophies.length;
+  const caught = Object.keys(trophies).length;
 
-  const genderImage = playerData.gender === "male" ? "images/pixelmanndown.png" : "images/pixelwomanDown.png";
+  const genderImage = playerData.gender === "male" ? "images/player/man/pixelmanndown.png" : "images/pixelwomanDown.png";
 
   box.innerHTML = `
     <h2>${playerData.name}</h2>
     <img src="${genderImage}" width="64" height="64"><br><br>
     <strong>Level:</strong> ${playerLevel}<br>
     <strong>XP:</strong> ${playerXP} / ${xpToNextLevel}<br>
-    <strong>Trophies:</strong> ${caught} av ${total}<br><br>
-    <button onclick="document.getElementById('characterInfoBox').remove()">Lukk</button>
+    <strong>Trophies:</strong> ${caught} / ${total}<br><br>
+    <button onclick="document.getElementById('characterInfoBox').remove()">Exit</button>
   `;
 
   document.body.appendChild(box);
@@ -1679,6 +1751,79 @@ if (saved) {
   //updateXPUI();
   updateXPBar();
 } else {
+  showMainMenu();
+}
+
+//---------------MAIN MENY FØRST-----------------
+
+function showMainMenu() {
+  const menu = document.createElement("div");
+  menu.id = "mainMenu";
+  menu.style.position = "absolute";
+  menu.style.top = "0";
+  menu.style.left = "0";
+  menu.style.width = "100%";
+  menu.style.height = "100%";
+  menu.style.background = "#000";
+  menu.style.display = "flex";
+  menu.style.flexDirection = "column";
+  menu.style.alignItems = "center";
+  menu.style.justifyContent = "center";
+  menu.style.gap = "30px";
+  menu.style.zIndex = 1000;
+
+  menu.innerHTML = `
+    <img src="images/npc/voidloreMerchantRight.png" style="width:128px;height:auto;" />
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="startCharacterCreationFromMenu()">Make Character</button>
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="showCredits()">Credits</button>
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="quitGame()">Quit</button>
+  `;
+
+  document.body.appendChild(menu);
+}
+
+function startCharacterCreationFromMenu() {
+  document.getElementById("mainMenu").remove();
   showCharacterCreation();
 }
+
+function showCredits() {
+  const credits = document.createElement("div");
+  credits.id = "creditsScreen";
+  credits.style.position = "absolute";
+  credits.style.top = "0";
+  credits.style.left = "0";
+  credits.style.width = "100%";
+  credits.style.height = "100%";
+  credits.style.background = "#111";
+  credits.style.color = "white";
+  credits.style.fontFamily = "monospace";
+  credits.style.display = "flex";
+  credits.style.flexDirection = "column";
+  credits.style.alignItems = "center";
+  credits.style.justifyContent = "center";
+  credits.style.zIndex = 1001;
+  credits.style.textAlign = "center";
+  credits.innerHTML = `
+    <h1>VoidQuest</h1>
+    <p>Created by: Erik Spenningsby</p>
+    <p>Every pixelart used in this game</p>
+    <p>are designed and created by our team, and for this game.</p>
+    <p>Pixel art help: Jocelyn, Isabella, Daniel</p>
+    <p>Music: Erik Spenningsby</p>
+    <p>Help/report bugs/inquiries</p>
+    <p>voidcrypt@hotmail.com</p>
+    
+    <br><br>
+    <button onclick="document.getElementById('creditsScreen').remove()">Tilbake</button>
+  `;
+  document.body.appendChild(credits);
+}
+
+function quitGame() {
+  window.close(); // Fungerer kun hvis siden ble åpnet av et skript
+  alert("Du må lukke fanen manuelt."); // Fallback for vanlige faner
+}
+
+toggleMenu();
 

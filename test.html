@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>VoidQuest!</title>
-  <link rel="icon" type="image/png" href="images/skuggosk.png">
+  <link rel="icon" type="image/png" href="images/creatures/vann/skuggosk.png">
   
   <style>
     body {
@@ -43,19 +43,24 @@
 
 
   <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
-    <button onclick="closeMenu()" style="font-size:24px; padding:10px 20px;">Fortsett</button>
-    <button onclick="saveGame()" style="font-size:24px; padding:10px 20px;">Lagre spill</button>
-    <button onclick="showCharacterInfo()" style="font-size:24px; padding:10px 20px;">Karakter</button>
-    <button onclick="toggleSettings()" style="font-size:24px; padding:10px 20px;">Innstillinger</button>
+    <button onclick="closeMenu()" style="padding: 20px 40px; font-size: 24px;">Continue</button>
+    <button onclick="saveGame()" style="padding: 20px 40px; font-size: 24px;">Save Game</button>
+    <button onclick="showCharacterInfo()" style="padding: 20px 40px; font-size: 24px;">Character</button>
+    <button onclick="toggleSettings()" style="padding: 20px 40px; font-size: 24px;">Settings</button>
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="showCredits()">Credits</button>
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="quitGame()">Quit</button>
+
   </div>
 
   <!-- Innstillinger -->
   <div id="settingsMenu" style="display:none; position:absolute; top:10%; left:50%; transform:translateX(-50%); background:#222; color:white; padding:20px; border:2px solid #888; z-index:21;">
-    <h3>Innstillinger</h3>
-    <label for="volumeSlider">Masterlyd:</label>
+    <h3>Settings</h3>
+    <label for="volumeSlider">Mastersound:</label>
     <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" onchange="updateVolume(this.value)">
     <br><br>
-    <button onclick="toggleSettings()">Lukk</button>
+    <button style="color: rgb(255, 255, 255); font-style:oblique; background-color: rgb(255, 0, 0);" onclick="confirmDeleteSave()">DELETE CHARACTER SAVE</button>
+    <br><br>
+    <button onclick="toggleSettings()">Close</button>
   </div>
 
 
