@@ -84,7 +84,7 @@ const characterImages = {
 };
 
 characterImages.up.src = 'images/player/man/pixelmannUp.png';
-characterImages.down.src = 'images/player/man/pixelmanndown.png';
+characterImages.down.src = 'images/player/man/pixelmannDown.png';
 characterImages.left.src = 'images/player/man/pixelmannLeft.png';
 characterImages.right.src = 'images/player/man/pixelmannRight.png';
 
@@ -158,7 +158,7 @@ const npcs = [
   },
   {
     name: "Path Seeker Nodin",
-    image: "images/player/man/pixelmanndown.png",
+    image: "images/player/man/pixelmannDown.png",
     x: 10,
     y: 6,
     level: 1,
@@ -759,7 +759,7 @@ function applyCharacterAppearance() {
 
   if (playerData.gender === 'male') {
     characterImages.up.src = 'images/player/man/pixelmannUp.png';
-    characterImages.down.src = 'images/player/man/pixelmanndown.png';
+    characterImages.down.src = 'images/player/man/pixelmannDown.png';
     characterImages.left.src = 'images/player/man/pixelmannLeft.png';
     characterImages.right.src = 'images/player/man/pixelmannRight.png';
   } else {
@@ -1932,7 +1932,7 @@ function showCharacterInfo() {
   const total = getAllUniqueCreatures().length;
   const caught = Object.keys(trophies).length;
 
-  const genderImage = playerData.gender === "male" ? "images/player/man/pixelmanndown.png" : "images/pixelwomanDown.png";
+  const genderImage = playerData.gender === "male" ? "images/player/man/pixelmannDown.png" : "images/pixelwomanDown.png";
 
   box.innerHTML = `
     <h2>${playerData.name}</h2>
@@ -1992,7 +1992,7 @@ function showMainMenu() {
   menu.style.zIndex = 1000;
 
   menu.innerHTML = `
-    <img src="images/npc/voidloreMerchantRight.png" style="width:128px;height:auto;" />
+    <img src="images/voidQuestLogo.png" style="width:128px;height:auto;" />
     <button style="padding: 20px 40px; font-size: 24px;" onclick="startCharacterCreationFromMenu()">Make Character</button>
     <button style="padding: 20px 40px; font-size: 24px;" onclick="showCredits()">Credits</button>
     <button style="padding: 20px 40px; font-size: 24px;" onclick="quitGame()">Quit</button>
