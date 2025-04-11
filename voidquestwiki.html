@@ -70,12 +70,17 @@
   </style>
 </head>
 <body>
+  <br>
+  Link: https://lt-lazy.github.io/VoidQuest/
 
   <header>
     <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
     <h1>VoidQuest Wiki</h1>
     <p>Your guide to exploring the world of Voidlore</p>
+    <p>Game status: Online🟢</p>
   </header>
+
+ 
 
   <nav>
     <button onclick="showSection('intro')">🧭 Intro</button>
@@ -87,12 +92,19 @@
 
   </nav>
 
-  <input type="text" id="searchBox" placeholder="Search by name..." oninput="filterContent()">
+  <input type="text" id="searchBox" placeholder="Filter..." oninput="filterContent()">
 
   <section id="intro" class="active">
     <h2>What is VoidQuest?</h2>
-    <p>VoidQuest is a retro-style RPG filled with mysterious creatures, unique NPCs, and a world full of secrets.</p>
-    <p>This wiki provides an overview of everything from fish and monsters to locations, characters, and the story behind the game.</p>
+    <p>VoidQuest is a retro-style RPG filled with unique creatures, mysterious NPCs, and a world full of secrets.</p>
+    <p>This wiki provides an overview of everything from fish and monsters to locations, characters, tips, information and the story behind the game.</p>
+    <h2>Tips!</h2>
+    <p>Movement and interaction:</p>
+    <p>The game is played by moving around with "w", "s", "a" and "d".</p>
+    <p>You can use your mouse to click on buttons and "e" to interact.</p>
+    <p>"j" opens journal, "m" opens map, "i", opens inventory, "c" opens character interface and "TAB" opens menu.</p>
+
+
   </section>
 
   <section id="creatures">
@@ -138,7 +150,17 @@
       <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
       <div>Voidlore Merchant</div>
     </div>
+    <div class="npc" data-name="Nocturne">
+      <img src="images/npc/nocturneDown.png" alt="Nocturne">
+      <div>Nocturne</div>
+    </div>
+    <div class="npc" data-name="Oleander the hunter">
+      <img src="images/npc/oleanderDown.png" alt="Oleander the hunter">
+      <div>Oleander the hunter</div>
+    </div>
   </section>
+
+</section>
 
   <section id="locations">
     <h2>Locations</h2>
@@ -154,11 +176,12 @@
 
   <section id="community">
     <h2>Secrets (rarity) found</h2>
-    <div class="creature" data-name="defaultFish">
+    <div class="creature" data-name="defaultTree">
         <img src="images/creatures/land/defaultTree.png" alt="defaultTree">
         <div>defaultTree<br><small>Error creature</small></div>
     </div>
     <p>Found by user: anonymous</p>
+    <p>Date: 09.04.25</p>
     <p>Basis: Between two updates in the game the player was farming land creatures in Path-1.</p>
     <p>The update rolled out to the playerbase before the creatures that could be farmed in Path-1 was ready.</p>
     <p>Leaving a window of 5 minutes to get the default skin creature. This is an error type land creature.</p>
