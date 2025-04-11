@@ -2,6 +2,9 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const tileSize = 40;
 
+let totalPlayTime = 0;     // Totalt antall millisekunder spilt
+let playSessionStart = null; // Når denne spilløkta startet
+
 let menuOpen = false;
 
 
@@ -31,6 +34,7 @@ const tileImages = {
   sand: new Image(),
   stoneSingle: new Image(),
   campfire: new Image(),
+  stonepath: new Image(),
   voidgate: new Image()
 };
 
@@ -44,9 +48,10 @@ tileImages.fence.src = 'images/tiles/fenceTile.png';
 tileImages.table.src = 'images/tiles/tableTile.png';
 tileImages.coblestone.src = 'images/tiles/coblestoneTile.png';
 tileImages.water.src = 'images/tiles/waterTile.png';
-tileImages.sand.src = 'images/tiles/sandTile.png';
+tileImages.sand.src = 'images/tiles/sandPathTile.png';
 tileImages.stoneSingle.src = 'images/tiles/stoneSingleTile.png';
 tileImages.campfire.src = 'images/tiles/campfireStill.png';
+tileImages.stonepath.src = 'images/tiles/stonePathTile.png';
 tileImages.voidgate.src = 'images/tiles/voidgateTile.png';
 
 const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire'];
@@ -65,6 +70,7 @@ const tileMapping = {
   'D': 'door',
   'W': 'water',
   'S': 'sand',
+  'p': 'stonepath',
   's': 'stoneSingle',
   'c': 'campfire',
   'V': 'voidgate',
@@ -84,42 +90,49 @@ characterImages.right.src = 'images/player/man/pixelmannRight.png';
 
 const fishPools = {
   0: [ // Utenfor
-    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 800, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 500, price: 14 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
     { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 49, price: 74 },
 
     // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
   ],
   2: [ // Cave
-    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 800, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 500, price: 10 },
-    { name: "Deep Void Lure", rarity: "legendary", image: "images/creatures/vann/deepVoidLure.png", chance: 10, price: 218 },
-    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 39 }
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
+    { name: "Deep Void Lure", rarity: "legendary", image: "images/creatures/vann/deepVoidLure.png", chance: 10, price: 418 },
+    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42 },
+  ],
+  4: [ // Path-1
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 95, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 80, price: 10 },
+    { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 1, price: 74 },
   ],
   5: [ // Yurborg
-    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 800, price: 15 },
-    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 60, price: 57 },
-    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 9, price: 743 },
+    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19 },
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 87 },
+    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743 },
+    { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217 },
+    { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
 
   ],
 };
 
 const treeCreaturePools = {
   0: [ // Level 0 – Spenningsbyen
-    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 900, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 80, price: 46 },
-    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 50, price: 67},
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
 
   ],
   4: [ // Sti-1
-    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 900, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 80, price: 46 },
-    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 50, price: 67},
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
   ],
   5: [ // Yurborg
-    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 900, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 80, price: 46 },
-    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 50, price: 67},
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
 
   ],
 };
@@ -129,7 +142,7 @@ const raritySettings = {
   uncommon: { time: 5000, color: "green", border: "green" },
   rare: { time: 2000, color: "blue", border: "blue" },
   legendary: { time: 1200, color: "gold", border: "gold" },
-  Mythical: { time: 1000, color: "purple", border: "purpe" },
+  mythical: { time: 1200, color: "purple", border: "purple" },
   secret: { time: 2500, color: "pink", border: "pink" },
 };
 
@@ -242,12 +255,27 @@ const npcShopItems = {
     {
       name: "Dock Key",
       image: "images/items/dockKey.png",
-      price: 10,
+      price: 2000,
       description: "Unlocks fence to dock in Yurborg.",
+      once: true // Bare én gang per spiller
+    },
+    {
+      name: "Abyss Seekers",
+      image: "images/items/book.png",
+      price: 1500,
+      description: "Unlocks location knowledge.",
       once: true // Bare én gang per spiller
     },
     // Flere varer kan enkelt legges til her senere
   ]
+};
+
+//KLIKKBARE ITEMS I INVENTORY
+const interactableItems = {
+  "The Veiled Abyss Location": {
+    message: "To enter The Veiled Abyss, tp to the-veiled-abyss"
+  },
+  // Du kan lett legge til flere spesialgjenstander her etterpå
 };
 
 let trophies = {}; // Navn på fiskene du har fanget før
@@ -303,15 +331,15 @@ const levels = [
     layout: [
       'TTTTTTTTTTTTTTTTTTsCCCCC',
       'TGGGGGGGGGGGGGGGGGGsCRRR',
-      'TGGGGGGGGGGGGGGGGGGsCPPP',
-      'TGGGGGGGGGGcGGGGGGGGsPDP',
-      'TGGGGGGGGGGGGGGGGGGGGsGs',
-      'TGGGGGGGGGGGGGGGGGGGGGGV',
-      'TRRRRGGGGGGGGGGGGGGGGGGT',
-      'TRRRRGTTGGGGGGGGGGGGGGGT',
-      'TBBBBTTTTTTGGGGGGGGGSSSS',
-      'TBDBBFFFFFGGGGGGGGGSWWWW',
-      'TGGGGGGGGGGGGGGGGGSWWWWW',
+      'TGGGGGTTTTpppGGGGGGsCPPP',
+      'TGGGTTTTTGpcpGGGGGGGsPDP',
+      'TGGGGTTTTGpppppGGGGGGsGs',
+      'TGGGGGGTTTGGpppppppppppV',
+      'TRRRRGGGGGGGGpppGGGGGGGT',
+      'TRRRRGTTGGGGGGpGGGGGGGGT',
+      'TBBBBTTTTTTGGGpGGGGGSSSS',
+      'TBDBBFFFFFGppppGGGGSWWWW',
+      'TpppppppppppGGGGGGSWWWWW',
       'TTTTTTTTTTTTTTTTTSWWWWWW'
     ],
     startX: 4,
@@ -369,13 +397,13 @@ const levels = [
   {
     // STI-1 "4"
     layout: [
-      'TTTTTTTTTTTTTTTTTTTTTTTT',
-      'TGGGGGGGGGGGGGGGGGGGGGGT',
-      'TGGGGGGGGGGGGGGGGGGGGGGT',
-      'VGGGGGGGGGGGGGGGGGGGGGGV',
-      'TGGGGGGGGGGGGGGGGGGGGGGT',
-      'TGGGGGGGGGGGGGGGGGGGGGGT',
-      'TTTTTTTTTTTTTTTTTTTTTTTT'
+      'TTTTTTTTTTTTTWWWTTTTTTTT',
+      'TTTGGppppGGTTWWWGGTTTGGT',
+      'TGGGppGGppGGTWWWGGGGGGGT',
+      'VppppGTTGpppGWWWFFFFFppV',
+      'TGGGGTTTTGGppPPPppGGppGT',
+      'TGGGTTTTTTGGpPPPpppppGGT',
+      'TTTTTTTTTTTTTWWWTTTTTTTT'
     ],
     startX: 5,
     startY: 5,
@@ -384,25 +412,25 @@ const levels = [
   {
     //YURBORG "5"
     layout: [
-      'G1GGGGGGGGGGGGGGGRRRRRRRRRRR',
-      'G1GGGGGGGGGGGGGGGRRRRRRRRRRR',
+      'G1GGGTTTTTTTTTTTTRRRRRRRRRRR',
+      'G1GGGGGGTTTTTTTTGRRRRRRRRRRR',
+      'GGGGGGGGGGGTTTGGGBBBBBBBBBBB',
       'GGGGGGGGGGGGGGGGGBBBBBBBBBBB',
-      'GGGGGGGGGGGGGGGGGBBBBBBBBBBB',
-      'GGGGGGGGGGGGGGGGGGGGGGGGGGGG',
-      'VGGGGGGGGGGGGGGGGGGGGGGGGGGG',
-      'GGGGGGGGGGGGGGGGGGGGGGGGGGGG',
-      'GGGGGGGGGGGGGGGGGGGGGGGRRRRR',
-      'GGGGGGGGGGGGGGGGGGGGGGGRRRRR',
-      'GGGGGGGGGGGGGGGGGGGGGGGBBBBB',
-      'TTTTGGGGGGGGGGGGGGGGGGGBBDBB',
-      'TTTTTTGGGGGGGGGGGGGGGGGGGGGG',
-      'TTTTTTTTGGGGGGGGGGGGGGGGGGGG',
+      'GGGGGGGGGGGGpppGGGGGGGGGGGGG',
+      'VppppppppGGppGppGGGppppppGGG',
+      'GGGGGGGGppppGGGpppppGGGGGGGG',
+      'GGGGGGGGGGGppGppGGGGGGGRRRRR',
+      'GGGGGGGGGGGGpppppppGGGGRRRRR',
+      'GTTGGGGGGGGGGpGGGGppGGGBBBBB',
+      'TTTTGGGGGGGGppGGGGGpppGBBDBB',
+      'TTTTTTGGGGGGpGGGGGGGGppppppp',
+      'TTTTTTTTGGGGpGGGGGGGGGGGGGGG',
       'TTTTTTTTTTTTFTTTTTTTTTTTTTTT',
       'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
       'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
       'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
       'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
-      'WWWWWWWWWWWWWWWWWWWWWWWWWWWW'
+      'WWWWWWWWWWWPPPWWWWWWWWWWWWWW'
     ],
     startX: 4,
     startY: 4,
@@ -438,9 +466,61 @@ const levels = [
     startY: 3,
     background: 'plank'
   },
+  {
+    // VEILED ABYSS "8"
+    layout: [
+      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'coblestone'
+  },
   
 ];
 
+const levelNamesToIndex = {
+  "spenningsbyen": 0,
+  "gatherers-hub": 1,
+  "deep-void-cave": 2,
+  "trophyroom": 3,
+  "path-1": 4,
+  "yurborg": 5,
+  "casino": 6,
+  "gatherers-hub-yurborg": 7,
+  
+  // Hemmelig nivå:
+  "the-veiled-abyss": 8 // <- hemmelig!
+};
+
+const levelDefinitions = {
+  "spenningsbyen":      { index: 0,  x: 4,  y: 10 },
+  "gatherers-hub":      { index: 1,  x: 5,  y: 5 },
+  "deep-void-cave":     { index: 2,  x: 5,  y: 5 },
+  "trophyroom":         { index: 3,  x: 5,  y: 5 },
+  "path-1":             { index: 4,  x: 2,  y: 3 },
+  "yurborg":            { index: 5,  x: 4,  y: 4 },
+  "casino":             { index: 6,  x: 5,  y: 5 },
+  "gatherers-hub-yurborg": { index: 7, x: 3, y: 3 },
+
+  // Hemmelig nivå
+  "the-veiled-abyss":   { index: 8,  x: 2,  y: 2 },
+};
 
 // ================== QUESTER ==================
 
@@ -533,7 +613,8 @@ function loadLevel(levelIndex, startX = null, startY = null) {
     4: "Path-1",
     5: "Yurborg",
     6: "Casino",
-    7: "Gatherers hub Yurborg",
+    7: "Gatherers-hub-Yurborg",
+    8: "The-Veiled-Abyss",
   };
   
   const level = levels[levelIndex];
@@ -1038,7 +1119,7 @@ function getRandomFish() {
     }
   }
 
-  return { name: "???", rarity: "", image: "images/defaultFish.png", price: 0 };
+  return { name: "???", rarity: "secret", image: "images/creatures/vann/defaultFish.png", price: 0 };
 }
 
 function addToInventory(fish) {
@@ -1226,6 +1307,7 @@ function renderWorldMap() {
 }
 
 document.addEventListener("keydown", (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
   if (e.key === "m") {
     showMap = !showMap;
     gameLoop();
@@ -1300,6 +1382,12 @@ function renderInventory() {
     };
 
     cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
+    if (interactableItems[item.name]) {
+      cell.style.cursor = "pointer";
+      cell.onclick = () => {
+        showItemDialog(item.name);
+      };
+    }
     grid.appendChild(cell);
   });
 
@@ -1312,7 +1400,40 @@ function toggleInventory() {
   if (inventoryOpen) renderInventory();
 }
 
+function showItemDialog(itemName) {
+  const data = interactableItems[itemName];
+  if (!data) return;
+
+  const existing = document.getElementById("itemDialog");
+  if (existing) existing.remove();
+
+  const box = document.createElement("div");
+  box.id = "itemDialog";
+  box.style.position = "absolute";
+  box.style.top = "50%";
+  box.style.left = "50%";
+  box.style.transform = "translate(-50%, -50%)";
+  box.style.background = "#111";
+  box.style.border = "2px solid #888";
+  box.style.padding = "20px";
+  box.style.color = "white";
+  box.style.fontFamily = "monospace";
+  box.style.zIndex = 9999;
+  box.style.maxWidth = "400px";
+  box.style.textAlign = "center";
+
+  box.innerHTML = `
+    <h3>${itemName}</h3>
+    <p>${data.message}</p>
+    <br>
+    <button onclick="document.getElementById('itemDialog').remove()">Close</button>
+  `;
+
+  document.body.appendChild(box);
+}
+
 document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
   if (character.moving) return;
   switch (e.key) {
     case 'w': moveCharacter(0, -1); break;
@@ -1327,6 +1448,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
   if (e.key === 'Tab') {
     e.preventDefault();
     toggleMenu();
@@ -1357,8 +1479,14 @@ function saveGame() {
     },
     playerLevel,
     playerXP,
-    xpToNextLevel
+    xpToNextLevel,
+    playTime: totalPlayTime
   };
+
+  if (playSessionStart) {
+    totalPlayTime += Date.now() - playSessionStart;
+    playSessionStart = Date.now(); // restart måling for neste økt
+  }
 
   localStorage.setItem('voidquest_save', JSON.stringify(saveData));
   alert("Spillet er lagret!");
@@ -1369,9 +1497,13 @@ function loadGame() {
     const saved = localStorage.getItem('voidquest_save');
     if (saved) {
       const data = JSON.parse(saved);
+      totalPlayTime = data.playTime || 0;
+      playSessionStart = Date.now();
       inventory = data.inventory || [];
       trophies = data.trophies || [];
       gold = data.gold || 0;
+
+      playSessionStart = Date.now();
 
       // Last nivå og XP
       playerLevel = data.playerLevel || 1;
@@ -1547,6 +1679,7 @@ function renderTrophyJournal() {
 
 // === Tast for å åpne journal ===
 document.addEventListener("keydown", (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
   if (e.key === "j") {
     toggleTrophyJournal();
   }
@@ -1620,6 +1753,91 @@ function createXPUI() {
   xpBarWrapper.appendChild(xpBar);
   document.body.appendChild(xpBarWrapper);
   updateXPBar();
+
+  // === Chatbox ===
+  const chatWrapper = document.createElement("div");
+  chatWrapper.style.display = "flex";
+  chatWrapper.style.marginTop = "10px";
+  chatWrapper.style.gap = "10px";
+  chatWrapper.style.alignItems = "center";
+  chatWrapper.style.justifyContent = "center";
+
+  const chatLabel = document.createElement("span");
+  chatLabel.textContent = "Chat:";
+  chatLabel.style.color = "white";
+
+  const chatInput = document.createElement("input");
+  chatInput.id = "commandInput";
+  chatInput.type = "text";
+  chatInput.placeholder = "Type command...";
+  chatInput.style.background = "#222";
+  chatInput.style.color = "white";
+  chatInput.style.border = "1px solid #888";
+  chatInput.style.padding = "5px";
+  chatInput.style.fontFamily = "monospace";
+  chatInput.style.width = "150px";
+
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      handleCommand(chatInput.value.trim());
+      chatInput.value = "";
+    }
+  });
+
+  chatWrapper.appendChild(chatLabel);
+  chatWrapper.appendChild(chatInput);
+  xpBarWrapper.appendChild(chatWrapper);
+  
+}
+
+function handleCommand(cmd) {
+  const args = cmd.toLowerCase().split(" ");
+  const base = args[0];
+
+  switch (base) {
+    case "/gold":
+      gold += parseInt(args[1] || "10");
+      alert(`You gained ${args[1] || 10} gold.`);
+      renderInventory();
+      break;
+
+    case "/played":
+      const now = Date.now();
+      const total = totalPlayTime + (playSessionStart ? now - playSessionStart : 0);
+      const minutes = Math.floor(total / 60000);
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      alert(`You have played this character for ${hours}h ${mins}m.`);
+      break;
+
+    case "/tp":
+      if (args.length >= 2) {
+        const levelName = args[1].toLowerCase();
+        const def = levelDefinitions[levelName];
+    
+        if (!def) {
+          alert(`Unknown level: "${levelName}"`);
+          break;
+        }
+    
+        const x = parseInt(args[2]) || def.x;
+        const y = parseInt(args[3]) || def.y;
+    
+        loadLevel(def.index, x, y);
+      } else {
+        alert("Usage: /tp <levelName> ");
+      }
+      break;
+      
+
+    case "/levelup":
+      playerXP = xpToNextLevel;
+      gainXP(0); // trigge level up
+      break;
+
+    default:
+      alert(`Unknown command: ${cmd}`);
+  }
 }
 
 // === Spill av lyd for level up ===
@@ -1687,6 +1905,7 @@ function finishCharacterCreationToSlot(slotKey) {
 
 // Prevent movement/inventory while menu is open or fishing
 document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
   if (menuOpen || isFishing) return;
   // Your existing movement + inventory toggle logic here
 });
@@ -1812,6 +2031,7 @@ function showCredits() {
     <p>Pixel art help: Jocelyn, Isabella, Daniel</p>
     <p>Music: Erik Spenningsby</p>
     <p>Help/report bugs/inquiries</p>
+    <p>Discord: https://discord.gg/UP67kGYmQE</p>
     <p>voidcrypt@hotmail.com</p>
     
     <br><br>
