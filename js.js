@@ -54,7 +54,7 @@ tileImages.campfire.src = 'images/tiles/campfireStill.png';
 tileImages.stonepath.src = 'images/tiles/stonePathTile.png';
 tileImages.voidgate.src = 'images/tiles/voidgateTile.png';
 
-const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire'];
+const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire',];
 const tilesAbovePlayer = ['roof', 'tree'];
 
 const tileMapping = {
@@ -115,6 +115,12 @@ const fishPools = {
     { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
 
   ],
+  8: [ // The-Veiled-Abyss
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
+    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42 },
+
+  ],
 };
 
 const treeCreaturePools = {
@@ -135,6 +141,27 @@ const treeCreaturePools = {
     { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
 
   ],
+};
+
+const bosses = {
+  "abyssBeast": {
+    name: "The Abyss Beast",
+    maxHP: 200,
+    level: "the-veiled-abyss",
+    image: "images/creatures/land/poisetle.png",
+    drops: [
+      {
+        name: "Void Core",
+        image: "images/testIMG.png",
+        rarity: "legendary",
+        price: 999,
+        chance: 50  // 20% sjanse
+      },
+    ],
+    barSpeed: 2000,       // Tid for bar i ms
+    damageToBoss: 34,      // Hvor mye skade bossen får ved suksess
+    damageToPlayer: 67     // Hvor mye skade spilleren får ved bom
+  },
 };
 
 const raritySettings = {
@@ -476,7 +503,7 @@ const levels = [
       'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCPPPPPPPCCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
@@ -521,6 +548,8 @@ const levelDefinitions = {
   // Hemmelig nivå
   "the-veiled-abyss":   { index: 8,  x: 2,  y: 2 },
 };
+
+
 
 // ================== QUESTER ==================
 
@@ -829,6 +858,7 @@ function moveCharacter(dx, dy) {
     } else {
       character.moving = false;
       const tile = map[character.y][character.x];
+
       if (tile === 'door' || tile === 'voidgate') {
         const key = `${character.x},${character.y}`;
         const door = doorMap[currentLevel]?.[key];
@@ -976,6 +1006,139 @@ function startFishing() {
   const wait = Math.floor(Math.random() * 8000) + 2000;
   fishTimeout = setTimeout(fishGotBite, wait);
 }
+
+function showBossFightPrompt(bossKey) {
+  const boss = bosses[bossKey];
+  if (!boss) return;
+
+  const box = document.createElement("div");
+  box.id = "bossPromptBox";
+  box.style.position = "absolute";
+  box.style.top = "50%";
+  box.style.left = "50%";
+  box.style.transform = "translate(-50%, -50%)";
+  box.style.background = "#111";
+  box.style.color = "white";
+  box.style.padding = "20px";
+  box.style.border = `2px solid ${raritySettings[boss.drops[0].rarity]?.border || "white"}`;
+  box.style.fontFamily = "monospace";
+  box.style.zIndex = 9999;
+  box.style.textAlign = "center";
+
+  box.innerHTML = `
+    <h2>${boss.name}</h2>
+    <img src="${boss.image}" width="80" /><br><br>
+    <p>Prepare to battle ${boss.name}.</p>
+    <p>It can hit you for <span style="color:red">${boss.damageToPlayer}</span> damage if you miss!</p>
+    <p>You deal <span style="color:lime">${boss.damageToBoss}</span> damage per hit.</p>
+    <br>
+    <button onclick="startBossFight('${bossKey}'); document.body.removeChild(document.getElementById('bossPromptBox'));">Battle</button>
+    <button onclick="document.body.removeChild(document.getElementById('bossPromptBox'));">Cancel</button>
+  `;
+
+  document.body.appendChild(box);
+}
+
+function startBossFight(bossKey) {
+  const boss = bosses[bossKey];
+  if (!boss) return;
+
+  let bossHP = boss.maxHP;
+  let playerHP = 200;
+
+  const fightNextRound = () => {
+    if (bossHP <= 0) {
+      endBossFight(true, boss);
+      return;
+    }
+    if (playerHP <= 0) {
+      endBossFight(false, boss);
+      return;
+    }
+
+    const baseBarTime = boss.barSpeed || 2000;
+    const barTime = baseBarTime + Math.random() * 1000;
+    let hit = false;
+    let elapsed = 0;
+
+    showFishingBox(`
+      <div>
+        <div style="margin-bottom: 8px;"><img src="${boss.image}" width="64"><br>${boss.name}</div>
+        <div>HP: You ${playerHP} | ${boss.name} ${bossHP}</div>
+        <div>Press [Space] when the bar is on the line!</div>
+        <div id="biteTimerBar" style="width: 100%; height: 20px; background: #222; position: relative;">
+          <div id="catchZone" style="position: absolute; top: 0; left: 45%; width: 10%; height: 100%; background: #fff2; border-left: 2px solid red; border-right: 2px solid red;"></div>
+          <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: red;"></div>
+        </div>
+      </div>
+    `);
+
+    const fill = document.getElementById("biteTimerFill");
+
+    const onKeyDown = (e) => {
+      if (e.code === "Space") {
+        const progress = elapsed / barTime;
+        if (progress >= 0.45 && progress <= 0.55) {
+          bossHP -= boss.damageToBoss || 1;
+        } else {
+          playerHP -= boss.damageToPlayer || 1;
+        }
+        document.removeEventListener("keydown", onKeyDown);
+        clearInterval(timer);
+        fightNextRound();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    const timer = setInterval(() => {
+      elapsed += 20;
+      fill.style.width = `${(elapsed / barTime) * 100}%`;
+      if (elapsed >= barTime) {
+        document.removeEventListener("keydown", onKeyDown);
+        clearInterval(timer);
+        playerHP -= boss.damageToPlayer || 1;
+        fightNextRound();
+      }
+    }, 20);
+  };
+
+  fightNextRound();
+}
+
+function endBossFight(playerWon, boss) {
+  if (playerWon) {
+
+      // Legg til bossen som et trofé
+    if (!trophies[boss.name]) {
+      trophies[boss.name] = new Date().toISOString();
+    }
+
+    let dropsWon = [];
+
+    for (const item of boss.drops) {
+      const roll = Math.random() * 100;
+      if (roll < item.chance) {
+        addToInventory({ ...item, count: 1 });
+        dropsWon.push(item.name);
+      }
+    }
+
+    if (dropsWon.length > 0) {
+      showFishingBox(`Boss defeated! You received: ${dropsWon.join(", ")}`);
+    } else {
+      showFishingBox("Boss defeated! But it dropped nothing...");
+    }
+  } else {
+    const msg = "You died... You return to Gatherers Hub.";
+    const loc = levelDefinitions["gatherers-hub"];
+    loadLevel(loc.index, loc.x, loc.y);
+    showFishingBox(msg);
+  }
+
+  setTimeout(cancelFishing, 3000);
+}
+
 
 function showFishingBox(text) {
   if (!fishingBox) {
@@ -1319,9 +1482,9 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawMap();
   drawCharacter();
+
   if (showMap) renderWorldMap();
 }
-
 
 function renderInventory() {
   const inv = document.getElementById('inventory');
@@ -1498,7 +1661,6 @@ function loadGame() {
     if (saved) {
       const data = JSON.parse(saved);
       totalPlayTime = data.playTime || 0;
-      playSessionStart = Date.now();
       inventory = data.inventory || [];
       trophies = data.trophies || [];
       gold = data.gold || 0;
@@ -1518,6 +1680,7 @@ function loadGame() {
 
       character.direction = dir;
       loadLevel(level, x, y);
+      createXPUI();
       renderInventory();
       updateXPUI(); // oppdater UI etter load
       updateXPBar();
@@ -1532,7 +1695,7 @@ function loadGame() {
 
 // === Troféjournal ===
 let trophyJournalOpen = false;
-let currentTrophyType = "water";
+let currentTrophyType = "water"; // kan være "water", "land" eller "boss"
 
 function toggleTrophyJournal() {
   trophyJournalOpen = !trophyJournalOpen;
@@ -1562,7 +1725,20 @@ function renderTrophyJournal() {
 
   //Sorterer journal skapninger etter rarity
   //Og fultrerer ut secret rarity
-  const fullList = currentTrophyType === "water" ? allFish : allLand;
+  const allBosses = Object.values(bosses).map(b => ({
+    name: b.name,
+    image: b.image,
+    rarity: b.drops[0]?.rarity || "legendary"
+  }));
+  
+  let fullList;
+  if (currentTrophyType === "water") {
+    fullList = allFish;
+  } else if (currentTrophyType === "land") {
+    fullList = allLand;
+  } else if (currentTrophyType === "boss") {
+    fullList = allBosses;
+  }
 
   const list = fullList
     .filter(creature => creature.rarity !== "secret" || trophies[creature.name])
@@ -1603,14 +1779,19 @@ function renderTrophyJournal() {
   journal.style.fontFamily = "monospace";
   journal.style.textAlign = "center";
 
-  const caught = list.filter(c => trophies[c.name]).length;
+  const caught = fullList.filter(c => trophies[c.name]).length;
 
   const buttons = `
-    <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
-    <button onclick="currentTrophyType='land'; toggleTrophyJournal(); toggleTrophyJournal()">Land</button>
+  <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
+  <button onclick="currentTrophyType='land'; toggleTrophyJournal(); toggleTrophyJournal()">Land</button>
+  <button onclick="currentTrophyType='boss'; toggleTrophyJournal(); toggleTrophyJournal()">Boss</button>
   `;
 
-  const title = `<h3>${currentTrophyType === 'water' ? 'Fisker' : 'Land skapninger'} (${caught}/${list.length})</h3>`;
+  const title = `<h3>${
+    currentTrophyType === 'water' ? 'Water creatures' :
+    currentTrophyType === 'land' ? 'Land creatures' :
+    'Bosses'
+  } (${caught}/${list.length})</h3>`;
 
   const grid = document.createElement("div");
   grid.style.display = "grid";
@@ -1801,14 +1982,21 @@ function handleCommand(cmd) {
       renderInventory();
       break;
 
-    case "/played":
-      const now = Date.now();
-      const total = totalPlayTime + (playSessionStart ? now - playSessionStart : 0);
-      const minutes = Math.floor(total / 60000);
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      alert(`You have played this character for ${hours}h ${mins}m.`);
-      break;
+      case "/played":
+        if (!playSessionStart) {
+          alert("Time tracking is not active.");
+          break;
+        }
+      
+        const now = Date.now();
+        const total = totalPlayTime + (now - playSessionStart);
+        const minutes = Math.floor(total / 60000);
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+      
+        console.log("Total playtime (ms):", total);
+        alert(`You have played this character for ${hours}h ${mins}m.`);
+        break;
 
     case "/tp":
       if (args.length >= 2) {
@@ -1828,11 +2016,17 @@ function handleCommand(cmd) {
         alert("Usage: /tp <levelName> ");
       }
       break;
-      
 
-    case "/levelup":
-      playerXP = xpToNextLevel;
-      gainXP(0); // trigge level up
+    case "/fight":
+      const levelName = Object.entries(levelDefinitions).find(([name, def]) => def.index === currentLevel)?.[0];
+      const bossInArea = Object.entries(bosses).find(([key, boss]) => boss.level === levelName);
+    
+      if (bossInArea) {
+        const [bossKey] = bossInArea;
+        showBossFightPrompt(bossKey); // <-- NY FUNKSJON
+      } else {
+        showMessage("No boss found in this area.");
+      }
       break;
 
     default:
@@ -1953,6 +2147,9 @@ if (saved) {
 
   playerData = data.character;
   applyCharacterAppearance();
+
+  totalPlayTime = data.playTime || 0;
+  playSessionStart = Date.now();
 
   inventory = data.inventory || [];
   trophies = data.trophies || [];
