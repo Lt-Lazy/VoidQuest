@@ -7,6 +7,10 @@ let playSessionStart = null; // Når denne spilløkta startet
 
 let menuOpen = false;
 
+let isDead = false;
+
+let lastFrameTime = performance.now();
+
 
 // === Kart: Lokasjoner og visning ===
 const mapData = [
@@ -148,21 +152,37 @@ const bosses = {
     name: "The Abyss Beast",
     maxHP: 200,
     level: "the-veiled-abyss",
-    image: "images/creatures/land/poisetle.png",
+    rarity: "rare",
+    image: "images/creatures/boss/theAbyssBeast/theAbyssBeastDown.png",
     drops: [
       {
-        name: "Void Core",
-        image: "images/testIMG.png",
-        rarity: "legendary",
-        price: 999,
+        name: "Abyss Eye",
+        image: "images/creatures/boss/theAbyssBeast/abyssEye.png",
+        rarity: "rare",
+        price: 875,
         chance: 50  // 20% sjanse
       },
     ],
-    barSpeed: 2000,       // Tid for bar i ms
+    barSpeed: 1500,       // Tid for bar i ms
     damageToBoss: 34,      // Hvor mye skade bossen får ved suksess
     damageToPlayer: 67     // Hvor mye skade spilleren får ved bom
   },
 };
+
+const visibleBosses = [
+  {
+    name: "The Abyss Beast",
+    image: "images/creatures/boss/theAbyssBeast/theAbyssBeastDown.png",
+    level: 8,
+    x: 25, // startposisjon på tilekartet
+    y: 4,
+    width: 6,   // hvor mange tiles bred
+    height: 6   // hvor mange tiles høy
+  },
+  // du kan legge til flere bosser her!
+];
+
+
 
 const raritySettings = {
   common: { time: 6000, color: "gray", border: "gray" },
@@ -503,7 +523,7 @@ const levels = [
       'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCPPPPPPPCCCCCCCCCCCCCCCCC',
+      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
       'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
@@ -703,6 +723,18 @@ function drawMap() {
         ctx.drawImage(img, npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
       }
   });
+    visibleBosses.forEach(boss => {
+      if (boss.level === currentLevel) {
+        const img = new Image();
+        img.src = boss.image;
+        ctx.drawImage(img, boss.x * tileSize, boss.y * tileSize, boss.width * tileSize, boss.height * tileSize);
+      }
+    });
+  // simulerer tåke for nivået(mørkere)
+  if (currentLevel === 2 || currentLevel === 8) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';  // 40% mørkt lag
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
 }
 
 function changeTile(levelIndex, x, y, newTileChar) {
@@ -831,25 +863,48 @@ function moveCharacter(dx, dy) {
 
   const targetX = character.x * tileSize;
   const targetY = character.y * tileSize;
-  const speed = 2;
+  const pixelsPerSecond = 200; // Justerbar hastighet (gå)
+  let previousTime = performance.now();
+  
 
-  function animate() {
+  function animate(currentTime) {
+    const deltaTime = (currentTime - previousTime) / 1000; // sekunder
+    previousTime = currentTime;
+    const speed = pixelsPerSecond * deltaTime;
+
     let doneX = false, doneY = false;
+
     if (character.pixelX < targetX) {
       character.pixelX += speed;
-      if (character.pixelX >= targetX) { character.pixelX = targetX; doneX = true; }
+      if (character.pixelX >= targetX) {
+        character.pixelX = targetX;
+        doneX = true;
+      }
     } else if (character.pixelX > targetX) {
       character.pixelX -= speed;
-      if (character.pixelX <= targetX) { character.pixelX = targetX; doneX = true; }
-    } else { doneX = true; }
+      if (character.pixelX <= targetX) {
+        character.pixelX = targetX;
+        doneX = true;
+      }
+    } else {
+      doneX = true;
+    }
 
     if (character.pixelY < targetY) {
       character.pixelY += speed;
-      if (character.pixelY >= targetY) { character.pixelY = targetY; doneY = true; }
+      if (character.pixelY >= targetY) {
+        character.pixelY = targetY;
+        doneY = true;
+      }
     } else if (character.pixelY > targetY) {
       character.pixelY -= speed;
-      if (character.pixelY <= targetY) { character.pixelY = targetY; doneY = true; }
-    } else { doneY = true; }
+      if (character.pixelY <= targetY) {
+        character.pixelY = targetY;
+        doneY = true;
+      }
+    } else {
+      doneY = true;
+    }
 
     gameLoop();
 
@@ -1040,6 +1095,8 @@ function showBossFightPrompt(bossKey) {
 }
 
 function startBossFight(bossKey) {
+  if (document.activeElement === chatInput) return;
+
   const boss = bosses[bossKey];
   if (!boss) return;
 
@@ -1090,6 +1147,15 @@ function startBossFight(bossKey) {
     };
 
     document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", (e) => {
+      // Ikke trigge hvis du allerede skriver
+      if (document.activeElement === chatInput) return;
+    
+      if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        chatInput.focus();
+      }
+    });
 
     const timer = setInterval(() => {
       elapsed += 20;
@@ -1130,10 +1196,15 @@ function endBossFight(playerWon, boss) {
       showFishingBox("Boss defeated! But it dropped nothing...");
     }
   } else {
-    const msg = "You died... You return to Gatherers Hub.";
-    const loc = levelDefinitions["gatherers-hub"];
-    loadLevel(loc.index, loc.x, loc.y);
-    showFishingBox(msg);
+    isDead = true;
+    showDeathScreen();
+    setTimeout(() => {
+      document.getElementById("deathScreen").remove();
+      const loc = levelDefinitions["gatherers-hub"];
+      loadLevel(loc.index, loc.x, loc.y);
+      isDead = false;
+      showFishingBox("You died... You return to Gatherers Hub.");
+    }, 3000); // vent 3 sekunder før respawn
   }
 
   setTimeout(cancelFishing, 3000);
@@ -1181,6 +1252,8 @@ function fishGotBite() {
 }
 
 function startCatchMinigame(creature, isWater) {
+  if (document.activeElement === chatInput) return;
+
   const settings = raritySettings[creature.rarity] || { time: 4000, color: "white" };
   const totalTime = settings.time;
   const color = settings.color;
@@ -1227,6 +1300,15 @@ function startCatchMinigame(creature, isWater) {
   }
 
   document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keydown", (e) => {
+    // Ikke trigge hvis du allerede skriver
+    if (document.activeElement === chatInput) return;
+  
+    if (e.key === "t" || e.key === "T") {
+      e.preventDefault();
+      chatInput.focus();
+    }
+  });
 
   const countdown = setInterval(() => {
     if (fishCaught) {
@@ -1470,10 +1552,21 @@ function renderWorldMap() {
 }
 
 document.addEventListener("keydown", (e) => {
+  if (document.activeElement === chatInput) return;
+
   if (document.activeElement.tagName === "INPUT") return;
   if (e.key === "m") {
     showMap = !showMap;
     gameLoop();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  // Ikke trigge hvis du allerede skriver
+  if (document.activeElement === chatInput) return;
+
+  if (e.key === "t" || e.key === "T") {
+    e.preventDefault();
+    chatInput.focus();
   }
 });
 
@@ -1693,6 +1786,32 @@ function loadGame() {
   }
 }
 
+function showDeathScreen() {
+  const overlay = document.createElement("div");
+  overlay.id = "deathScreen";
+  overlay.style.position = "absolute";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0, 0, 0, 0.8)";
+  overlay.style.backdropFilter = "blur(4px) grayscale(100%)";
+  overlay.style.display = "flex";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+  overlay.style.zIndex = "10000";
+
+  const text = document.createElement("h1");
+  text.textContent = "You died";
+  text.style.color = "white";
+  text.style.fontSize = "64px";
+  text.style.fontFamily = "monospace";
+  text.style.textShadow = "0 0 10px red";
+
+  overlay.appendChild(text);
+  document.body.appendChild(overlay);
+}
+
 // === Troféjournal ===
 let trophyJournalOpen = false;
 let currentTrophyType = "water"; // kan være "water", "land" eller "boss"
@@ -1741,12 +1860,14 @@ function renderTrophyJournal() {
   }
 
   const list = fullList
-    .filter(creature => creature.rarity !== "secret" || trophies[creature.name])
-    .slice()
-    .sort((a, b) => {
-      const order = { common: 1, rare: 2, legendary: 3, mythical: 4, secret: 5 };
-      return (order[a.rarity] || 99) - (order[b.rarity] || 99);
-    });
+  .filter(creature => creature.rarity !== "secret" || trophies[creature.name])
+  .slice()
+  .sort((a, b) => {
+    const order = { common: 1, rare: 2, legendary: 3, mythical: 4, secret: 5 };
+    return (order[a.rarity] || 99) - (order[b.rarity] || 99);
+
+  });
+
 
   // === INFOBOKS hover ===
   let hoverInfoBox = document.getElementById("hoverInfoBox");
@@ -1860,9 +1981,20 @@ function renderTrophyJournal() {
 
 // === Tast for å åpne journal ===
 document.addEventListener("keydown", (e) => {
+  if (document.activeElement === chatInput) return;
+
   if (document.activeElement.tagName === "INPUT") return;
   if (e.key === "j") {
     toggleTrophyJournal();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  // Ikke trigge hvis du allerede skriver
+  if (document.activeElement === chatInput) return;
+
+  if (e.key === "t" || e.key === "T") {
+    e.preventDefault();
+    chatInput.focus();
   }
 });
 
@@ -1936,38 +2068,38 @@ function createXPUI() {
   updateXPBar();
 
   // === Chatbox ===
-  const chatWrapper = document.createElement("div");
-  chatWrapper.style.display = "flex";
-  chatWrapper.style.marginTop = "10px";
-  chatWrapper.style.gap = "10px";
-  chatWrapper.style.alignItems = "center";
-  chatWrapper.style.justifyContent = "center";
-
-  const chatLabel = document.createElement("span");
-  chatLabel.textContent = "Chat:";
-  chatLabel.style.color = "white";
-
-  const chatInput = document.createElement("input");
-  chatInput.id = "commandInput";
-  chatInput.type = "text";
-  chatInput.placeholder = "Type command...";
-  chatInput.style.background = "#222";
-  chatInput.style.color = "white";
-  chatInput.style.border = "1px solid #888";
-  chatInput.style.padding = "5px";
-  chatInput.style.fontFamily = "monospace";
-  chatInput.style.width = "150px";
-
-  chatInput.addEventListener("keydown", (e) => {
+  const chatInput = document.getElementById("chatInput");
+  const chatMessages = document.getElementById("chatMessages");
+  
+  chatInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
-      handleCommand(chatInput.value.trim());
+      const input = chatInput.value.trim();
+      if (input.length > 300) {
+        appendChatMessage("System: Message too long (max 300 characters).");
+        chatInput.value = "";
+        return;
+      }
+      if (!input) return;
+      
+      if (input.startsWith("/")) {
+        // Dette er en kommando – IKKE vis i chat
+        handleCommand(input);
+      } else {
+        // Vanlig melding – vis i chat
+        appendChatMessage(playerData.name + ": " + input);
+      }
+  
       chatInput.value = "";
+      chatInput.blur();
     }
   });
-
-  chatWrapper.appendChild(chatLabel);
-  chatWrapper.appendChild(chatInput);
-  xpBarWrapper.appendChild(chatWrapper);
+  
+  function appendChatMessage(text) {
+    const msg = document.createElement("div");
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
   
 }
 
