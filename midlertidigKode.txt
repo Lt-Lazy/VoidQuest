@@ -1,114 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Movement</title>
-    <style>
-        body {
-            margin: 0;
-            background-color: gray;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            width: 800px;
-            height: 600px;
-            background-color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        .playground {
-            width: 600px;
-            height: 400px;
-            background-image: url('background.png'); /* Add background with trees/roads */
-            background-size: cover;
-            position: relative;
-            border: 2px solid black;
-        }
-        .player {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: top 0.5s linear, left 0.5s linear;
-        }
-        .restricted-zone {
-            position: absolute;
-            background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="playground" id="playground" onclick="movePlayer(event)">
-            <div class="player" id="player"></div>
-        </div>
-    </div>
+Oppdateringer fra Sandefjord
 
-    <script>
-        const restrictedZones = [
-            { x: -50, y: -50, width: 180, height: 480 }, // Example restricted area
-            { x: 300, y: 200, width: 150, height: 100 }
-        ];
+- Lagt til lavaTile, LavaCoble
+- Lagt til Beetle og golden beetle, (bare finnes i paths)
 
-        function drawRestrictedZones() {
-            const playground = document.getElementById("playground");
-            restrictedZones.forEach(zone => {
-                const div = document.createElement("div");
-                div.classList.add("restricted-zone");
-                div.style.left = `${zone.x}px`;
-                div.style.top = `${zone.y}px`;
-                div.style.width = `${zone.width}px`;
-                div.style.height = `${zone.height}px`;
-                playground.appendChild(div);
-            });
-        }
 
-        function isWalkable(x, y) {
-            return !restrictedZones.some(zone => 
-                x >= zone.x && x <= zone.x + zone.width && 
-                y >= zone.y && y <= zone.y + zone.height
-            );
-        }
 
-        function findNearestWalkable(x, y) {
-            let closestX = x, closestY = y;
-            restrictedZones.forEach(zone => {
-                if (x >= zone.x && x <= zone.x + zone.width) {
-                    closestX = x < zone.x ? zone.x - 10 : zone.x + zone.width + 10;
-                }
-                if (y >= zone.y && y <= zone.y + zone.height) {
-                    closestY = y < zone.y ? zone.y - 10 : zone.y + zone.height + 10;
-                }
-            });
-            return { x: closestX, y: closestY };
-        }
 
-        function movePlayer(event) {
-            const player = document.getElementById("player");
-            const playground = document.querySelector(".playground");
-            
-            const rect = playground.getBoundingClientRect();
-            let x = event.clientX - rect.left - (player.offsetWidth / 2);
-            let y = event.clientY - rect.top - (player.offsetHeight / 2);
-            
-            if (!isWalkable(x, y)) {
-                ({ x, y } = findNearestWalkable(x, y));
-            }
-            
-            player.style.left = `${x}px`;
-            player.style.top = `${y}px`;
-        }
 
-        drawRestrictedZones();
-    </script>
-</body>
-</html>
+
+const levels = [
+    {
+      //Spenningsbyen "0"
+      layout: [
+        'TTTTTTTTTTTTTTTTTTsCCCCC',
+        'TGGGGGGGGGGGGGGGGGGsCRRR',
+        'TGGGGGTTTTpppGGGGGGsCPPP',
+        'TGGGTTTTTGpcpGGGGGGGsPDP',
+        'TGGGGTTTTGpppppGGGGGGsGs',
+        'TGGGGGGTTTGGpppppppppppV',
+        'TRRRRGGGGGGGGpppGGGGGGGT',
+        'TRRRRGTTGGGGGGpGGGGGGGGT',
+        'TBBBBTTTTTTGGGpGGGGGSSSS',
+        'TBDBBFFFFFGppppGGGGSWWWW',
+        'TpppppppppppGGGGGGSWWWWW',
+        'TTTTTTTTTTTTTTTTTSWWWWWW'
+      ],
+      startX: 4,
+      startY: 10,
+      background: 'grass'
+    },
+    {
+      //GATHERERS HUB "1"
+      layout: [
+        ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],
+        ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],
+        ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'G1', 'G1', 'P1', 'P1', 'G1', 'B1'],
+        ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'G1', 'G1', 'P1', 'P1', 'G1', 'B1'],
+        ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'G1', 'G1', 'P1', 'P1', 'G1', 'B1'],
+        ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'G1', 'G1', 'P1', 'P1', 'G1', 'B1'],
+        ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'G1', 'G1', 'P1', 'P1', 'G1', 'B1'],
+        ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'G1', 'G1', 'P1', 'P1', 'G1', 'B1'],
+      ],
+      startX: 5,
+      startY: 5,
+      background: 'plank'
+    },
+    {
+      // DEEP VOID CAVE SPENNINGSBYEN "2"
+      layout: [
+        'CCsssVssCsWW',
+        'CsCssCCsCCsW',
+        'CsCCCCCCCCCC',
+        'CCCsCCCCCCsC',
+        'CsCsssCCCCsC',
+        'CCCCsCCssCsC',
+        'CCCCsCCCCCsC',
+        'CCCCsCCCCCCC'
+      ],
+      startX: 5,
+      startY: 5,
+      background: 'coblestone'
+    },
+    {
+      // HUS HUB TROFE ROM "3"
+      layout: [
+        'BPPPPPPPPPPB',
+        'BPPPPPPPPPPB',
+        'BPPPPPPPPPPB',
+        'BPPPPPPPPPPB',
+        'BPPPPPPPPPPB',
+        'BPPPPPPPPPPB',
+        'BPPPPPPPPPPB',
+        'BBBBBBBDBBBB'
+      ],
+      startX: 5,
+      startY: 5,
+      background: 'plank'
+    },
+    {
+      // STI-1 "4"
+      layout: [
+        'TTTTTTTTTTTTTWWWTTTTTTTT',
+        'TTTGGppppGGTTWWWGGTTTGGT',
+        'TGGGppGGppGGTWWWGGGGGGGT',
+        'VppppGTTGpppGWWWFFFFFppV',
+        'TGGGGTTTTGGppPPPppGGppGT',
+        'TGGGTTTTTTGGpPPPpppppGGT',
+        'TTTTTTTTTTTTTWWWTTTTTTTT'
+      ],
+      startX: 5,
+      startY: 5,
+      background: 'grass'
+    },
+    {
+      //YURBORG "5"
+      layout: [
+        'G1GGGTTTTTTTTTTTTRRRRRRRRRRR',
+        'G1GGGGGGTTTTTTTTGRRRRRRRRRRR',
+        'GGGGGGGGGGGTTTGGGBBBBBBBBBBB',
+        'GGGGGGGGGGGGGGGGGBBBBBBBBBBB',
+        'GGGGGGGGGGGGpppGGGGGGGGGGGGG',
+        'VppppppppGGppGppGGGppppppGGG',
+        'GGGGGGGGppppGGGpppppGGGGGGGG',
+        'GGGGGGGGGGGppGppGGGGGGGRRRRR',
+        'GGGGGGGGGGGGpppppppGGGGRRRRR',
+        'GTTGGGGGGGGGGpGGGGppGGGBBBBB',
+        'TTTTGGGGGGGGppGGGGGpppGBBDBB',
+        'TTTTTTGGGGGGpGGGGGGGGppppppp',
+        'TTTTTTTTGGGGpGGGGGGGGGGGGGGG',
+        'TTTTTTTTTTTTFTTTTTTTTTTTTTTT',
+        'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
+        'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
+        'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
+        'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
+        'WWWWWWWWWWWPPPWWWWWWWWWWWWWW'
+      ],
+      startX: 4,
+      startY: 4,
+      background: 'grass'
+    },
+    {
+      // CASINO YURBORG "6"
+      layout: [
+        'BBBBBBBBBBBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBBBBBBBBBBB',
+        'BPPPPPPPPPPPPPPPPPPPPPPB',
+        'BPPPPPPPPPPPPPPPPPPPPPPB',
+        'BPPPPPPPPPPPPPPPPPPPPPPB',
+        'BPPPPPPPPPPPPPPPPPPPPPPB',
+        'BPPPPVPPPPPPPPPPPPPPPPPB'
+      ],
+      startX: 5,
+      startY: 5,
+      background: 'plank'
+    },
+    {
+      // GATHERERS HUB YURBORG "7"
+      layout: [
+        'BBBBBBBBBBBBBBB',
+        'BBBBBBBBBBBBBBB',
+        'BPPPPPPPPPPPPPB',
+        'B11PPPPPPPPPPPB',
+        'BPPPPPPPPPPPPPB',
+        'BPPPPPPPPPPPPPB',
+        'BPPPPPPVPPPPPPB'
+      ],
+      startX: 3,
+      startY: 3,
+      background: 'plank'
+    },
+    {
+      // VEILED ABYSS "8"
+      layout: [
+        'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC',
+        'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC'
+      ],
+      startX: 5,
+      startY: 5,
+      background: 'coblestone'
+    },
+    
+  ];

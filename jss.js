@@ -1,1 +1,2418 @@
-function _0x6179(_0x25102c,_0x2cce5d){const _0x54e181=_0x54e1();return _0x6179=function(_0x61793,_0x2caf85){_0x61793=_0x61793-0x84;let _0x163ce6=_0x54e181[_0x61793];return _0x163ce6;},_0x6179(_0x25102c,_0x2cce5d);}const _0x323031=_0x6179;(function(_0x375ffe,_0x3af9af){const _0x1dfb3b=_0x6179,_0x48d94c=_0x375ffe();while(!![]){try{const _0x20cf19=-parseInt(_0x1dfb3b(0xca))/0x1*(parseInt(_0x1dfb3b(0x136))/0x2)+parseInt(_0x1dfb3b(0x241))/0x3*(parseInt(_0x1dfb3b(0x1de))/0x4)+-parseInt(_0x1dfb3b(0xea))/0x5+parseInt(_0x1dfb3b(0x1bd))/0x6*(-parseInt(_0x1dfb3b(0x215))/0x7)+parseInt(_0x1dfb3b(0xe8))/0x8+parseInt(_0x1dfb3b(0x154))/0x9+parseInt(_0x1dfb3b(0x125))/0xa;if(_0x20cf19===_0x3af9af)break;else _0x48d94c['push'](_0x48d94c['shift']());}catch(_0x20b25b){_0x48d94c['push'](_0x48d94c['shift']());}}}(_0x54e1,0x60e18));const canvas=document[_0x323031(0x87)]('gameCanvas'),ctx=canvas[_0x323031(0xc3)]('2d'),tileSize=0x28;let menuOpen=![];const mapData=[{'name':'Spenningsbyen','x':0x14,'y':0x14,'type':'city','color':_0x323031(0x186)},{'name':_0x323031(0x193),'x':0x23,'y':0x14,'type':_0x323031(0xe7),'color':_0x323031(0x221)},{'name':_0x323031(0x193),'x':0x32,'y':0x14,'type':_0x323031(0xe7),'color':_0x323031(0x221)},{'name':_0x323031(0x193),'x':0x41,'y':0x14,'type':'road','color':_0x323031(0x221)},{'name':_0x323031(0x193),'x':0x50,'y':0x14,'type':'road','color':_0x323031(0x221)},{'name':_0x323031(0x13e),'x':0x5f,'y':0x14,'type':_0x323031(0xaa),'color':'dodgerblue'}],tileImages={'grass':new Image(),'coblestone':new Image(),'tree':new Image(),'brick':new Image(),'roof':new Image(),'plank':new Image(),'fence':new Image(),'table':new Image(),'door':new Image(),'water':new Image(),'sand':new Image(),'stoneSingle':new Image(),'campfire':new Image(),'voidgate':new Image()};tileImages[_0x323031(0xc5)][_0x323031(0x164)]=_0x323031(0x209),tileImages[_0x323031(0x8a)][_0x323031(0x164)]=_0x323031(0x16c),tileImages[_0x323031(0x1c9)]['src']='images/tiles/brickTile.png',tileImages[_0x323031(0x9b)][_0x323031(0x164)]=_0x323031(0x189),tileImages['plank'][_0x323031(0x164)]=_0x323031(0x205),tileImages[_0x323031(0x1a7)][_0x323031(0x164)]=_0x323031(0x1cb),tileImages[_0x323031(0x1ea)][_0x323031(0x164)]='images/tiles/fenceTile.png',tileImages[_0x323031(0xe1)][_0x323031(0x164)]='images/tiles/tableTile.png',tileImages[_0x323031(0x116)][_0x323031(0x164)]='images/tiles/coblestoneTile.png',tileImages[_0x323031(0x231)][_0x323031(0x164)]='images/tiles/waterTile.png',tileImages[_0x323031(0x20d)][_0x323031(0x164)]=_0x323031(0xec),tileImages[_0x323031(0x1a5)][_0x323031(0x164)]=_0x323031(0x15f),tileImages[_0x323031(0x124)][_0x323031(0x164)]=_0x323031(0x217),tileImages[_0x323031(0x233)][_0x323031(0x164)]='images/tiles/voidgateTile.png';const nonWalkableTiles=[_0x323031(0x8a),'brick',_0x323031(0x1ea),_0x323031(0xe1),_0x323031(0x231),_0x323031(0x1a5),_0x323031(0x124)],tilesAbovePlayer=[_0x323031(0x9b),_0x323031(0x8a)],tileMapping={'G':_0x323031(0xc5),'C':_0x323031(0x116),'T':'tree','B':'brick','R':'roof','P':_0x323031(0x127),'F':_0x323031(0x1ea),'F':_0x323031(0x1ea),'1':_0x323031(0xe1),'D':_0x323031(0x1a7),'W':'water','S':'sand','s':'stoneSingle','c':_0x323031(0x124),'V':'voidgate'},characterImages={'up':new Image(),'down':new Image(),'left':new Image(),'right':new Image()};characterImages['up'][_0x323031(0x164)]=_0x323031(0x141),characterImages[_0x323031(0xac)][_0x323031(0x164)]=_0x323031(0x1b7),characterImages['left'][_0x323031(0x164)]=_0x323031(0x14e),characterImages[_0x323031(0x170)][_0x323031(0x164)]=_0x323031(0x195);const fishPools={0x0:[{'name':_0x323031(0xb3),'rarity':_0x323031(0x201),'image':_0x323031(0x14c),'chance':0x320,'price':0x5},{'name':_0x323031(0x181),'rarity':_0x323031(0x201),'image':_0x323031(0x239),'chance':0x1f4,'price':0xe},{'name':_0x323031(0x208),'rarity':_0x323031(0x1f6),'image':_0x323031(0x1ae),'chance':0x31,'price':0x4a}],0x2:[{'name':'Grodr','rarity':_0x323031(0x201),'image':'images/creatures/vann/grodr.png','chance':0x320,'price':0x5},{'name':_0x323031(0x181),'rarity':'common','image':_0x323031(0x239),'chance':0x1f4,'price':0xa},{'name':_0x323031(0x12e),'rarity':_0x323031(0x1cc),'image':_0x323031(0x119),'chance':0xa,'price':0xda},{'name':_0x323031(0xc7),'rarity':_0x323031(0x1f6),'image':'images/creatures/vann/skuggosk.png','chance':0x50,'price':0x27}],0x5:[{'name':_0x323031(0x151),'rarity':_0x323031(0x201),'image':'images/creatures/vann/krap.png','chance':0x320,'price':0xf},{'name':_0x323031(0x192),'rarity':_0x323031(0x1f6),'image':_0x323031(0x158),'chance':0x3c,'price':0x39},{'name':_0x323031(0x8d),'rarity':'legendary','image':_0x323031(0x229),'chance':0x9,'price':0x2e7}]},treeCreaturePools={0x0:[{'name':_0x323031(0xa0),'rarity':'common','image':'images/creatures/land/mouseGrey.png','chance':0x384,'price':0x10},{'name':_0x323031(0x180),'rarity':_0x323031(0x1f6),'image':'images/creatures/land/poisetle.png','chance':0x50,'price':0x2e},{'name':_0x323031(0x12c),'rarity':_0x323031(0x1f6),'image':'images/creatures/land/albinoMouse.png','chance':0x32,'price':0x43}],0x4:[{'name':_0x323031(0xa0),'rarity':_0x323031(0x201),'image':'images/creatures/land/mouseGrey.png','chance':0x384,'price':0x10},{'name':_0x323031(0x180),'rarity':_0x323031(0x1f6),'image':_0x323031(0x97),'chance':0x50,'price':0x2e},{'name':'Albino\x20Mouse','rarity':'rare','image':_0x323031(0x168),'chance':0x32,'price':0x43}],0x5:[{'name':'Grey\x20Mouse','rarity':_0x323031(0x201),'image':_0x323031(0x120),'chance':0x384,'price':0x10},{'name':'Poisetle','rarity':_0x323031(0x1f6),'image':'images/creatures/land/poisetle.png','chance':0x50,'price':0x2e},{'name':_0x323031(0x12c),'rarity':_0x323031(0x1f6),'image':_0x323031(0x168),'chance':0x32,'price':0x43}]},raritySettings={'common':{'time':0x1770,'color':_0x323031(0x103),'border':_0x323031(0x103)},'uncommon':{'time':0x1388,'color':_0x323031(0x1b0),'border':'green'},'rare':{'time':0x7d0,'color':_0x323031(0xe2),'border':_0x323031(0xe2)},'legendary':{'time':0x4b0,'color':'gold','border':_0x323031(0x117)},'Mythical':{'time':0x3e8,'color':_0x323031(0x20e),'border':_0x323031(0x138)},'secret':{'time':0x9c4,'color':_0x323031(0x167),'border':_0x323031(0x167)}},npcs=[{'name':_0x323031(0x223),'image':_0x323031(0x196),'x':0x2,'y':0x2,'level':0x1,'type':'shop','dialog':[_0x323031(0x130)]},{'name':_0x323031(0x122),'image':'images/player/man/pixelmanndown.png','x':0xa,'y':0x6,'level':0x1,'type':'lore','dialog':[_0x323031(0x1f0),_0x323031(0x218),'This\x20is\x20a\x20town\x20located\x20far\x20to\x20the\x20north-west\x20in\x20the\x20continent\x20of\x20Voidlore.','I\x20am\x20a\x20fellow\x20Path\x20Seeker\x20myself,\x20and\x20for\x20now\x20i\x20have\x20dedicated\x20myself\x20to\x20help\x20fellow\x20Path\x20Seekers!',_0x323031(0x1d1),_0x323031(0x1be),_0x323031(0x17e),_0x323031(0x1a4),_0x323031(0x100),_0x323031(0x84),_0x323031(0x1d7),_0x323031(0x222),_0x323031(0x23e),'Last\x20tip,\x20you\x20can\x20zoom\x20in\x20and\x20out\x20after\x20your\x20liking\x20for\x20better\x20experience.',_0x323031(0x86)]},{'name':_0x323031(0x17c),'image':_0x323031(0x19a),'x':0x13,'y':0x3,'level':0x0,'type':'lore','dialog':[_0x323031(0x11a),_0x323031(0xb5),_0x323031(0xd6),'I\x20originate\x20from\x20a\x20town\x20to\x20the\x20east\x20called\x20Yurborg,\x20not\x20to\x20far\x20away.',_0x323031(0x99),_0x323031(0x23d),_0x323031(0x8c),_0x323031(0x88),_0x323031(0x1cf),'If\x20you\x20havent\x20yet\x20seen\x20it.\x20There\x20is\x20a\x20trophy\x20hanging\x20over\x20the\x20door\x20in\x20to\x20the\x20cave,\x20that\x20is\x20the\x20legendary\x20Deep\x20Void\x20Lure!\x20I\x20caught\x20it\x20myself.','My\x20tip\x20was\x20to\x20fish\x20in\x20my\x20old\x20pear\x20here,\x20you\x20will\x20get\x20many\x20trophies\x20to\x20show\x20off.',_0x323031(0x147)]},{'name':'Deep\x20Void\x20Lure','image':_0x323031(0x119),'x':0x16,'y':0x2,'level':0x0,'type':_0x323031(0xab),'dialog':[_0x323031(0x1ed),_0x323031(0xff),_0x323031(0x21e)]},{'name':'Oleander\x20the\x20Hunter','image':_0x323031(0x19b),'x':0x1,'y':0x2,'level':0x7,'type':_0x323031(0x21d),'dialog':['Dont\x20touch\x20my\x20creatures!',_0x323031(0xfd)]},{'name':_0x323031(0x190),'image':_0x323031(0x9d),'x':0x0,'y':0x0,'level':0x5,'type':_0x323031(0x1e7),'dialog':[_0x323031(0xdb),_0x323031(0x228)]},{'name':_0x323031(0x180),'image':_0x323031(0x97),'x':0x5,'y':0x2,'level':0x7,'type':_0x323031(0xab),'dialog':[_0x323031(0x1b8),'SSssssSSSsss']}],npcShopItems={'Voidlore\x20Merchant':[{'name':_0x323031(0x22a),'image':_0x323031(0x18e),'price':0xa,'description':_0x323031(0x108),'once':!![]}]};let trophies={};const character={'x':0x0,'y':0x0,'pixelX':0x0,'pixelY':0x0,'direction':_0x323031(0xac),'moving':![]},keys={'w':![],'a':![],'s':![],'d':![]},doorMap={0x0:{'2,9':{'targetLevel':0x1,'targetX':0xa,'targetY':0x2},'22,3':{'targetLevel':0x2,'targetX':0x5,'targetY':0x1},'23,5':{'targetLevel':0x4,'targetX':0x1,'targetY':0x3}},0x1:{'10,1':{'targetLevel':0x0,'targetX':0x2,'targetY':0xa},'7,1':{'targetLevel':0x3,'targetX':0x7,'targetY':0x6}},0x2:{'5,0':{'targetLevel':0x0,'targetX':0x16,'targetY':0x4}},0x3:{'7,7':{'targetLevel':0x1,'targetX':0x7,'targetY':0x2}},0x4:{'0,3':{'targetLevel':0x0,'targetX':0x16,'targetY':0x5},'23,3':{'targetLevel':0x5,'targetX':0x1,'targetY':0x5}},0x5:{'0,5':{'targetLevel':0x4,'targetX':0x16,'targetY':0x3},'25,10':{'targetLevel':0x7,'targetX':0x7,'targetY':0x5}},0x6:{'5,5':{'targetLevel':0x5,'targetX':0x5,'targetY':0x2}},0x7:{'7,6':{'targetLevel':0x5,'targetX':0x19,'targetY':0xb}}},levels=[{'layout':[_0x323031(0xc8),_0x323031(0x18d),_0x323031(0x1ac),_0x323031(0xe5),_0x323031(0x1c4),_0x323031(0x1ad),_0x323031(0x211),_0x323031(0xfc),_0x323031(0x1c1),_0x323031(0x22b),_0x323031(0xbb),_0x323031(0x20f)],'startX':0x4,'startY':0xa,'background':_0x323031(0xc5)},{'layout':['BBBBBBBBBBBB',_0x323031(0x163),'BPPPPPPPPPPB',_0x323031(0x194),_0x323031(0x137),_0x323031(0x137),'BPPPPPPPPPPB','BPPPPPPPPPPB'],'startX':0x5,'startY':0x5,'background':_0x323031(0x127)},{'layout':[_0x323031(0x9f),_0x323031(0xc2),_0x323031(0x15d),_0x323031(0xc4),_0x323031(0x96),_0x323031(0x1ef),_0x323031(0x1a0),_0x323031(0x1a3)],'startX':0x5,'startY':0x5,'background':'coblestone'},{'layout':[_0x323031(0x137),'BPPPPPPPPPPB',_0x323031(0x137),'BPPPPPPPPPPB',_0x323031(0x137),'BPPPPPPPPPPB',_0x323031(0x137),'BBBBBBBDBBBB'],'startX':0x5,'startY':0x5,'background':_0x323031(0x127)},{'layout':['TTTTTTTTTTTTTTTTTTTTTTTT',_0x323031(0x1af),_0x323031(0x1af),_0x323031(0x1db),_0x323031(0x1af),_0x323031(0x1af),_0x323031(0x238)],'startX':0x5,'startY':0x5,'background':_0x323031(0xc5)},{'layout':['G1GGGGGGGGGGGGGGGRRRRRRRRRRR',_0x323031(0x198),_0x323031(0x14d),_0x323031(0x14d),_0x323031(0xa8),'VGGGGGGGGGGGGGGGGGGGGGGGGGGG',_0x323031(0xa8),'GGGGGGGGGGGGGGGGGGGGGGGRRRRR',_0x323031(0x1a1),_0x323031(0x152),_0x323031(0x110),_0x323031(0x1c8),_0x323031(0x237),_0x323031(0xbe),'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',_0x323031(0x17f),_0x323031(0x105),_0x323031(0x105),_0x323031(0x91)],'startX':0x4,'startY':0x4,'background':_0x323031(0xc5)},{'layout':[_0x323031(0xf3),_0x323031(0xf3),_0x323031(0x23a),_0x323031(0x23a),_0x323031(0x23a),_0x323031(0x23a),_0x323031(0x13d)],'startX':0x5,'startY':0x5,'background':_0x323031(0x127)},{'layout':[_0x323031(0x10b),'BBBBBBBBBBBBBBB','BPPPPPPPPPPPPPB','B11PPPPPPPPPPPB',_0x323031(0xa1),'BPPPPPPPPPPPPPB','BPPPPPPVPPPPPPB'],'startX':0x3,'startY':0x3,'background':_0x323031(0x127)}],sounds={'music':{0x0:new Audio('musikk/introVoidQuestMusic.wav'),0x5:new Audio(_0x323031(0x160))},'sfx':{'startFishing':new Audio('lyder/kasteFiskeStang.wav'),'gotBite':new Audio(_0x323031(0xdf)),'catchSuccess':new Audio(_0x323031(0x1bb)),'catchFail':new Audio(_0x323031(0x144))}};let masterVolume=0.5;const savedVolume=localStorage[_0x323031(0x128)](_0x323031(0xb2));savedVolume!==null&&(masterVolume=parseFloat(savedVolume));function toggleSettings(){const _0x4d9fc2=_0x323031,_0x3d3654=document['getElementById']('settingsMenu');_0x3d3654[_0x4d9fc2(0x157)][_0x4d9fc2(0x118)]=_0x3d3654[_0x4d9fc2(0x157)][_0x4d9fc2(0x118)]===_0x4d9fc2(0x1ec)?_0x4d9fc2(0x8f):'none';}function confirmDeleteSave(){const _0xb076e4=_0x323031,_0x3fb01a=confirm(_0xb076e4(0xd2));_0x3fb01a&&deleteSave();}function deleteSave(){const _0x5af1dd=_0x323031;localStorage[_0x5af1dd(0x20c)](_0x5af1dd(0x188)),localStorage[_0x5af1dd(0x20c)](_0x5af1dd(0xb2)),alert(_0x5af1dd(0x1c3)),location[_0x5af1dd(0x21c)]();}function updateVolume(_0x563652){const _0x563858=_0x323031;masterVolume=parseFloat(_0x563652),Object['values'](sounds[_0x563858(0x10a)])[_0x563858(0x227)](_0x364793=>{const _0xd4fb1c=_0x563858;_0x364793[_0xd4fb1c(0x1f4)]=masterVolume;}),Object[_0x563858(0x200)](sounds[_0x563858(0x203)])[_0x563858(0x227)](_0x5e790c=>{const _0x873dab=_0x563858;_0x5e790c[_0x873dab(0x1f4)]=masterVolume;}),localStorage[_0x563858(0x129)](_0x563858(0xb2),masterVolume);}let currentMusic=null,currentLevel=0x0,map=[],mapWidth=0x0,mapHeight=0x0,currentBackground=_0x323031(0xc5),isFishing=![],fishingBox=null,fishTimeout=null,biteTimeout=null,currentFish=null,fishCaught=![],inventory=[],inventoryOpen=![],gold=0x0;function loadLevel(_0x1d81a7,_0x5ec949=null,_0x2d264a=null){const _0x320a2b=_0x323031,_0x33bbe0={0x0:_0x320a2b(0xe3),0x1:'Gatherers\x20hub',0x2:'Deep-Void-Cave',0x3:_0x320a2b(0xe0),0x4:_0x320a2b(0x193),0x5:_0x320a2b(0x13e),0x6:_0x320a2b(0x161),0x7:_0x320a2b(0xa2)},_0x518ed1=levels[_0x1d81a7];currentLevel=_0x1d81a7;const _0x31b5d1=document[_0x320a2b(0x87)](_0x320a2b(0xee));_0x31b5d1[_0x320a2b(0xba)]=_0x33bbe0[_0x1d81a7]||_0x320a2b(0x1bc)+_0x1d81a7;currentMusic&&(currentMusic[_0x320a2b(0xc1)](),currentMusic[_0x320a2b(0x106)]=0x0);currentMusic=sounds[_0x320a2b(0x10a)][_0x1d81a7];currentMusic&&(currentMusic[_0x320a2b(0xd7)]=!![],currentMusic[_0x320a2b(0x1f4)]=masterVolume,currentMusic[_0x320a2b(0x220)]());map=_0x518ed1['layout'][_0x320a2b(0x11f)](_0x2e4969=>_0x2e4969[_0x320a2b(0x146)]('')[_0x320a2b(0x11f)](_0x2533cb=>tileMapping[_0x2533cb])),mapHeight=map[_0x320a2b(0x1e1)],mapWidth=map[0x0]['length'],canvas[_0x320a2b(0x1d9)]=mapWidth*tileSize,canvas['height']=mapHeight*tileSize,currentBackground=_0x518ed1[_0x320a2b(0x224)]||_0x320a2b(0xc5),character['x']=_0x5ec949!==null?_0x5ec949:_0x518ed1[_0x320a2b(0xfa)],character['y']=_0x2d264a!==null?_0x2d264a:_0x518ed1[_0x320a2b(0xb4)],character[_0x320a2b(0xae)]=character['x']*tileSize,character['pixelY']=character['y']*tileSize,gameLoop();const _0x5d2a84=document[_0x320a2b(0x87)](_0x320a2b(0xc6));if(_0x5d2a84)_0x5d2a84[_0x320a2b(0x18f)]();}function drawMap(){const _0x131671=_0x323031;for(let _0x3f4b40=0x0;_0x3f4b40<mapHeight;_0x3f4b40++){for(let _0x38fa46=0x0;_0x38fa46<mapWidth;_0x38fa46++){const _0x2e59f5=map[_0x3f4b40][_0x38fa46];ctx[_0x131671(0xf5)](tileImages[currentBackground],_0x38fa46*tileSize,_0x3f4b40*tileSize,tileSize,tileSize),_0x2e59f5!=='grass'&&ctx[_0x131671(0xf5)](tileImages[_0x2e59f5],_0x38fa46*tileSize,_0x3f4b40*tileSize,tileSize,tileSize);}}npcs[_0x131671(0x227)](_0x4328a6=>{const _0xb79b14=_0x131671;if(_0x4328a6[_0xb79b14(0x166)]===currentLevel){const _0x40ad5f=new Image();_0x40ad5f['src']=_0x4328a6['image'],ctx[_0xb79b14(0xf5)](_0x40ad5f,_0x4328a6['x']*tileSize,_0x4328a6['y']*tileSize,tileSize,tileSize);}});}function changeTile(_0x20a22a,_0x2f3ca1,_0x3b8f47,_0x1c01df){const _0x2c840e=_0x323031,_0x4eafdf=levels[_0x20a22a][_0x2c840e(0x14a)][_0x3b8f47],_0x2cf8cd=_0x4eafdf[_0x2c840e(0x149)](0x0,_0x2f3ca1)+_0x1c01df+_0x4eafdf[_0x2c840e(0x149)](_0x2f3ca1+0x1);levels[_0x20a22a][_0x2c840e(0x14a)][_0x3b8f47]=_0x2cf8cd,currentLevel===_0x20a22a&&(map[_0x3b8f47][_0x2f3ca1]=tileMapping[_0x1c01df],gameLoop());}let playerData={'gender':null,'name':null};function showCharacterCreation(){const _0x155b71=_0x323031,_0x30d8e7=document[_0x155b71(0x1c7)](_0x155b71(0x13f));_0x30d8e7['id']=_0x155b71(0x112),_0x30d8e7[_0x155b71(0x157)][_0x155b71(0xf7)]=_0x155b71(0x10f),_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x1c2)]='0',_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x17d)]='0',_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x1d9)]=_0x155b71(0x20a),_0x30d8e7['style']['height']='100%',_0x30d8e7['style']['background']=_0x155b71(0x135),_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x13b)]='50',_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x118)]=_0x155b71(0x172),_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x21a)]='column',_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x123)]=_0x155b71(0x1cd),_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x19c)]='center',_0x30d8e7[_0x155b71(0x157)][_0x155b71(0x1e5)]=_0x155b71(0x1c0),_0x30d8e7[_0x155b71(0x157)]['fontFamily']=_0x155b71(0xfe),_0x30d8e7[_0x155b71(0x1d0)]=_0x155b71(0x19f),document[_0x155b71(0xd0)][_0x155b71(0x216)](_0x30d8e7);}function finishCharacterCreation(){const _0x1864f0=_0x323031,_0x23e0bb=document[_0x1864f0(0x87)](_0x1864f0(0x179))[_0x1864f0(0xa7)],_0x35070b=document[_0x1864f0(0x87)]('charName')[_0x1864f0(0xa7)]['trim']();if(!_0x35070b){alert('Du\x20må\x20velge\x20et\x20navn!');return;}playerData[_0x1864f0(0xda)]=_0x23e0bb,playerData['name']=_0x35070b,applyCharacterAppearance(),document['getElementById'](_0x1864f0(0x112))[_0x1864f0(0x18f)](),loadLevel(0x1),saveGame();}function applyCharacterAppearance(){const _0x39ede7=_0x323031;if(!playerData||!playerData['gender'])return;playerData[_0x39ede7(0xda)]===_0x39ede7(0x1d8)?(characterImages['up'][_0x39ede7(0x164)]='images/player/man/pixelmannUp.png',characterImages[_0x39ede7(0xac)][_0x39ede7(0x164)]=_0x39ede7(0x1b7),characterImages[_0x39ede7(0x17d)][_0x39ede7(0x164)]=_0x39ede7(0x14e),characterImages['right'][_0x39ede7(0x164)]=_0x39ede7(0x195)):(characterImages['up'][_0x39ede7(0x164)]=_0x39ede7(0x22f),characterImages[_0x39ede7(0xac)][_0x39ede7(0x164)]=_0x39ede7(0xef),characterImages['left'][_0x39ede7(0x164)]='images/player/woman/pixelwomanLeft.png',characterImages[_0x39ede7(0x170)][_0x39ede7(0x164)]=_0x39ede7(0x104));}function drawCharacter(){const _0xd6f197=_0x323031,_0x1de1d8=map[character['y']][character['x']],_0x19aa8c=characterImages[character[_0xd6f197(0x12f)]];tilesAbovePlayer[_0xd6f197(0xd1)](_0x1de1d8)&&(ctx[_0xd6f197(0x235)]=0.5),ctx[_0xd6f197(0xf5)](_0x19aa8c,character[_0xd6f197(0xae)],character[_0xd6f197(0x22d)],tileSize,tileSize),ctx[_0xd6f197(0x235)]=0x1;}function canMoveTo(_0xa25830,_0x31b092){if(_0xa25830<0x0||_0x31b092<0x0||_0xa25830>=mapWidth||_0x31b092>=mapHeight)return![];return!nonWalkableTiles['includes'](map[_0x31b092][_0xa25830]);}function moveCharacter(_0x513201,_0x1eea99){const _0x552e2d=_0x323031;if(character[_0x552e2d(0x214)])return;const _0x3b3d5e=character['x']+_0x513201,_0x2d92fc=character['y']+_0x1eea99;if(!canMoveTo(_0x3b3d5e,_0x2d92fc))return;character['direction']=_0x513201===-0x1?'left':_0x513201===0x1?_0x552e2d(0x170):_0x1eea99===-0x1?'up':_0x552e2d(0xac),character[_0x552e2d(0x214)]=!![],character['x']=_0x3b3d5e,character['y']=_0x2d92fc;const _0x1b4318=character['x']*tileSize,_0x1bb342=character['y']*tileSize,_0xcc9555=0x2;function _0x5f27a5(){const _0x48bba6=_0x552e2d;let _0x4dc436=![],_0x319a8e=![];if(character[_0x48bba6(0xae)]<_0x1b4318)character[_0x48bba6(0xae)]+=_0xcc9555,character[_0x48bba6(0xae)]>=_0x1b4318&&(character[_0x48bba6(0xae)]=_0x1b4318,_0x4dc436=!![]);else character[_0x48bba6(0xae)]>_0x1b4318?(character[_0x48bba6(0xae)]-=_0xcc9555,character['pixelX']<=_0x1b4318&&(character['pixelX']=_0x1b4318,_0x4dc436=!![])):_0x4dc436=!![];if(character[_0x48bba6(0x22d)]<_0x1bb342)character[_0x48bba6(0x22d)]+=_0xcc9555,character['pixelY']>=_0x1bb342&&(character[_0x48bba6(0x22d)]=_0x1bb342,_0x319a8e=!![]);else character[_0x48bba6(0x22d)]>_0x1bb342?(character[_0x48bba6(0x22d)]-=_0xcc9555,character['pixelY']<=_0x1bb342&&(character[_0x48bba6(0x22d)]=_0x1bb342,_0x319a8e=!![])):_0x319a8e=!![];gameLoop();if(!_0x4dc436||!_0x319a8e)requestAnimationFrame(_0x5f27a5);else{character[_0x48bba6(0x214)]=![];const _0x5571ca=map[character['y']][character['x']];if(_0x5571ca===_0x48bba6(0x1a7)||_0x5571ca===_0x48bba6(0x233)){const _0x1bf5a3=character['x']+','+character['y'],_0x55ab26=doorMap[currentLevel]?.[_0x1bf5a3];if(_0x55ab26){if(_0x55ab26[_0x48bba6(0x1e9)]&&!hasItem(_0x55ab26[_0x48bba6(0x1e9)])){alert(_0x48bba6(0x1c5)+_0x55ab26[_0x48bba6(0x1e9)]+_0x48bba6(0x182));return;}loadLevel(_0x55ab26[_0x48bba6(0x21f)],_0x55ab26[_0x48bba6(0x92)],_0x55ab26[_0x48bba6(0x173)]);}}}}requestAnimationFrame(_0x5f27a5);}function getAllUniqueCreatures(){const _0x7eb8f6=_0x323031,_0x432c9=Object[_0x7eb8f6(0x200)](fishPools)[_0x7eb8f6(0x139)](),_0x1a130b=Object['values'](treeCreaturePools)[_0x7eb8f6(0x139)](),_0x1bf881=[..._0x432c9,..._0x1a130b],_0x90879f={};return _0x1bf881[_0x7eb8f6(0x18b)](_0x5dc7fc=>{const _0x4c63be=_0x7eb8f6;if(_0x90879f[_0x5dc7fc[_0x4c63be(0x225)]])return![];return _0x90879f[_0x5dc7fc['name']]=!![],!![];});}function tryInteract(){const _0xb91064=_0x323031;if(character[_0xb91064(0x214)]||isFishing)return;let _0x12e149=character['x'],_0x1e49fe=character['y'];if(character[_0xb91064(0x12f)]==='up')_0x1e49fe-=0x1;if(character[_0xb91064(0x12f)]===_0xb91064(0xac))_0x1e49fe+=0x1;if(character[_0xb91064(0x12f)]===_0xb91064(0x17d))_0x12e149-=0x1;if(character['direction']===_0xb91064(0x170))_0x12e149+=0x1;const _0x46f7c7=map[_0x1e49fe]?.[_0x12e149];if(currentLevel===0x5&&_0x12e149===0xc&&_0x1e49fe===0xd&&_0x46f7c7===_0xb91064(0x1ea)){hasItem(_0xb91064(0x22a))?changeTile(currentLevel,0xc,0xd,'G'):alert(_0xb91064(0xdd));return;}const _0x5b08c9=npcs['find'](_0x2ce6cb=>_0x2ce6cb[_0xb91064(0x166)]===currentLevel&&_0x2ce6cb['x']===_0x12e149&&_0x2ce6cb['y']===_0x1e49fe);if(_0x5b08c9)return startNPCInteraction(_0x5b08c9);if(_0x46f7c7===_0xb91064(0x231))return startFishing();if(_0x46f7c7===_0xb91064(0x8a))return startTreeHunt();if(_0x46f7c7==='npcShop')return openShop();}function startNPCInteraction(_0x2efa50){const _0x42b8b3=_0x323031,_0x2b2d70=document[_0x42b8b3(0x1c7)](_0x42b8b3(0x13f));_0x2b2d70['id']=_0x42b8b3(0x1ca),_0x2b2d70[_0x42b8b3(0x157)]['position']='absolute',_0x2b2d70[_0x42b8b3(0x157)]['bottom']=_0x42b8b3(0x1e2),_0x2b2d70[_0x42b8b3(0x157)][_0x42b8b3(0x17d)]=_0x42b8b3(0xcc),_0x2b2d70[_0x42b8b3(0x157)]['transform']=_0x42b8b3(0x19d),_0x2b2d70[_0x42b8b3(0x157)][_0x42b8b3(0x224)]=_0x42b8b3(0x242),_0x2b2d70['style']['color']='white',_0x2b2d70[_0x42b8b3(0x157)][_0x42b8b3(0x1b1)]=_0x42b8b3(0x13c),_0x2b2d70[_0x42b8b3(0x157)][_0x42b8b3(0xd9)]='20px',_0x2b2d70[_0x42b8b3(0x157)][_0x42b8b3(0xeb)]='monospace',_0x2b2d70['style'][_0x42b8b3(0x13b)]=0x14,_0x2b2d70[_0x42b8b3(0x157)][_0x42b8b3(0x1d9)]=_0x42b8b3(0x16f);let _0x51f5d9=0x0;function _0x4122c2(){const _0x39aff8=_0x42b8b3;_0x2b2d70[_0x39aff8(0x1d0)]=_0x39aff8(0x10e)+_0x2efa50[_0x39aff8(0xf6)]+'\x22\x20width=\x2248\x22\x20height=\x2248\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<strong>'+_0x2efa50['name']+'</strong>\x0a\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20<p\x20style=\x22margin-top:\x2010px;\x22>'+_0x2efa50[_0x39aff8(0x174)][_0x51f5d9]+_0x39aff8(0x184),_0x2b2d70[_0x39aff8(0x11c)]('#nextDialogBtn')[_0x39aff8(0x1f8)]=()=>{const _0x442e8b=_0x39aff8;_0x51f5d9++;if(_0x51f5d9>=_0x2efa50['dialog']['length']){document[_0x442e8b(0xd0)][_0x442e8b(0x219)](_0x2b2d70);if(_0x2efa50[_0x442e8b(0x14b)]===_0x442e8b(0xa6))openShop(_0x442e8b(0x231));else{if(_0x2efa50[_0x442e8b(0x14b)]===_0x442e8b(0x21d))openShop(_0x442e8b(0x148));else _0x2efa50['type']===_0x442e8b(0x1e7)&&openSpecialShop(_0x2efa50['name']);}}else _0x4122c2();};}_0x4122c2(),document[_0x42b8b3(0xd0)]['appendChild'](_0x2b2d70);}function startTreeHunt(){const _0x1cf6dc=_0x323031;isFishing=!![],fishCaught=![],showFishingBox(_0x1cf6dc(0x22e));const _0x21cb82=Math[_0x1cf6dc(0x213)](Math['random']()*0x1f40)+0x7d0;fishTimeout=setTimeout(treeCreatureAppears,_0x21cb82);}function treeCreatureAppears(){currentFish=getRandomTreeCreature(),startCatchMinigame(currentFish,![]);}function getRandomTreeCreature(){const _0x23adee=_0x323031,_0x5c4d95=treeCreaturePools[currentLevel]||[],_0x18fa11=_0x5c4d95['reduce']((_0x1463cf,_0x5d8f91)=>_0x1463cf+_0x5d8f91[_0x23adee(0x191)],0x0),_0x57adbf=Math['random']()*_0x18fa11;let _0x55b637=0x0;for(const _0x3e50e6 of _0x5c4d95){_0x55b637+=_0x3e50e6[_0x23adee(0x191)];if(_0x57adbf<_0x55b637)return _0x3e50e6;}return{'name':_0x23adee(0x23c),'rarity':'secret','image':_0x23adee(0x155),'price':0x0};}function startFishing(){const _0x9dbdf6=_0x323031;isFishing=!![];if(sounds[_0x9dbdf6(0x203)][_0x9dbdf6(0x121)])sounds[_0x9dbdf6(0x203)][_0x9dbdf6(0x121)][_0x9dbdf6(0x220)]();fishCaught=![],showFishingBox('Fishing...');const _0x40d23e=Math[_0x9dbdf6(0x213)](Math['random']()*0x1f40)+0x7d0;fishTimeout=setTimeout(fishGotBite,_0x40d23e);}function showFishingBox(_0x494327){const _0x5b79a5=_0x323031;!fishingBox&&(fishingBox=document['createElement'](_0x5b79a5(0x13f)),fishingBox['id']=_0x5b79a5(0x202),fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0xf7)]=_0x5b79a5(0x10f),fishingBox[_0x5b79a5(0x157)]['bottom']=_0x5b79a5(0x1e2),fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0x17d)]='50%',fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0xa5)]=_0x5b79a5(0x19d),fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0x224)]=_0x5b79a5(0x1b6),fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0x1e5)]='#fff',fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0xd9)]=_0x5b79a5(0x1bf),fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0x1b1)]='2px\x20solid\x20#aaa',fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0xeb)]=_0x5b79a5(0xfe),fishingBox[_0x5b79a5(0x157)][_0x5b79a5(0x13b)]='10',document[_0x5b79a5(0xd0)][_0x5b79a5(0x216)](fishingBox)),fishingBox[_0x5b79a5(0x1d0)]=_0x494327+_0x5b79a5(0x16d);}function hideFishingBox(){const _0x35cc46=_0x323031;fishingBox&&(document['body'][_0x35cc46(0x219)](fishingBox),fishingBox=null);}function cancelFishing(){clearTimeout(fishTimeout),clearTimeout(biteTimeout),hideFishingBox(),isFishing=![];}function fishGotBite(){const _0x424a4b=_0x323031;currentFish=getRandomFish();if(sounds[_0x424a4b(0x203)][_0x424a4b(0xdc)])sounds[_0x424a4b(0x203)]['gotBite'][_0x424a4b(0x220)]();startCatchMinigame(currentFish,!![]);}function startCatchMinigame(_0x4797a6,_0xdb81d6){const _0x213ef2=_0x323031,_0x305f13=raritySettings[_0x4797a6['rarity']]||{'time':0xfa0,'color':'white'},_0x303b81=_0x305f13[_0x213ef2(0x1c6)],_0x370038=_0x305f13[_0x213ef2(0x1e5)];fishCaught=![];let _0x99cc5d=0.45,_0x46716a=0.55;fishingBox[_0x213ef2(0x1d0)]=_0x213ef2(0x1dd)+_0x370038+_0x213ef2(0x226)+_0x4797a6[_0x213ef2(0xf6)]+'\x22\x20width=\x2264\x22\x20height=\x2264\x22\x20alt=\x22'+_0x4797a6[_0x213ef2(0x225)]+'\x22>\x0a\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20<div>'+_0x4797a6[_0x213ef2(0x225)]+_0x213ef2(0xc0)+_0x370038+_0x213ef2(0xa4)+_0x370038+';\x20z-index:\x201;\x22></div>\x0a\x20\x20\x20\x20\x20\x20<div\x20id=\x22biteTimerFill\x22\x20style=\x22position:\x20absolute;\x20top:\x200;\x20left:\x200;\x20height:\x20100%;\x20width:\x200%;\x20background:\x20'+_0x370038+_0x213ef2(0x16b);const _0x39b78e=document[_0x213ef2(0x87)](_0x213ef2(0x126));let _0x39c9fa=0x0;const _0x5a082d=0x14;function _0x31a20e(_0x6510e2){const _0x28e9f6=_0x213ef2;if(_0x6510e2[_0x28e9f6(0xad)]===_0x28e9f6(0x1f5)&&!fishCaught){const _0x1bead0=_0x39c9fa/_0x303b81;if(_0x1bead0>=_0x99cc5d&&_0x1bead0<=_0x46716a){fishCaught=!![],showFishingBox(_0x28e9f6(0x89)+_0x4797a6[_0x28e9f6(0x225)]+'!'),addToInventory(_0x4797a6);if(sounds['sfx'][_0x28e9f6(0xf9)])sounds[_0x28e9f6(0x203)][_0x28e9f6(0xf9)][_0x28e9f6(0x220)]();}else{fishCaught=!![],showFishingBox(_0x28e9f6(0x1ab));if(sounds[_0x28e9f6(0x203)]['catchFail'])sounds[_0x28e9f6(0x203)]['catchFail'][_0x28e9f6(0x220)]();}document[_0x28e9f6(0x1f9)](_0x28e9f6(0x1fa),_0x31a20e),clearInterval(_0x4f8524),setTimeout(cancelFishing,0x5dc);}}document[_0x213ef2(0xed)](_0x213ef2(0x1fa),_0x31a20e);const _0x4f8524=setInterval(()=>{const _0xa0eb66=_0x213ef2;if(fishCaught){clearInterval(_0x4f8524),document[_0xa0eb66(0x1f9)](_0xa0eb66(0x1fa),_0x31a20e);return;}_0x39c9fa+=_0x5a082d;const _0x59435b=_0x39c9fa/_0x303b81;_0x39b78e[_0xa0eb66(0x157)][_0xa0eb66(0x1d9)]=_0x59435b*0x64+'%';if(_0x39c9fa>=_0x303b81){clearInterval(_0x4f8524),document[_0xa0eb66(0x1f9)](_0xa0eb66(0x1fa),_0x31a20e),showFishingBox(_0xa0eb66(0xd4));if(sounds['sfx'][_0xa0eb66(0x9e)])sounds[_0xa0eb66(0x203)][_0xa0eb66(0x9e)][_0xa0eb66(0x220)]();setTimeout(cancelFishing,0x4b0);}},_0x5a082d);}function tryCatchFish(_0x218422){const _0x4429d9=_0x323031;if(currentFish&&currentFish[_0x4429d9(0xe4)]===_0x218422){showFishingBox('Du\x20fanget\x20en\x20'+currentFish[_0x4429d9(0x225)]+'!');if(sounds[_0x4429d9(0x203)][_0x4429d9(0xf9)])sounds[_0x4429d9(0x203)][_0x4429d9(0xf9)]['play']();addToInventory(currentFish);}else{showFishingBox(_0x4429d9(0x1e6));if(sounds[_0x4429d9(0x203)]['catchFail'])sounds[_0x4429d9(0x203)][_0x4429d9(0x9e)][_0x4429d9(0x220)]();}fishCaught=!![],setTimeout(cancelFishing,0x7d0);}function getRandomFish(){const _0x1e097b=_0x323031,_0xe4713a=fishPools[currentLevel]||[],_0x2308a1=_0xe4713a[_0x1e097b(0xcf)]((_0x3f84b5,_0x32a934)=>_0x3f84b5+_0x32a934[_0x1e097b(0x191)],0x0),_0x269f8d=Math[_0x1e097b(0xb7)]()*_0x2308a1;let _0x2ae78b=0x0;for(const _0x1dea2b of _0xe4713a){_0x2ae78b+=_0x1dea2b['chance'];if(_0x269f8d<_0x2ae78b)return{'name':_0x1dea2b[_0x1e097b(0x225)],'rarity':_0x1dea2b[_0x1e097b(0xe4)],'image':_0x1dea2b[_0x1e097b(0xf6)],'price':_0x1dea2b[_0x1e097b(0x143)]};}return{'name':_0x1e097b(0x23c),'rarity':'','image':_0x1e097b(0x95),'price':0x0};}function addToInventory(_0x2b8854){const _0x35b7c6=_0x323031;let _0x19d3d3=inventory[_0x35b7c6(0x1dc)](_0x3ea530=>_0x3ea530[_0x35b7c6(0x225)]===_0x2b8854[_0x35b7c6(0x225)]);_0x19d3d3?_0x19d3d3[_0x35b7c6(0x22c)]+=0x1:inventory['push']({..._0x2b8854,'count':0x1});if(!trophies[_0x2b8854[_0x35b7c6(0x225)]]){const _0x42ec5d=new Date(),_0x1db5b4=_0x42ec5d[_0x35b7c6(0xb6)]()+'-'+String(_0x42ec5d[_0x35b7c6(0x1a9)]()+0x1)[_0x35b7c6(0x113)](0x2,'0')+'-'+String(_0x42ec5d[_0x35b7c6(0x1f3)]())['padStart'](0x2,'0')+'\x20'+String(_0x42ec5d['getHours']())[_0x35b7c6(0x113)](0x2,'0')+':'+String(_0x42ec5d[_0x35b7c6(0x109)]())[_0x35b7c6(0x113)](0x2,'0');trophies[_0x2b8854[_0x35b7c6(0x225)]]=_0x1db5b4;}if(inventoryOpen)renderInventory();}function removeItem(_0x552c67){const _0xc4f5ed=_0x323031,_0x4bf58c=inventory[_0xc4f5ed(0xf8)](_0x2cb751=>_0x2cb751[_0xc4f5ed(0x225)]===_0x552c67);if(_0x4bf58c!==-0x1){inventory[_0x4bf58c][_0xc4f5ed(0x22c)]--;inventory[_0x4bf58c][_0xc4f5ed(0x22c)]<=0x0&&inventory['splice'](_0x4bf58c,0x1);if(inventoryOpen)renderInventory();}}function hasItem(_0x1789af){const _0x502164=_0x323031;return inventory[_0x502164(0x1d6)](_0x1067fe=>_0x1067fe[_0x502164(0x225)]===_0x1789af);}function openSpecialShop(_0x500802){const _0x148680=_0x323031,_0x127d32=document[_0x148680(0x87)](_0x148680(0x15a)),_0x385631=npcShopItems[_0x500802]||[],_0x40c00c=inventory['map'](_0x57a524=>_0x57a524[_0x148680(0x225)]);let _0x5eb05c='<h3>'+_0x500802+_0x148680(0xbf);const _0x58fcac=_0x385631[_0x148680(0x18b)](_0x19b9bd=>!(_0x19b9bd[_0x148680(0xfb)]&&_0x40c00c[_0x148680(0xd1)](_0x19b9bd['name'])));_0x58fcac['length']===0x0?_0x5eb05c+=_0x148680(0x234):_0x58fcac[_0x148680(0x227)](_0xec9c00=>{const _0x5efc89=_0x148680;_0x5eb05c+='<div\x20style=\x22margin-bottom:10px;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22'+_0xec9c00[_0x5efc89(0xf6)]+_0x5efc89(0x1b3)+_0xec9c00[_0x5efc89(0x225)]+_0x5efc89(0x13a)+_0xec9c00['description']+_0x5efc89(0xe6)+_0x500802+'\x27,\x20\x27'+_0xec9c00[_0x5efc89(0x225)]+'\x27,\x20'+_0xec9c00[_0x5efc89(0x143)]+_0x5efc89(0x16a)+_0xec9c00['price']+_0x5efc89(0x10d);}),_0x5eb05c+='<br><button\x20onclick=\x22closeShop()\x22>Leave</button>',_0x127d32[_0x148680(0x1d0)]=_0x5eb05c,_0x127d32[_0x148680(0x157)][_0x148680(0x118)]='block';}function buySpecialItem(_0x5033bb,_0x21a94f,_0x4bc243){const _0x52a8ec=_0x323031,_0x6dd421=npcShopItems[_0x5033bb][_0x52a8ec(0x1dc)](_0x5a7676=>_0x5a7676[_0x52a8ec(0x225)]===_0x21a94f);if(!_0x6dd421)return;if(gold<_0x4bc243){alert(_0x52a8ec(0x142));return;}gold-=_0x4bc243,inventory[_0x52a8ec(0x153)]({..._0x6dd421,'count':0x1});if(inventoryOpen)renderInventory();saveGame(),openSpecialShop(_0x5033bb);}let currentShopType=_0x323031(0x231);function openShop(_0x3c7fa=_0x323031(0x231)){const _0x528841=_0x323031;currentShopType=_0x3c7fa;const _0x533287=document[_0x528841(0x87)](_0x528841(0x15a));let _0x214fab='<h3\x20style=\x22font-family:\x20Cursive;\x22></h3><p>This\x20is\x20my\x20prices:</p>',_0x5d44a6=![];inventory[_0x528841(0x227)](_0x4b3ca7=>{const _0x3c5001=_0x528841,_0x2bff17=_0x3c7fa===_0x3c5001(0x231)?fishPools:treeCreaturePools,_0x50ee19=Object['values'](_0x2bff17)[_0x3c5001(0x139)](),_0x3826d4=_0x50ee19[_0x3c5001(0x1dc)](_0x13e1db=>_0x13e1db['name']===_0x4b3ca7[_0x3c5001(0x225)]);_0x3826d4&&(_0x5d44a6=!![],_0x214fab+=_0x3c5001(0x199)+_0x4b3ca7[_0x3c5001(0x225)]+'\x27,\x20'+_0x3826d4[_0x3c5001(0x143)]+_0x3c5001(0x14f)+_0x4b3ca7[_0x3c5001(0x225)]+'\x20('+_0x3826d4[_0x3c5001(0x143)]+_0x3c5001(0x131));}),!_0x5d44a6&&(_0x214fab+=_0x528841(0xf2)),_0x214fab+=_0x528841(0x178),_0x533287['innerHTML']=_0x214fab,_0x533287[_0x528841(0x157)]['display']=_0x528841(0x8f);}function closeShop(){const _0x4562c8=_0x323031;document[_0x4562c8(0x87)]('shopBox')['style'][_0x4562c8(0x118)]=_0x4562c8(0x1ec);}function sellFish(_0x3db1f8,_0x5a1b84){const _0x28a090=_0x323031,_0x3160fd=inventory[_0x28a090(0xf8)](_0x3cf526=>_0x3cf526[_0x28a090(0x225)]===_0x3db1f8);_0x3160fd!==-0x1&&(inventory[_0x3160fd]['count']--,gold+=_0x5a1b84,inventory[_0x3160fd][_0x28a090(0x22c)]<=0x0&&inventory['splice'](_0x3160fd,0x1),renderInventory(),openShop(currentShopType));}let showMap=![];const mouse={'x':0x0,'y':0x0};let hoveredLocation=null;function _0x54e1(){const _0x1f475a=['count','pixelY','Searching\x20the\x20tree...','images/player/woman/pixelwomanUp.png','8px','water','textContent','voidgate','<p>You\x20already\x20own\x20everything\x20I\x20have...</p>','globalAlpha','hoverInfoBox','TTTTTTTTGGGGGGGGGGGGGGGGGGGG','TTTTTTTTTTTTTTTTTTTTTTTT','images/creatures/vann/grauder.png','BPPPPPPPPPPPPPPPPPPPPPPB','\x0a\x20\x20\x20\x20<button\x20onclick=\x22currentTrophyType=\x27water\x27;\x20toggleTrophyJournal();\x20toggleTrophyJournal()\x22>Water</button>\x0a\x20\x20\x20\x20<button\x20onclick=\x22currentTrophyType=\x27land\x27;\x20toggleTrophyJournal();\x20toggleTrophyJournal()\x22>Land</button>\x0a\x20\x20','???','After\x20the\x20old\x20moss\x20clan\x20invaded\x20Yurborg\x20city\x20i\x20had\x20to\x20leave.','Dont\x20forget\x20to\x20save\x20often!','\x22\x20width=\x2264\x22\x20height=\x2264\x22><br><br>\x0a\x20\x20\x20\x20<strong>Level:</strong>\x20','fixed','48bPpFZY','#222','I\x20myself\x20only\x20hunt\x20rare\x20land\x20creatures.','trophies','I\x20hope\x20our\x20path\x20crosses,\x20fellow\x20Path\x20Seeker...','getElementById','He\x20is\x20a\x20good\x20man.','You\x20caught\x20a\x20','tree','mousemove','I\x20took\x20refugee\x20here\x20at\x20Morgan\x27s\x20gatherers\x20hub.','Albino\x20Krap','lyder/levelUp.wav','block','</div>','WWWWWWWWWWWWWWWWWWWWWWWWWWWW','targetX','#444','\x20gold<br>','images/defaultFish.png','CsCsssCCCCsC','images/creatures/land/poisetle.png','You\x20just\x20levelled\x20up\x20to\x20level\x20','But\x20this\x20cave\x20was\x20my\x20old\x20pearl.','playerXP','roof','key','images/npc/voidloreMerchantRight.png','catchFail','CCsssVssCsWW','Grey\x20Mouse','BPPPPPPPPPPPPPB','Gatherers\x20hub\x20Yurborg','clientY',';\x20border-right:\x202px\x20solid\x20','transform','shop','value','GGGGGGGGGGGGGGGGGGGGGGGGGGGG','keys','city','creature','down','code','pixelX','trim','#fff','height','voidquest_volume','Grodr','startY','I\x20have\x20retired\x20from\x20searching\x20the\x20land\x20after\x20creatures.\x20Those\x20years\x20are\x20behind\x20me.','getFullYear','random','1px\x20solid\x20#999','\x20gold</span><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20style=\x22color:gray;\x22>First\x20caught:\x20','innerText','TGGGGGGGGGGGGGGGGGSWWWWW','strokeStyle','gap','TTTTTTTTTTTTFTTTTTTTTTTTTTTT','</h3><p>Choose\x20wisely...</p>','</div>\x0a\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20<div\x20style=\x22margin-bottom:\x2010px;\x22>Press\x20[Space]\x20when\x20the\x20bar\x20is\x20on\x20the\x20line!</div>\x0a\x20\x20\x20\x20<div\x20id=\x22biteTimerBar\x22\x20style=\x22width:\x20100%;\x20height:\x2020px;\x20background:\x20#222;\x20margin-top:\x2010px;\x20position:\x20relative;\x22>\x0a\x20\x20\x20\x20\x20\x20<div\x20id=\x22catchZone\x22\x20style=\x22position:\x20absolute;\x20top:\x200;\x20left:\x2045%;\x20width:\x2010%;\x20height:\x20100%;\x20background:\x20#fff2;\x20border-left:\x202px\x20solid\x20','pause','CsCssCCsCCsW','getContext','CCCsCCCCCCsC','grass','trophyRoom','Skuggosk','TTTTTTTTTTTTTTTTTTsCCCCC','getBoundingClientRect','1FdzrfA','gameMenu','50%','10%','Lukk','reduce','body','includes','Are\x20you\x20sure\x20you\x20want\x20to\x20delete\x20your\x20character\x20save?','clientX','You\x20didnt\x20react\x20in\x20time!','Unknown','An\x20average\x20old\x20man\x20are\x20maybe\x20not\x20that\x20much\x20to\x20use,\x20but\x20i\x20have\x20more\x20knowledge\x20of\x20these\x20Great\x20cave\x20water\x20creatures,\x20than\x20anyone\x20in\x20Voidlore!','loop','gridTemplateColumns','padding','gender','No\x20one\x20sells\x20goods\x20like\x20mine!','gotBite','Gjerdet\x20er\x20låst.\x20Du\x20trenger\x20en\x20Dock\x20Key.','stringify','lyder/fiskNapper.wav','Trophyroom','table','blue','Spenningsbyen','rarity','TGGGGGGGGGGcGGGGGGGGsPDP','</small><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22buySpecialItem(\x27','road','2877952Ftaupj','slice','470220snEguZ','fontFamily','images/tiles/sandTile.png','addEventListener','locationLabel','images/player/woman/pixelwomanDown.png','Feil\x20ved\x20lasting\x20av\x20lagring:','levelUp','<p>You\x20dont\x20have\x20any\x20creatures,\x20off\x20you\x20go!.</p>','BBBBBBBBBBBBBBBBBBBBBBBB','characterInfoBox','drawImage','image','position','findIndex','catchSuccess','startX','once','TRRRRGTTGGGGGGGGGGGGGGGT','Have\x20you\x20hunted\x20any?','monospace','And\x20you\x20are\x20not\x20supposed\x20to\x20know\x20that\x20i\x20ca-','To\x20fish\x20you\x20just\x20have\x20to\x20go\x20up\x20to\x20any\x20lake\x20or\x20ocean\x20and\x20interact.','repeat(6,\x2064px)','12px\x20monospace','gray','images/player/woman/pixelwomanRight.png','WWWWWWWWWPPPPPPPWWWWWWWWWWWW','currentTime','_character','Unlocks\x20fence\x20to\x20dock\x20in\x20Yurborg.','getMinutes','music','BBBBBBBBBBBBBBB','mainMenu','\x20gold\x0a\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20</div>','\x0a\x20\x20\x20\x20\x20\x20<div\x20style=\x22display:\x20flex;\x20gap:\x2010px;\x20align-items:\x20center;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22','absolute','TTTTGGGGGGGGGGGGGGGGGGGBBDBB','textAlign','charCreation','padStart','close','title','coblestone','gold','display','images/creatures/vann/deepVoidLure.png','Greeting\x20to\x20ya!','inventory','querySelector','error','1000','map','images/creatures/land/mouseGrey.png','startFishing','Path\x20Seeker\x20Nodin','alignItems','campfire','3039920ZYTKvn','biteTimerFill','plank','getItem','setItem','bottom','<img\x20src=\x22','Albino\x20Mouse','fill','Deep\x20Void\x20Lure','direction','I\x20give\x20a\x20good\x20coin\x20in\x20exchange\x20of\x20good\x20fish!','\x20gold)</button><br>','</h2>\x0a\x20\x20\x20\x20<img\x20src=\x22','column','</span>\x0a\x20\x20\x20\x20\x20\x20','rgba(0,0,0,0.9)','987428fXuHSg','BPPPPPPPPPPB','purpe','flat','</strong><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<small>','zIndex','2px\x20solid\x20#888','BPPPPVPPPPPPPPPPPPPPPPPB','Yurborg','div','</strong><br>','images/player/man/pixelmannUp.png','You\x20can\x27t\x20afford\x20that.','price','lyder/mistetFisk.wav','300px','split','Now..\x20take\x20care\x20mye\x20friend.','land','substring','layout','type','images/creatures/vann/grodr.png','GGGGGGGGGGGGGGGGGBBBBBBBBBBB','images/player/man/pixelmannLeft.png',')\x22>Sell\x20','marginTop','Krap','GGGGGGGGGGGGGGGGGGGGGGGBBBBB','push','4156209ZinIAl','images/defaultTree.png','</strong><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span>Rarity:\x20<span\x20style=\x22color:','style','images/creatures/vann/blueKrap.png','<h3\x20style=\x22color:white;font-family:\x20Cursive;\x22>Inventory\x20(','shopBox','#666',')</h3><p\x20style=\x22color:gold;font-family:\x20Cursive;\x22>Gold:\x20','CsCCCCCCCCCC','\x20/\x20','images/tiles/stoneSingleTile.png','musikk/yurborgMusic.wav','Casino','<h3>','BBBBBBBDBBDB','src','xpBar','level','pink','images/creatures/land/albinoMouse.png','character',')\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Buy\x20for\x20',';\x20z-index:\x202;\x22></div>\x0a\x20\x20\x20\x20</div>\x0a\x20\x20','images/tiles/treeTile.png','<br><button\x20onclick=\x22cancelFishing()\x22>Avbryt</button>','14px','400px','right','#000','flex','targetY','dialog','pow','secret','fillStyle','<br><button\x20onclick=\x22closeShop()\x22>Cancel</button>','charGender','</p>','#charCreation\x20button','Nocturne','left','Be\x20sure\x20to\x20use\x20your\x20map\x20by\x20pressing\x20M,\x20to\x20navigate\x20through\x20Voidlore.','WWWWWWWWWWWPPPWWWWWWWWWWWWWW','Poisetle','Grauder','\x20to\x20enter\x20this\x20area.','preventDefault','</p>\x0a\x20\x20\x20\x20\x20\x20<button\x20id=\x22nextDialogBtn\x22>Next</button>\x0a\x20\x20\x20\x20','2px\x20solid\x20','dodgerblue','translate(-50%,\x20-50%)','voidquest_save','images/tiles/roofTile.png','Fisker','filter','parse','TGGGGGGGGGGGGGGGGGGsCRRR','images/items/dockKey.png','remove','Voidlore\x20Merchant','chance','Blue\x20Krap','Path-1','B111PPPPPPPB','images/player/man/pixelmannRight.png','images/npc/morganSailorDown.png','<span\x20style=\x22color:gray;\x22>First\x20caught:\x20','G1GGGGGGGGGGGGGGGRRRRRRRRRRR','<button\x20onclick=\x22sellFish(\x27','images/npc/nocturneDown.png','images/npc/oleanderDown.png','justifyContent','translateX(-50%)','button','\x0a\x20\x20\x20\x20<h2>Create\x20your\x20character</h2>\x0a\x20\x20\x20\x20<label>Username:\x20<input\x20id=\x22charName\x22\x20/></label><br>\x0a\x20\x20\x20\x20<label>Gender:\x0a\x20\x20\x20\x20\x20\x20<select\x20id=\x22charGender\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<option\x20value=\x22male\x22>Male</option>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<option\x20value=\x22female\x22>Female</option>\x0a\x20\x20\x20\x20\x20\x20</select>\x20<br>\x20<br>\x0a\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22finishCharacterCreation()\x22>Start</button>\x20\x0a\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22showMainMenu();\x22>Menu</button>\x20\x0a\x0a\x20\x20\x20\x20</label><br><br>\x0a\x20\x20','CCCCsCCCCCsC','GGGGGGGGGGGGGGGGGGGGGGGRRRRR','beginPath','CCCCsCCCCCCC','The\x20fellow\x20over\x20there\x20is\x20Morgan,\x20i\x20dont\x20know\x20much\x20about\x20the\x20man.\x20But\x20i\x20got\x20some\x20gold\x20by\x20giving\x20him\x20some\x20grodr\x20fish!','stoneSingle','#111','door','arc','getMonth','getHours','Oh\x20you\x20failed!\x20The\x20creature\x20fleed.','TGGGGGGGGGGGGGGGGGGsCPPP','TGGGGGGGGGGGGGGGGGGGGGGV','images/creatures/vann/albinoGrodr.png','TGGGGGGGGGGGGGGGGGGGGGGT','green','border','</span></span><br>','\x22\x20width=\x2232\x22\x20height=\x2232\x22>\x20<strong>','font','circle','#333','images/player/man/pixelmanndown.png','SSSsSsssSssSSS','<br>\x0a\x20\x20\x20\x20<strong>Trophies:</strong>\x20','strokeRect','lyder/fangetFisk.wav','Område\x20','2058NCGVGp','You\x20can\x20interact\x20with\x20others\x20by\x20pressing\x20E,\x20like\x20you\x20just\x20found\x20out...','10px','white','TBBBBTTTTTTGGGGGGGGGSSSS','top','Your\x20save\x20has\x20been\x20deleted.\x20The\x20game\x20will\x20now\x20restart.','TGGGGGGGGGGGGGGGGGGGGsGs','You\x20need\x20the\x20','time','createElement','TTTTTTGGGGGGGGGGGGGGGGGGGGGG','brick','npcDialog','images/tiles/doorTile.png','legendary','center','Price:\x20','You\x20look\x20like\x20a\x20happy\x20and\x20hopeful\x20person\x20yourself!\x20Let\x20me\x20give\x20you\x20a\x20piece\x20of\x20advice\x20my\x20friend.','innerHTML','I\x20will\x20give\x20you\x20a\x20quick\x20rundown\x20and\x20then\x20off\x20with\x20you.','20px','\x0a\x20\x20\x20\x20<img\x20src=\x22images/npc/voidloreMerchantRight.png\x22\x20style=\x22width:128px;height:auto;\x22\x20/>\x0a\x20\x20\x20\x20<button\x20style=\x22padding:\x2020px\x2040px;\x20font-size:\x2024px;\x22\x20onclick=\x22startCharacterCreationFromMenu()\x22>Make\x20Character</button>\x0a\x20\x20\x20\x20<button\x20style=\x22padding:\x2020px\x2040px;\x20font-size:\x2024px;\x22\x20onclick=\x22showCredits()\x22>Credits</button>\x0a\x20\x20\x20\x20<button\x20style=\x22padding:\x2020px\x2040px;\x20font-size:\x2024px;\x22\x20onclick=\x22quitGame()\x22>Quit</button>\x0a\x20\x20','trophyJournal','img','some','Be\x20sure\x20to\x20keep\x20track\x20of\x20your\x20inventory\x20by\x20pressing\x20i.\x20I\x20like\x20to\x20have\x20it\x20open\x20almost\x20always,\x20the\x20inventory\x20shows\x20important\x20info.','male','width','<span>Rarity:\x20<span\x20style=\x22color:','VGGGGGGGGGGGGGGGGGGGGGGV','find','\x0a\x20\x20\x20\x20<div\x20style=\x22margin-bottom:\x2010px;\x22>\x0a\x20\x20\x20\x20\x20\x20<div\x20style=\x22border:\x202px\x20solid\x20','176aUifDc','sort','fillRect','length','50px','<strong\x20style=\x22color:','12px','color','Bom!\x20Du\x20mistet\x20fisken.','special_shop','30px','requires','fence',')</h3>','none','You\x20are\x20not\x20supposed\x20to\x20be\x20here...','\x0a\x20\x20\x20\x20<h1>VoidQuest</h1>\x0a\x20\x20\x20\x20<p>Created\x20by:\x20Erik\x20Spenningsby</p>\x0a\x20\x20\x20\x20<p>Every\x20pixelart\x20used\x20in\x20this\x20game</p>\x0a\x20\x20\x20\x20<p>are\x20designed\x20and\x20created\x20by\x20our\x20team,\x20and\x20for\x20this\x20game.</p>\x0a\x20\x20\x20\x20<p>Pixel\x20art\x20help:\x20Jocelyn,\x20Isabella,\x20Daniel</p>\x0a\x20\x20\x20\x20<p>Music:\x20Erik\x20Spenningsby</p>\x0a\x20\x20\x20\x20<p>Help/report\x20bugs/inquiries</p>\x0a\x20\x20\x20\x20<p>voidcrypt@hotmail.com</p>\x0a\x20\x20\x20\x20\x0a\x20\x20\x20\x20<br><br>\x0a\x20\x20\x20\x20<button\x20onclick=\x22document.getElementById(\x27creditsScreen\x27).remove()\x22>Tilbake</button>\x0a\x20\x20','CCCCsCCssCsC','hail\x20be\x20thou!\x20My\x20name\x20is\x20Nodin!','xpToNextLevel','</span></span><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span>Price:\x20','getDate','volume','Space','rare','onmousemove','onclick','removeEventListener','keydown','\x0a\x20\x20\x20\x20<h2>','<br><br>\x0a\x20\x20\x20\x20<button\x20onclick=\x22document.getElementById(\x27characterInfoBox\x27).remove()\x22>Exit</button>\x0a\x20\x20','mythical','Du\x20må\x20velge\x20et\x20navn!','rect','values','common','fishingBox','sfx','</span>','images/tiles/plankTile.png','\x22\x20width=\x2232\x22\x20height=\x2232\x22><div\x20style=\x22color:white;\x22>x','fillText','Albino\x20Grodr','images/tiles/grassTile.png','100%','lime','removeItem','sand','purple','TTTTTTTTTTTTTTTTTSWWWWWW','playerLevel','TRRRRGGGGGGGGGGGGGGGGGGT','pointerEvents','floor','moving','2891zvPJSO','appendChild','images/tiles/campfireStill.png','Welcome\x20to\x20Spenningsbyen!','removeChild','flexDirection','64px','reload','shop_land','Eh?\x20i\x20feel\x20the..\x20you..\x20are..','targetLevel','play','#8B4513','And\x20ofcourse\x20press\x20TAB\x20to\x20se\x20the\x20menu.','Morgan\x20the\x20sailor','background','name',';\x20padding:\x204px;\x20display:inline-block;\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<img\x20src=\x22','forEach','Take\x20a\x20look.','images/creatures/vann/albinoKrap.png','Dock\x20Key','TBDBBFFFFFGGGGGGGGGSWWWW'];_0x54e1=function(){return _0x1f475a;};return _0x54e1();}canvas[_0x323031(0xed)](_0x323031(0x8b),_0x3da863=>{const _0x4e34d7=_0x323031;if(!showMap)return;const _0x279d20=canvas[_0x4e34d7(0xc9)]();mouse['x']=_0x3da863[_0x4e34d7(0xd3)]-_0x279d20['left'],mouse['y']=_0x3da863[_0x4e34d7(0xa3)]-_0x279d20[_0x4e34d7(0x1c2)],gameLoop();});function renderWorldMap(){const _0x53c4cc=_0x323031,_0x28701b=canvas[_0x53c4cc(0x1d9)]-0xc8-0x14,_0x58c333=0xa,_0x2b0259=0xc8,_0x19f434=0xc8;ctx[_0x53c4cc(0x177)]='#111',ctx[_0x53c4cc(0x1e0)](_0x28701b,_0x58c333,_0x2b0259,_0x19f434),ctx[_0x53c4cc(0xbc)]='#888',ctx[_0x53c4cc(0x1ba)](_0x28701b,_0x58c333,_0x2b0259,_0x19f434),hoveredLocation=null,mapData[_0x53c4cc(0x227)](_0x2e7f25=>{const _0x4d31a9=_0x53c4cc,_0x2753a9=_0x28701b+_0x2e7f25['x'],_0x7a357b=_0x58c333+_0x2e7f25['y'],_0x23ada9=_0x2e7f25['type']==='city'?0xa:0x6,_0x26dc48=_0x2e7f25[_0x4d31a9(0x14b)]===_0x4d31a9(0xaa)?_0x4d31a9(0x1ff):_0x4d31a9(0x1b5),_0x477edc=mouse['x']>=_0x2753a9-_0x23ada9&&mouse['x']<=_0x2753a9+_0x23ada9&&mouse['y']>=_0x7a357b-_0x23ada9&&mouse['y']<=_0x7a357b+_0x23ada9;if(_0x477edc)hoveredLocation=_0x2e7f25['name'];ctx['fillStyle']=_0x2e7f25[_0x4d31a9(0x1e5)],_0x26dc48===_0x4d31a9(0x1ff)?ctx[_0x4d31a9(0x1e0)](_0x2753a9-_0x23ada9/0x2,_0x7a357b-_0x23ada9/0x2,_0x23ada9,_0x23ada9):(ctx[_0x4d31a9(0x1a2)](),ctx[_0x4d31a9(0x1a8)](_0x2753a9,_0x7a357b,_0x23ada9/0x2,0x0,Math['PI']*0x2),ctx[_0x4d31a9(0x12d)]());}),hoveredLocation&&(ctx[_0x53c4cc(0x177)]=_0x53c4cc(0xb0),ctx[_0x53c4cc(0x1b4)]=_0x53c4cc(0x102),ctx[_0x53c4cc(0x207)](hoveredLocation,_0x28701b+0x5,_0x58c333+_0x19f434-0x5));}document[_0x323031(0xed)]('keydown',_0x19eedd=>{const _0x83c356=_0x323031;_0x19eedd[_0x83c356(0x9c)]==='m'&&(showMap=!showMap,gameLoop());});function gameLoop(){const _0x140ccc=_0x323031;ctx['clearRect'](0x0,0x0,canvas[_0x140ccc(0x1d9)],canvas[_0x140ccc(0xb1)]),drawMap(),drawCharacter();if(showMap)renderWorldMap();}function renderInventory(){const _0x1af7cc=_0x323031,_0x223b12=document['getElementById'](_0x1af7cc(0x11b));_0x223b12[_0x1af7cc(0x1d0)]=_0x1af7cc(0x159)+playerData[_0x1af7cc(0x225)]+_0x1af7cc(0x15c)+gold+_0x1af7cc(0x17a);let _0x48bd8f=document['getElementById'](_0x1af7cc(0x236));!_0x48bd8f&&(_0x48bd8f=document[_0x1af7cc(0x1c7)]('div'),_0x48bd8f['id']=_0x1af7cc(0x236),_0x48bd8f[_0x1af7cc(0x157)][_0x1af7cc(0xf7)]=_0x1af7cc(0x240),_0x48bd8f[_0x1af7cc(0x157)][_0x1af7cc(0x212)]=_0x1af7cc(0x1ec),_0x48bd8f[_0x1af7cc(0x157)][_0x1af7cc(0x224)]=_0x1af7cc(0x242),_0x48bd8f[_0x1af7cc(0x157)]['border']=_0x1af7cc(0xb8),_0x48bd8f[_0x1af7cc(0x157)][_0x1af7cc(0x1e5)]=_0x1af7cc(0x1c0),_0x48bd8f[_0x1af7cc(0x157)]['padding']=_0x1af7cc(0x230),_0x48bd8f['style'][_0x1af7cc(0xeb)]=_0x1af7cc(0xfe),_0x48bd8f[_0x1af7cc(0x157)][_0x1af7cc(0x13b)]=_0x1af7cc(0x11e),_0x48bd8f[_0x1af7cc(0x157)]['display']=_0x1af7cc(0x1ec),document[_0x1af7cc(0xd0)][_0x1af7cc(0x216)](_0x48bd8f));const _0x5d8ad5=document['createElement'](_0x1af7cc(0x13f));_0x5d8ad5['style'][_0x1af7cc(0x118)]='grid',_0x5d8ad5[_0x1af7cc(0x157)][_0x1af7cc(0xd8)]='repeat(5,\x2064px)',_0x5d8ad5['style'][_0x1af7cc(0xbd)]=_0x1af7cc(0x230),inventory['forEach'](_0x3c9798=>{const _0x433adc=_0x1af7cc,_0x1790b3=document[_0x433adc(0x1c7)]('div'),_0x599bf1=raritySettings[_0x3c9798[_0x433adc(0xe4)]],_0x43879c=_0x599bf1?_0x599bf1['border']:_0x433adc(0x15b);_0x1790b3['style']['width']=_0x433adc(0x21b),_0x1790b3[_0x433adc(0x157)]['height']=_0x433adc(0x21b),_0x1790b3[_0x433adc(0x157)][_0x433adc(0x224)]=_0x433adc(0x1a6),_0x1790b3[_0x433adc(0x157)][_0x433adc(0x1b1)]=_0x433adc(0x185)+_0x43879c,_0x1790b3[_0x433adc(0x157)][_0x433adc(0x118)]=_0x433adc(0x172),_0x1790b3[_0x433adc(0x157)]['flexDirection']=_0x433adc(0x133),_0x1790b3[_0x433adc(0x157)][_0x433adc(0x123)]=_0x433adc(0x1cd),_0x1790b3[_0x433adc(0x157)][_0x433adc(0x19c)]=_0x433adc(0x1cd),_0x1790b3[_0x433adc(0x1f7)]=_0x1b95ba=>{const _0x508cc9=_0x433adc,_0x8ba525=raritySettings[_0x3c9798[_0x508cc9(0xe4)]],_0x4ca20e=_0x8ba525?_0x8ba525[_0x508cc9(0x1e5)]:_0x508cc9(0xb0),_0x16d35c=trophies[_0x3c9798[_0x508cc9(0x225)]]||_0x508cc9(0xd5);_0x48bd8f[_0x508cc9(0x1d0)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20<strong\x20style=\x22color:'+_0x4ca20e+'\x22>'+_0x3c9798[_0x508cc9(0x225)]+_0x508cc9(0x156)+_0x4ca20e+'\x22>'+_0x3c9798[_0x508cc9(0xe4)]+_0x508cc9(0x1f2)+_0x3c9798['price']+_0x508cc9(0xb9)+_0x16d35c+_0x508cc9(0x134),_0x48bd8f['style'][_0x508cc9(0x118)]=_0x508cc9(0x8f),_0x48bd8f['style'][_0x508cc9(0x17d)]=_0x1b95ba['clientX']+0xf+'px',_0x48bd8f[_0x508cc9(0x157)][_0x508cc9(0x1c2)]=_0x1b95ba[_0x508cc9(0xa3)]+0xf+'px';},_0x1790b3['onmouseleave']=()=>{const _0x465405=_0x433adc;_0x48bd8f['style']['display']=_0x465405(0x1ec);},_0x1790b3[_0x433adc(0x1d0)]=_0x433adc(0x12b)+_0x3c9798['image']+_0x433adc(0x206)+_0x3c9798[_0x433adc(0x22c)]+_0x433adc(0x90),_0x5d8ad5[_0x433adc(0x216)](_0x1790b3);}),_0x223b12['appendChild'](_0x5d8ad5);}function toggleInventory(){const _0x1007b4=_0x323031;inventoryOpen=!inventoryOpen,document[_0x1007b4(0x87)](_0x1007b4(0x11b))[_0x1007b4(0x157)][_0x1007b4(0x118)]=inventoryOpen?'block':'none';if(inventoryOpen)renderInventory();}document['addEventListener'](_0x323031(0x1fa),_0x2e6e1f=>{const _0x161ea4=_0x323031;if(character['moving'])return;switch(_0x2e6e1f[_0x161ea4(0x9c)]){case'w':moveCharacter(0x0,-0x1);break;case's':moveCharacter(0x0,0x1);break;case'a':moveCharacter(-0x1,0x0);break;case'd':moveCharacter(0x1,0x0);break;case'e':tryInteract();break;case'i':toggleInventory();break;case'c':showCharacterInfo();break;}}),document[_0x323031(0xed)](_0x323031(0x1fa),_0xd96060=>{const _0x2058e5=_0x323031;_0xd96060[_0x2058e5(0x9c)]==='Tab'&&(_0xd96060[_0x2058e5(0x183)](),toggleMenu());});function toggleMenu(){const _0xcfb888=_0x323031;menuOpen=!menuOpen,document[_0xcfb888(0x87)](_0xcfb888(0xcb))[_0xcfb888(0x157)][_0xcfb888(0x118)]=menuOpen?'flex':'none';}function closeMenu(){const _0x1e97cf=_0x323031;menuOpen=![],document[_0x1e97cf(0x87)](_0x1e97cf(0xcb))[_0x1e97cf(0x157)][_0x1e97cf(0x118)]='none';}function saveGame(){const _0x2f4263=_0x323031,_0x86ed7a={'character':playerData,'inventory':inventory,'trophies':trophies,'gold':gold,'level':currentLevel,'position':{'x':character['x'],'y':character['y'],'direction':character[_0x2f4263(0x12f)]},'playerLevel':playerLevel,'playerXP':playerXP,'xpToNextLevel':xpToNextLevel};localStorage[_0x2f4263(0x129)](_0x2f4263(0x188),JSON[_0x2f4263(0xde)](_0x86ed7a)),alert('Spillet\x20er\x20lagret!');}function loadGame(){const _0x2d83b9=_0x323031;try{const _0x400830=localStorage[_0x2d83b9(0x128)](_0x2d83b9(0x188));if(_0x400830){const _0x78a716=JSON[_0x2d83b9(0x18c)](_0x400830);inventory=_0x78a716[_0x2d83b9(0x11b)]||[],trophies=_0x78a716[_0x2d83b9(0x85)]||[],gold=_0x78a716['gold']||0x0,playerLevel=_0x78a716[_0x2d83b9(0x210)]||0x1,playerXP=_0x78a716[_0x2d83b9(0x9a)]||0x0,xpToNextLevel=Math[_0x2d83b9(0x213)](0x64*Math[_0x2d83b9(0x175)](1.25,playerLevel-0x1));const _0xf615be=_0x78a716[_0x2d83b9(0x166)]??0x0,_0x513af9=_0x78a716[_0x2d83b9(0xf7)]?.['x']??levels[_0xf615be][_0x2d83b9(0xfa)],_0x6df5ee=_0x78a716[_0x2d83b9(0xf7)]?.['y']??levels[_0xf615be][_0x2d83b9(0xb4)],_0x15cdd8=_0x78a716[_0x2d83b9(0xf7)]?.[_0x2d83b9(0x12f)]??_0x2d83b9(0xac);character['direction']=_0x15cdd8,loadLevel(_0xf615be,_0x513af9,_0x6df5ee),renderInventory(),updateXPUI(),updateXPBar();}else loadLevel(0x0);}catch(_0x1d4383){console[_0x2d83b9(0x11d)](_0x2d83b9(0xf0),_0x1d4383),loadLevel(0x0);}}let trophyJournalOpen=![],currentTrophyType=_0x323031(0x231);function toggleTrophyJournal(){const _0x56cdd3=_0x323031;trophyJournalOpen=!trophyJournalOpen;const _0x48035f=document[_0x56cdd3(0x87)](_0x56cdd3(0x1d4));if(_0x48035f){_0x48035f[_0x56cdd3(0x18f)]();return;}renderTrophyJournal();}function getUniqueCreaturesFromList(_0x59ad97,_0x16e9fc=![]){const _0x55994f=_0x323031,_0x2389ab=new Set();return _0x59ad97[_0x55994f(0x18b)](_0x3fd0ef=>{const _0x2a3588=_0x55994f;if(_0x2389ab['has'](_0x3fd0ef[_0x2a3588(0x225)]))return![];if(_0x3fd0ef[_0x2a3588(0xe4)]===_0x2a3588(0x176)&&!_0x16e9fc&&!trophies[_0x3fd0ef[_0x2a3588(0x225)]])return![];return _0x2389ab['add'](_0x3fd0ef['name']),!![];});}function renderTrophyJournal(){const _0x36f6df=_0x323031,_0x16a71a=Object[_0x36f6df(0x200)](fishPools)[_0x36f6df(0x139)](),_0x3c6eac=Object[_0x36f6df(0x200)](treeCreaturePools)[_0x36f6df(0x139)](),_0x3f789e=getUniqueCreaturesFromList(_0x16a71a,!![]),_0x1ed6e5=getUniqueCreaturesFromList(_0x3c6eac,!![]),_0x5782fe=currentTrophyType===_0x36f6df(0x231)?_0x3f789e:_0x1ed6e5,_0x4893af=_0x5782fe['filter'](_0x370799=>_0x370799[_0x36f6df(0xe4)]!=='secret'||trophies[_0x370799[_0x36f6df(0x225)]])[_0x36f6df(0xe9)]()[_0x36f6df(0x1df)]((_0x5b3d22,_0x4e09ff)=>{const _0x2c6128=_0x36f6df,_0x3613e9={'common':0x1,'rare':0x2,'legendary':0x3,'mythical':0x4,'secret':0x5};return(_0x3613e9[_0x5b3d22[_0x2c6128(0xe4)]]||0x63)-(_0x3613e9[_0x4e09ff['rarity']]||0x63);});let _0x4ec6b0=document['getElementById']('hoverInfoBox');!_0x4ec6b0&&(_0x4ec6b0=document[_0x36f6df(0x1c7)](_0x36f6df(0x13f)),_0x4ec6b0['id']='hoverInfoBox',_0x4ec6b0['style'][_0x36f6df(0xf7)]='fixed',_0x4ec6b0[_0x36f6df(0x157)][_0x36f6df(0x212)]=_0x36f6df(0x1ec),_0x4ec6b0[_0x36f6df(0x157)]['background']=_0x36f6df(0x242),_0x4ec6b0[_0x36f6df(0x157)][_0x36f6df(0x1b1)]='1px\x20solid\x20#999',_0x4ec6b0['style']['color']=_0x36f6df(0x1c0),_0x4ec6b0[_0x36f6df(0x157)]['padding']=_0x36f6df(0x230),_0x4ec6b0[_0x36f6df(0x157)][_0x36f6df(0xeb)]=_0x36f6df(0xfe),_0x4ec6b0[_0x36f6df(0x157)]['zIndex']=_0x36f6df(0x11e),_0x4ec6b0[_0x36f6df(0x157)][_0x36f6df(0x118)]='none',document[_0x36f6df(0xd0)]['appendChild'](_0x4ec6b0));const _0x216824=document['createElement']('div');_0x216824['id']=_0x36f6df(0x1d4),_0x216824[_0x36f6df(0x157)]['position']=_0x36f6df(0x10f),_0x216824[_0x36f6df(0x157)][_0x36f6df(0x1c2)]=_0x36f6df(0x1e2),_0x216824[_0x36f6df(0x157)][_0x36f6df(0x17d)]=_0x36f6df(0xcc),_0x216824[_0x36f6df(0x157)][_0x36f6df(0xa5)]=_0x36f6df(0x19d),_0x216824['style'][_0x36f6df(0x224)]=_0x36f6df(0x1a6),_0x216824['style'][_0x36f6df(0x1b1)]=_0x36f6df(0x13c),_0x216824[_0x36f6df(0x157)][_0x36f6df(0xd9)]=_0x36f6df(0x1d2),_0x216824['style'][_0x36f6df(0x13b)]='30',_0x216824[_0x36f6df(0x157)][_0x36f6df(0x1e5)]=_0x36f6df(0x1c0),_0x216824[_0x36f6df(0x157)][_0x36f6df(0xeb)]=_0x36f6df(0xfe),_0x216824[_0x36f6df(0x157)][_0x36f6df(0x111)]=_0x36f6df(0x1cd);const _0x2130dc=_0x4893af['filter'](_0x5daadc=>trophies[_0x5daadc[_0x36f6df(0x225)]])['length'],_0xbd4786=_0x36f6df(0x23b),_0x1cc399=_0x36f6df(0x162)+(currentTrophyType==='water'?_0x36f6df(0x18a):'Land\x20skapninger')+'\x20('+_0x2130dc+'/'+_0x4893af[_0x36f6df(0x1e1)]+_0x36f6df(0x1eb),_0x1d04df=document[_0x36f6df(0x1c7)]('div');_0x1d04df[_0x36f6df(0x157)][_0x36f6df(0x118)]='grid',_0x1d04df[_0x36f6df(0x157)][_0x36f6df(0xd8)]=_0x36f6df(0x101),_0x1d04df['style'][_0x36f6df(0xbd)]=_0x36f6df(0x1e4),_0x1d04df['style'][_0x36f6df(0x150)]=_0x36f6df(0x1e4),_0x4893af['forEach'](_0x36ee55=>{const _0x4f5bfd=_0x36f6df,_0x33fb61=trophies[_0x36ee55[_0x4f5bfd(0x225)]],_0x178770=document[_0x4f5bfd(0x1c7)](_0x4f5bfd(0x13f));_0x178770[_0x4f5bfd(0x157)][_0x4f5bfd(0x1d9)]='64px',_0x178770[_0x4f5bfd(0x157)]['height']=_0x4f5bfd(0x21b),_0x178770['style'][_0x4f5bfd(0x224)]=_0x4f5bfd(0x242);const _0x24ceed=raritySettings[_0x36ee55[_0x4f5bfd(0xe4)]],_0x824cd8=_0x33fb61&&_0x24ceed?_0x24ceed[_0x4f5bfd(0x1b1)]:_0x4f5bfd(0x93);_0x178770['style'][_0x4f5bfd(0x1b1)]=_0x4f5bfd(0x185)+_0x824cd8,_0x178770[_0x4f5bfd(0x157)][_0x4f5bfd(0x118)]=_0x4f5bfd(0x172),_0x178770['style'][_0x4f5bfd(0x123)]=_0x4f5bfd(0x1cd),_0x178770[_0x4f5bfd(0x157)][_0x4f5bfd(0x19c)]=_0x4f5bfd(0x1cd);const _0x878cf5=document[_0x4f5bfd(0x1c7)](_0x4f5bfd(0x1d5));_0x178770['onmousemove']=_0x5be2e7=>{const _0x5e6bdb=_0x4f5bfd,_0x25febb=raritySettings[_0x36ee55['rarity']],_0x2e8a2f=_0x25febb?_0x25febb[_0x5e6bdb(0x1e5)]:_0x5e6bdb(0xb0);let _0x3371c0=_0x5e6bdb(0x1e3)+_0x2e8a2f+'\x22>'+(_0x33fb61?_0x36ee55[_0x5e6bdb(0x225)]:'???')+_0x5e6bdb(0x140);_0x3371c0+=_0x5e6bdb(0x1da)+_0x2e8a2f+'\x22>'+_0x36ee55[_0x5e6bdb(0xe4)]+_0x5e6bdb(0x1b2);if(_0x33fb61){const _0x409e63=trophies[_0x36ee55[_0x5e6bdb(0x225)]];_0x3371c0+=_0x5e6bdb(0x1ce)+_0x36ee55['price']+_0x5e6bdb(0x94),_0x3371c0+=_0x5e6bdb(0x197)+_0x409e63+_0x5e6bdb(0x204);}_0x4ec6b0[_0x5e6bdb(0x1d0)]=_0x3371c0,_0x4ec6b0['style'][_0x5e6bdb(0x118)]=_0x5e6bdb(0x8f),_0x4ec6b0[_0x5e6bdb(0x157)][_0x5e6bdb(0x17d)]=_0x5be2e7[_0x5e6bdb(0xd3)]+0xf+'px',_0x4ec6b0[_0x5e6bdb(0x157)][_0x5e6bdb(0x1c2)]=_0x5be2e7[_0x5e6bdb(0xa3)]+0xf+'px';},_0x178770['onmouseleave']=()=>{const _0x5a6e4f=_0x4f5bfd;_0x4ec6b0['style'][_0x5a6e4f(0x118)]=_0x5a6e4f(0x1ec);},_0x878cf5[_0x4f5bfd(0x164)]=_0x36ee55[_0x4f5bfd(0xf6)],_0x878cf5['width']=0x30,_0x878cf5[_0x4f5bfd(0xb1)]=0x30,_0x878cf5[_0x4f5bfd(0x115)]=_0x33fb61?_0x36ee55['name']:_0x4f5bfd(0x23c);if(!_0x33fb61)_0x878cf5[_0x4f5bfd(0x157)]['filter']='grayscale(100%)\x20brightness(50%)';_0x178770[_0x4f5bfd(0x216)](_0x878cf5),_0x1d04df[_0x4f5bfd(0x216)](_0x178770);}),_0x216824[_0x36f6df(0x1d0)]=_0xbd4786+_0x1cc399,_0x216824['appendChild'](_0x1d04df);const _0x5158f5=document[_0x36f6df(0x1c7)](_0x36f6df(0x19e));_0x5158f5[_0x36f6df(0x232)]=_0x36f6df(0xce),_0x5158f5['style']['marginTop']=_0x36f6df(0x1bf),_0x5158f5[_0x36f6df(0x1f8)]=()=>_0x216824[_0x36f6df(0x18f)](),_0x216824[_0x36f6df(0x216)](_0x5158f5),document[_0x36f6df(0xd0)][_0x36f6df(0x216)](_0x216824);}document['addEventListener']('keydown',_0x14d2e7=>{const _0x2119c9=_0x323031;_0x14d2e7[_0x2119c9(0x9c)]==='j'&&toggleTrophyJournal();});let playerLevel=0x1,playerXP=0x0,xpToNextLevel=0x64;defineFishXP();function defineFishXP(){const _0x55e57b=Object['values'](fishPools)['flat']();_0x55e57b['forEach'](_0x53682f=>{const _0x16cc21=_0x6179;if(!_0x53682f['xp']){if(_0x53682f[_0x16cc21(0xe4)]===_0x16cc21(0x201))_0x53682f['xp']=0xa;else{if(_0x53682f[_0x16cc21(0xe4)]==='rare')_0x53682f['xp']=0x19;else{if(_0x53682f[_0x16cc21(0xe4)]===_0x16cc21(0x1cc))_0x53682f['xp']=0x4b;else{if(_0x53682f['rarity']===_0x16cc21(0x1fd))_0x53682f['xp']=0xfa;else{if(_0x53682f['rarity']==='secret')_0x53682f['xp']=0x0;}}}}}});}function gainXP(_0x56ed5d){const _0x6a88b1=_0x323031;playerXP+=_0x56ed5d;if(playerXP>=xpToNextLevel){playerXP-=xpToNextLevel,playerLevel++,xpToNextLevel=Math[_0x6a88b1(0x213)](xpToNextLevel*1.25),alert(_0x6a88b1(0x98)+playerLevel+'!');if(sounds[_0x6a88b1(0x203)][_0x6a88b1(0xf1)])sounds[_0x6a88b1(0x203)][_0x6a88b1(0xf1)][_0x6a88b1(0x220)]();}updateXPBar();}function updateXPBar(){const _0x84e983=_0x323031,_0x49aa3c=document[_0x84e983(0x87)](_0x84e983(0x165)),_0x6fa088=Math[_0x84e983(0x213)](playerXP/xpToNextLevel*0x64);_0x49aa3c&&(_0x49aa3c[_0x84e983(0x157)]['width']=_0x6fa088+'%',_0x49aa3c[_0x84e983(0x1d0)]='<span\x20style=\x22white-space:\x20nowrap;\x22>XP:\x20'+playerXP+'\x20/\x20'+xpToNextLevel+_0x84e983(0x204));}function createXPUI(){const _0x37065c=_0x323031,_0x4ac776=document['createElement'](_0x37065c(0x13f));_0x4ac776[_0x37065c(0x157)][_0x37065c(0xf7)]='absolute',_0x4ac776[_0x37065c(0x157)][_0x37065c(0x12a)]=_0x37065c(0x1e2),_0x4ac776[_0x37065c(0x157)][_0x37065c(0x17d)]=_0x37065c(0xcc),_0x4ac776[_0x37065c(0x157)]['transform']=_0x37065c(0x19d),_0x4ac776[_0x37065c(0x157)][_0x37065c(0x1d9)]=_0x37065c(0x145),_0x4ac776[_0x37065c(0x157)][_0x37065c(0x224)]=_0x37065c(0x242),_0x4ac776[_0x37065c(0x157)]['border']=_0x37065c(0x13c),_0x4ac776['style'][_0x37065c(0x1e5)]=_0x37065c(0x1c0),_0x4ac776[_0x37065c(0x157)]['fontFamily']=_0x37065c(0xfe);const _0x25c1df=document[_0x37065c(0x1c7)](_0x37065c(0x13f));_0x25c1df['id']=_0x37065c(0x165),_0x25c1df['style']['height']=_0x37065c(0x1d2),_0x25c1df['style'][_0x37065c(0x1d9)]='0%',_0x25c1df['style']['background']=_0x37065c(0x20b),_0x25c1df[_0x37065c(0x157)]['textAlign']=_0x37065c(0x1cd),_0x25c1df['style']['fontSize']=_0x37065c(0x16e),_0x25c1df[_0x37065c(0x157)]['lineHeight']=_0x37065c(0x1d2),_0x4ac776[_0x37065c(0x216)](_0x25c1df),document[_0x37065c(0xd0)][_0x37065c(0x216)](_0x4ac776),updateXPBar();}sounds[_0x323031(0x203)][_0x323031(0xf1)]=new Audio(_0x323031(0x8e));function addToInventory(_0x35849e){const _0x2e17a6=_0x323031;let _0x22098d=inventory[_0x2e17a6(0x1dc)](_0x468504=>_0x468504['name']===_0x35849e['name']);_0x22098d?_0x22098d[_0x2e17a6(0x22c)]+=0x1:inventory[_0x2e17a6(0x153)]({..._0x35849e,'count':0x1});if(!trophies[_0x35849e[_0x2e17a6(0x225)]]){const _0x18f098=new Date(),_0x32b2f7=_0x18f098[_0x2e17a6(0xb6)]()+'-'+String(_0x18f098[_0x2e17a6(0x1a9)]()+0x1)[_0x2e17a6(0x113)](0x2,'0')+'-'+String(_0x18f098[_0x2e17a6(0x1f3)]())['padStart'](0x2,'0')+'\x20'+String(_0x18f098[_0x2e17a6(0x1aa)]())[_0x2e17a6(0x113)](0x2,'0')+':'+String(_0x18f098[_0x2e17a6(0x109)]())[_0x2e17a6(0x113)](0x2,'0');trophies[_0x35849e[_0x2e17a6(0x225)]]=_0x32b2f7;}gainXP(_0x35849e['xp']||0xa);if(inventoryOpen)renderInventory();}createXPUI();function showCharacterCreationWithSlot(_0x303780){showCharacterCreation(),setTimeout(()=>{const _0x53eab7=_0x6179,_0x297102=document[_0x53eab7(0x11c)](_0x53eab7(0x17b));_0x297102?_0x297102[_0x53eab7(0x1f8)]=()=>finishCharacterCreationToSlot(_0x303780):console['error']('Fant\x20ikke\x20startknappen\x20for\x20karakteropprettelse!');},0x0);}function finishCharacterCreationToSlot(_0x3101fd){const _0x3a5443=_0x323031,_0x583567=document[_0x3a5443(0x87)](_0x3a5443(0x179))['value'],_0x29fb95=document[_0x3a5443(0x87)]('charName')[_0x3a5443(0xa7)][_0x3a5443(0xaf)]();if(!_0x29fb95){alert(_0x3a5443(0x1fe));return;}playerData[_0x3a5443(0xda)]=_0x583567,playerData[_0x3a5443(0x225)]=_0x29fb95,applyCharacterAppearance(),localStorage['setItem'](_0x3101fd+_0x3a5443(0x107),JSON[_0x3a5443(0xde)](playerData)),document[_0x3a5443(0x87)](_0x3a5443(0x112))['remove'](),loadLevel(0x0);}document[_0x323031(0xed)]('keydown',_0x120e6b=>{if(menuOpen||isFishing)return;});function showCharacterInfo(){const _0x9ab715=_0x323031,_0x54d83c=document['getElementById'](_0x9ab715(0xf4));if(_0x54d83c)_0x54d83c[_0x9ab715(0x18f)]();const _0x1cda0b=document['createElement'](_0x9ab715(0x13f));_0x1cda0b['id']=_0x9ab715(0xf4),_0x1cda0b[_0x9ab715(0x157)]['position']=_0x9ab715(0x10f),_0x1cda0b['style'][_0x9ab715(0x1c2)]='50%',_0x1cda0b[_0x9ab715(0x157)][_0x9ab715(0x17d)]=_0x9ab715(0xcd),_0x1cda0b['style'][_0x9ab715(0xa5)]=_0x9ab715(0x187),_0x1cda0b[_0x9ab715(0x157)][_0x9ab715(0x224)]=_0x9ab715(0x242),_0x1cda0b[_0x9ab715(0x157)][_0x9ab715(0x1b1)]='2px\x20solid\x20#aaa',_0x1cda0b[_0x9ab715(0x157)][_0x9ab715(0xd9)]=_0x9ab715(0x1d2),_0x1cda0b[_0x9ab715(0x157)][_0x9ab715(0x1e5)]='white',_0x1cda0b['style'][_0x9ab715(0xeb)]=_0x9ab715(0xfe),_0x1cda0b['style'][_0x9ab715(0x13b)]='30',_0x1cda0b[_0x9ab715(0x157)][_0x9ab715(0x111)]=_0x9ab715(0x1cd);const _0x14ebbb=getAllUniqueCreatures()[_0x9ab715(0x1e1)],_0x18b9ba=Object[_0x9ab715(0xa9)](trophies)[_0x9ab715(0x1e1)],_0x36597e=playerData['gender']===_0x9ab715(0x1d8)?'images/player/man/pixelmanndown.png':'images/pixelwomanDown.png';_0x1cda0b['innerHTML']=_0x9ab715(0x1fb)+playerData[_0x9ab715(0x225)]+_0x9ab715(0x132)+_0x36597e+_0x9ab715(0x23f)+playerLevel+'<br>\x0a\x20\x20\x20\x20<strong>XP:</strong>\x20'+playerXP+'\x20/\x20'+xpToNextLevel+_0x9ab715(0x1b9)+_0x18b9ba+_0x9ab715(0x15e)+_0x14ebbb+_0x9ab715(0x1fc),document['body'][_0x9ab715(0x216)](_0x1cda0b);}const saved=localStorage[_0x323031(0x128)](_0x323031(0x188));if(saved){const data=JSON['parse'](saved);playerData=data[_0x323031(0x169)],applyCharacterAppearance(),inventory=data[_0x323031(0x11b)]||[],trophies=data['trophies']||[],gold=data['gold']||0x0,playerLevel=data[_0x323031(0x210)]||0x1,playerXP=data[_0x323031(0x9a)]||0x0,xpToNextLevel=data[_0x323031(0x1f1)]||0x64;const level=data[_0x323031(0x166)]??0x0,pos=data['position']||{'x':0x0,'y':0x0,'direction':_0x323031(0xac)};character['direction']=pos[_0x323031(0x12f)],loadLevel(level,pos['x'],pos['y']),renderInventory(),updateXPBar();}else showMainMenu();function showMainMenu(){const _0x2938a5=_0x323031,_0x556de5=document['createElement'](_0x2938a5(0x13f));_0x556de5['id']=_0x2938a5(0x10c),_0x556de5[_0x2938a5(0x157)]['position']=_0x2938a5(0x10f),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x1c2)]='0',_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x17d)]='0',_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x1d9)]=_0x2938a5(0x20a),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0xb1)]=_0x2938a5(0x20a),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x224)]=_0x2938a5(0x171),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x118)]=_0x2938a5(0x172),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x21a)]=_0x2938a5(0x133),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x123)]=_0x2938a5(0x1cd),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0x19c)]=_0x2938a5(0x1cd),_0x556de5[_0x2938a5(0x157)][_0x2938a5(0xbd)]=_0x2938a5(0x1e8),_0x556de5[_0x2938a5(0x157)]['zIndex']=0x3e8,_0x556de5[_0x2938a5(0x1d0)]=_0x2938a5(0x1d3),document[_0x2938a5(0xd0)][_0x2938a5(0x216)](_0x556de5);}function startCharacterCreationFromMenu(){const _0x4eba23=_0x323031;document[_0x4eba23(0x87)](_0x4eba23(0x10c))[_0x4eba23(0x18f)](),showCharacterCreation();}function showCredits(){const _0xe54236=_0x323031,_0x3e01f9=document[_0xe54236(0x1c7)](_0xe54236(0x13f));_0x3e01f9['id']='creditsScreen',_0x3e01f9[_0xe54236(0x157)][_0xe54236(0xf7)]='absolute',_0x3e01f9[_0xe54236(0x157)][_0xe54236(0x1c2)]='0',_0x3e01f9[_0xe54236(0x157)]['left']='0',_0x3e01f9['style']['width']=_0xe54236(0x20a),_0x3e01f9[_0xe54236(0x157)][_0xe54236(0xb1)]='100%',_0x3e01f9['style'][_0xe54236(0x224)]=_0xe54236(0x1a6),_0x3e01f9[_0xe54236(0x157)][_0xe54236(0x1e5)]='white',_0x3e01f9[_0xe54236(0x157)]['fontFamily']=_0xe54236(0xfe),_0x3e01f9[_0xe54236(0x157)][_0xe54236(0x118)]='flex',_0x3e01f9[_0xe54236(0x157)][_0xe54236(0x21a)]=_0xe54236(0x133),_0x3e01f9['style'][_0xe54236(0x123)]=_0xe54236(0x1cd),_0x3e01f9[_0xe54236(0x157)]['justifyContent']='center',_0x3e01f9[_0xe54236(0x157)][_0xe54236(0x13b)]=0x3e9,_0x3e01f9[_0xe54236(0x157)]['textAlign']=_0xe54236(0x1cd),_0x3e01f9[_0xe54236(0x1d0)]=_0xe54236(0x1ee),document[_0xe54236(0xd0)]['appendChild'](_0x3e01f9);}function quitGame(){const _0x5d881f=_0x323031;window[_0x5d881f(0x114)](),alert('Du\x20må\x20lukke\x20fanen\x20manuelt.');}toggleMenu();
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const tileSize = 40;
+
+let totalPlayTime = 0;     // Totalt antall millisekunder spilt
+let playSessionStart = null; // Når denne spilløkta startet
+
+let menuOpen = false;
+
+let isDead = false;
+
+let lastFrameTime = performance.now();
+
+let gameStarted = false;
+
+
+// === Kart: Lokasjoner og visning ===
+const mapData = [
+  { name: "Spenningsbyen", x: 20, y: 20, type: "city", color: "dodgerblue" },
+  { name: "Path-1", x: 35, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 50, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 65, y: 20, type: "road", color: "#8B4513" },
+  { name: "Path-1", x: 80, y: 20, type: "road", color: "#8B4513" },
+  { name: "Yurborg", x: 95, y: 20, type: "city", color: "dodgerblue" },
+  
+];
+
+// === Tiles ===
+const tileImages = {
+  grass: new Image(),
+  coblestone: new Image(),
+  tree: new Image(),
+  brick: new Image(),
+  roof: new Image(),
+  plank: new Image(),
+  fence: new Image(),
+  table: new Image(),
+  door: new Image(),
+  water: new Image(),
+  sand: new Image(),
+  stoneSingle: new Image(),
+  campfire: new Image(),
+  stonepath: new Image(),
+  voidgate: new Image()
+};
+
+tileImages.grass.src = 'images/tiles/grassTile.png';
+tileImages.tree.src = 'images/tiles/treeTile.png';
+tileImages.brick.src = 'images/tiles/brickTile.png';
+tileImages.roof.src = 'images/tiles/roofTile.png';
+tileImages.plank.src = 'images/tiles/plankTile.png';
+tileImages.door.src = 'images/tiles/doorTile.png';
+tileImages.fence.src = 'images/tiles/fenceTile.png';
+tileImages.table.src = 'images/tiles/tableTile.png';
+tileImages.coblestone.src = 'images/tiles/coblestoneTile.png';
+tileImages.water.src = 'images/tiles/waterTile.png';
+tileImages.sand.src = 'images/tiles/sandPathTile.png';
+tileImages.stoneSingle.src = 'images/tiles/stoneSingleTile.png';
+tileImages.campfire.src = 'images/tiles/campfireStill.png';
+tileImages.stonepath.src = 'images/tiles/stonePathTile.png';
+tileImages.voidgate.src = 'images/tiles/voidgateTile.png';
+
+const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire',];
+const tilesAbovePlayer = ['roof', 'tree'];
+
+const tileMapping = {
+  'G1': 'grass',
+  'C1': 'coblestone',
+  'T1': 'tree',
+  'B1': 'brick',
+  'R1': 'roof',
+  'P1': 'plank',
+  'F1': 'fence',
+  'T2': 'table', 
+  'D1': 'door',
+  'W1': 'water',
+  'S1': 'sand',
+  'P2': 'stonepath',
+  'S2': 'stoneSingle',
+  'C2': 'campfire',
+  'V1': 'voidgate',
+};
+
+const characterImages = {
+  up: new Image(),
+  down: new Image(),
+  left: new Image(),
+  right: new Image(),
+};
+
+characterImages.up.src = 'images/player/man/pixelmannUp.png';
+characterImages.down.src = 'images/player/man/pixelmannDown.png';
+characterImages.left.src = 'images/player/man/pixelmannLeft.png';
+characterImages.right.src = 'images/player/man/pixelmannRight.png';
+
+const fishPools = {
+  0: [ // Utenfor
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
+    { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 49, price: 74 },
+
+    // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
+  ],
+  2: [ // Cave
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
+    { name: "Deep Void Lure", rarity: "legendary", image: "images/creatures/vann/deepVoidLure.png", chance: 10, price: 418 },
+    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42 },
+  ],
+  4: [ // Path-1
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 95, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 80, price: 10 },
+    { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 1, price: 74 },
+  ],
+  5: [ // Yurborg
+    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19 },
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 87 },
+    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743 },
+    { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217 },
+    { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
+
+  ],
+  8: [ // The-Veiled-Abyss
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
+    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42 },
+
+  ],
+};
+
+const treeCreaturePools = {
+  0: [ // Level 0 – Spenningsbyen
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
+
+  ],
+  4: [ // Sti-1
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
+  ],
+  5: [ // Yurborg
+    { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
+
+  ],
+};
+
+const bosses = {
+  "abyssBeast": {
+    name: "The Abyss Beast",
+    maxHP: 200,
+    level: "the-veiled-abyss",
+    rarity: "rare",
+    image: "images/creatures/boss/theAbyssBeast/theAbyssBeastDown.png",
+    drops: [
+      {
+        name: "Abyss Eye",
+        image: "images/creatures/boss/theAbyssBeast/abyssEye.png",
+        rarity: "rare",
+        price: 875,
+        chance: 50  // 20% sjanse
+      },
+    ],
+    barSpeed: 1500,       // Tid for bar i ms
+    damageToBoss: 34,      // Hvor mye skade bossen får ved suksess
+    damageToPlayer: 67     // Hvor mye skade spilleren får ved bom
+  },
+};
+
+const visibleBosses = [
+  {
+    name: "The Abyss Beast",
+    image: "images/creatures/boss/theAbyssBeast/theAbyssBeastDown.png",
+    level: 8,
+    x: 25, // startposisjon på tilekartet
+    y: 4,
+    width: 6,   // hvor mange tiles bred
+    height: 6   // hvor mange tiles høy
+  },
+  // du kan legge til flere bosser her!
+];
+
+
+
+const raritySettings = {
+  common: { time: 6000, color: "gray", border: "gray" },
+  uncommon: { time: 5000, color: "green", border: "green" },
+  rare: { time: 2000, color: "blue", border: "blue" },
+  legendary: { time: 1200, color: "gold", border: "gold" },
+  mythical: { time: 1200, color: "purple", border: "purple" },
+  secret: { time: 2500, color: "pink", border: "pink" },
+};
+
+const npcs = [
+  {
+    name: "Morgan the sailor",
+    image: "images/npc/morganSailorDown.png",
+    x: 2,
+    y: 2,
+    level: 1,
+    type: "shop",
+    dialog: ["I give a good coin in exchange of good fish!"]
+  },
+  {
+    name: "Path Seeker Nodin",
+    image: "images/player/man/pixelmannDown.png",
+    x: 10,
+    y: 6,
+    level: 1,
+    type: "lore",
+    dialog: ["hail be thou! My name is Nodin!", 
+      "Welcome to Spenningsbyen!",
+      "This is a town located far to the north-west in the continent of Voidlore.",
+      "I am a fellow Path Seeker myself, and for now i have dedicated myself to help fellow Path Seekers!",
+      "I will give you a quick rundown and then off with you.",
+      "You can interact with others by pressing E, like you just found out...",
+      "Be sure to use your map by pressing M, to navigate through Voidlore.",
+      "The fellow over there is Morgan, i dont know much about the man. But i got some gold by giving him some grodr fish!",
+      "To fish you just have to go up to any lake or ocean and interact.",
+      "I myself only hunt rare land creatures.",
+      "Be sure to keep track of your inventory by pressing i. I like to have it open almost always, the inventory shows important info.",
+      "And ofcourse press TAB to se the menu.",
+      "Dont forget to save often!",
+      "Last tip, you can zoom in and out after your liking for better experience.",
+      "I hope our path crosses, fellow Path Seeker...",
+    ]
+  },
+  {
+    name: "Nocturne",
+    image: "images/npc/nocturneDown.png",
+    x: 19,
+    y: 3,
+    level: 0,
+    type: "lore",
+    dialog: ["Greeting to ya!", 
+      "I have retired from searching the land after creatures. Those years are behind me.",
+      "An average old man are maybe not that much to use, but i have more knowledge of these Great cave water creatures, than anyone in Voidlore!",
+      "I originate from a town to the east called Yurborg, not to far away.",
+      "But this cave was my old pearl.",
+      "After the old moss clan invaded Yurborg city i had to leave.",
+      "I took refugee here at Morgan's gatherers hub.",
+      "He is a good man.",
+      "You look like a happy and hopeful person yourself! Let me give you a piece of advice my friend.",
+      "If you havent yet seen it. There is a trophy hanging over the door in to the cave, that is the legendary Deep Void Lure! I caught it myself.",
+      "My tip was to fish in my old pear here, you will get many trophies to show off.",
+      "Now.. take care mye friend."
+
+    ]
+  },
+  {
+    name: "Oleander the Hunter",
+    image: "images/npc/oleanderDown.png",
+    x: 1,
+    y: 2,
+    level: 7,
+    type: "shop_land",
+    dialog: ["Dont touch my creatures!",
+      "Have you hunted any?"
+    ]
+  },
+  {
+    name: "Voidlore Merchant",
+    image: "images/npc/voidloreMerchantRight.png",
+    x: 6,
+    y: 4,
+    level: 5,
+    type: "special_shop",
+    dialog: ["No one sells goods like mine!",
+      "Take a look."
+    ]
+  },
+
+  //----------SKAPNINGER----------
+  
+  {
+    name: "Poisetle",
+    image: "images/creatures/land/poisetle.png",
+    x: 5,
+    y: 2,
+    level: 7,
+    type: "creature",
+    dialog: ["SSSsSsssSssSSS",
+      "SSssssSSSsss"
+    ]
+  },
+  {
+    name: "Deep Void Lure",
+    image: "images/creatures/vann/deepVoidLure.png",
+    x: 22,
+    y: 2,
+    level: 0,
+    type: "creature",
+    dialog: ["You are not supposed to be here...",
+      "And you are not supposed to know that i ca-",
+      "Eh? i feel the.. you.. are.."
+    ]
+  },
+  {
+    name: "Skuggosk",
+    image: "images/creatures/vann/skuggosk.png",
+    x: 2,
+    y: 4,
+    level: 2,
+    type: "creature",
+    dialog: ["krk-kvak-kvek",
+      "kvekek-krk-kvekek",
+    ]
+  },
+  // Legg til flere her!
+];
+
+const npcShopItems = {
+  "Voidlore Merchant": [
+    {
+      name: "Dock Key",
+      image: "images/items/dockKey.png",
+      price: 2000,
+      description: "Unlocks fence to dock in Yurborg.",
+      once: true // Bare én gang per spiller
+    },
+    {
+      name: "Abyss Seekers",
+      image: "images/items/book.png",
+      price: 1500,
+      description: "Unlocks location knowledge.",
+      once: true // Bare én gang per spiller
+    },
+    // Flere varer kan enkelt legges til her senere
+  ]
+};
+
+//KLIKKBARE ITEMS I INVENTORY
+const interactableItems = {
+  "The Veiled Abyss Location": {
+    message: "To enter The Veiled Abyss, tp to the-veiled-abyss"
+  },
+  // Du kan lett legge til flere spesialgjenstander her etterpå
+};
+
+let trophies = {}; // Navn på fiskene du har fanget før
+
+const character = {
+  x: 0, y: 0,
+  pixelX: 0, pixelY: 0,
+  direction: 'down',
+  moving: false
+};
+
+const keys = { w: false, a: false, s: false, d: false };
+
+// === Bruk: Legg til en locked door i doorMap slik: ===
+// '5,5': { targetLevel: 6, targetX: 1, targetY: 1, requires: "Void Key" }
+
+const doorMap = {
+  0: { //SPENNINGSBYEN
+    '2,9': { targetLevel: 1, targetX: 10, targetY: 2 }, // TIL HUS
+    '22,3': { targetLevel: 2, targetX: 5, targetY: 1 },  // TIL CAVE
+    '23,5': { targetLevel: 4, targetX: 1, targetY: 3 }  // TIL STI-1
+  },
+  1: { //HUS HUB SPENNINGSBYEN
+    '10,1': { targetLevel: 0, targetX: 2, targetY: 10 }, // TIL UTE 
+    '7,1': { targetLevel: 3, targetX: 7, targetY: 6 } // TIL TROFEROM
+  },
+  2: { //CAVE1 SPENNINGSBYEN
+    '5,0': { targetLevel: 0, targetX: 22, targetY: 4 }  // TIL UTE 
+  },
+  3: { //TROFEROM HUS HUB SPENNINGSBYEN
+    '7,7': { targetLevel: 1, targetX: 7, targetY: 2 }  // TIL HUS HUB
+  },
+  4: { //STI-1
+    '0,3': { targetLevel: 0, targetX: 22, targetY: 5 },  // TIL SPENNINGSBYEN
+    '23,3': { targetLevel: 5, targetX: 1, targetY: 5 }  // TIL YURBORG
+  },
+  5: { //YURBORG
+    '0,5': { targetLevel: 4, targetX: 22, targetY: 3 },  // TIL STI-1
+    '26,11': { targetLevel: 7, targetX: 7, targetY: 6 }, // TIL GATHERERS HUB 
+    //'5,5': { targetLevel: 0, targetX: 22, targetY: 5 }  // TIL CASINO-1
+  },
+  6: { //CASINO-1
+    '5,5': { targetLevel: 5, targetX: 5, targetY: 2 }  // TIL YURBORG
+  },
+  7: { //GATHERERS HUB YURBORG
+    '7,7': { targetLevel: 5, targetX: 26, targetY: 12 }  // TIL YURBORG
+  }
+};
+
+const levels = [
+  {
+    //Spenningsbyen "0"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'S2', 'C1', 'C1', 'C1', 'C1', 'C1'],//0
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'S2', 'C1', 'R1', 'R1', 'R1'],//1
+      ['T1', 'G1', 'G1', 'G1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'S2', 'C1', 'P1', 'P1', 'P1'],//2
+      ['T1', 'G1', 'G1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'S2', 'P1', 'D1', 'P1'],//3
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'P2', 'C2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'S2', 'G1', 'S2'],//4
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'G1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'V1'],//5
+      ['T1', 'R1', 'R1', 'R1', 'R1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//6
+      ['T1', 'R1', 'R1', 'R1', 'R1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//7
+      ['T1', 'B1', 'B1', 'B1', 'B1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'S1', 'S1', 'S1', 'S1'],//8
+      ['T1', 'B1', 'D1', 'B1', 'B1', 'F1', 'F1', 'F1', 'F1', 'F1', 'F1', 'F1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'S1', 'W1', 'W1', 'W1', 'W1'],//9
+      ['T1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'S1', 'W1', 'W1', 'W1', 'W1', 'W1'],//10
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'S1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//11
+
+    ],
+    startX: 4,
+    startY: 10,
+    background: 'grass'
+  },
+  {
+    //GATHERERS HUB "1"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//0
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'D1', 'B1', 'B1', 'D1', 'B1'],//1
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//2
+      ['B1', 'T2', 'T2', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//3
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//4
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//5
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//6
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//7
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'plank'
+  },
+  {
+    // DEEP VOID CAVE SPENNINGSBYEN "2"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['S2', 'S2', 'S2', 'P2', 'C1', 'V1', 'C1', 'C1', 'C1', 'S2', 'S2', 'S2'],//0
+      ['S2', 'S2', 'P2', 'C1', 'C1', 'P2', 'C1', 'S2', 'C1', 'C1', 'C1', 'C1'],//1
+      ['S2', 'P2', 'C1', 'C1', 'C1', 'P2', 'C1', 'C1', 'C1', 'S2', 'C1', 'C1'],//2
+      ['P2', 'C1', 'C1', 'C1', 'P2', 'P2', 'P2', 'C1', 'C1', 'C1', 'C1', 'C1'],//3
+      ['P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2'],//4
+      ['W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//5
+      ['W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//6
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//7
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'coblestone'
+  },
+  {
+    // HUS HUB TROFE ROM "3"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//0
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//1
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//2
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//3
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//4
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//5
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//6
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'D1', 'P1', 'P1', 'P1', 'B1'],//7
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'plank'
+  },
+  {
+    // STI-1 "4"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'W1', 'W1', 'W1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//0
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'S2', 'W1', 'W1', 'W1', 'S2', 'T1', 'T1', 'G1', 'T1', 'G1', 'G1', 'T1'],//1
+      ['T1', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'W1', 'W1', 'W1', 'G1', 'G1', 'G1', 'G1', 'T1', 'G1', 'G1', 'T1'],//2
+      ['V1', 'P2', 'P2', 'T1', 'G1', 'P2', 'P2', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'W1', 'W1', 'W1', 'F1', 'F1', 'F1', 'G1', 'G1', 'P2', 'P2', 'P2'],//3
+      ['T1', 'G1', 'T1', 'T1', 'T1', 'G1', 'P2', 'P2', 'P2', 'G1', 'G1', 'P2', 'P2', 'P1', 'P1', 'P1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'T1', 'T1'],//4
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'S2', 'G1', 'G1', 'G1', 'G1', 'G1', 'P1', 'P1', 'P1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1', 'T1', 'T1'],//5
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'W1', 'W1', 'W1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//6
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'grass'
+  },
+  {
+    //YURBORG "5"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23----24----25----26----27----28
+      ['G1', 'G1', 'G1', 'G1', 'G1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1'],//0
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1'],//1
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//2
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//3
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1'],//4
+      ['P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1'],//5
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1'],//6
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1'],//7
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'R1', 'R1'],//8
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'R1', 'R1'],//9
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'B1', 'B1'],//10
+      ['T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'G1', 'B1', 'B1', 'D1', 'B1', 'B1'],//11
+      ['T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2'],//12
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1'],//13
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'F1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//14
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//15
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//16
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//17
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//18
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//19
+
+    ],
+    startX: 4,
+    startY: 4,
+    background: 'grass'
+  },
+  {
+    // CASINO YURBORG "6"
+    layout: [
+      'BBBBBBBBBBBBBBBBBBBBBBBB',
+      'BBBBBBBBBBBBBBBBBBBBBBBB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPPPPPPPPPPPPPPPPPPPB',
+      'BPPPPVPPPPPPPPPPPPPPPPPB'
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'plank'
+  },
+  {
+    // GATHERERS HUB YURBORG "7"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23----24----25----26----27----28----29----30----31----32----33----34----35
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//0
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//1
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//2
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//3
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//4
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//5
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//6
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//7
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//8
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//9
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//10
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//11
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//12
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//14
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//15
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//16
+
+    ],
+    startX: 3,
+    startY: 3,
+    background: 'plank'
+  },
+  {
+    // VEILED ABYSS "8"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23----24----25----26----27----28----29----30----31----32----33----34----35
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//0
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//1
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//2
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//3
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//4
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//5
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//6
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//7
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//8
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//9
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//10
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//11
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//12
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//14
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//15
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//16
+
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'coblestone'
+  },
+  
+];
+
+const levelNamesToIndex = {
+  "spenningsbyen": 0,
+  "gatherers-hub": 1,
+  "deep-void-cave": 2,
+  "trophyroom": 3,
+  "path-1": 4,
+  "yurborg": 5,
+  "casino": 6,
+  "gatherers-hub-yurborg": 7,
+  
+  // Hemmelig nivå:
+  "the-veiled-abyss": 8 // <- hemmelig!
+};
+
+const levelDefinitions = {
+  "spenningsbyen":      { index: 0,  x: 4,  y: 10 },
+  "gatherers-hub":      { index: 1,  x: 5,  y: 5 },
+  "deep-void-cave":     { index: 2,  x: 5,  y: 5 },
+  "trophyroom":         { index: 3,  x: 5,  y: 5 },
+  "path-1":             { index: 4,  x: 2,  y: 3 },
+  "yurborg":            { index: 5,  x: 4,  y: 4 },
+  "casino":             { index: 6,  x: 5,  y: 5 },
+  "gatherers-hub-yurborg": { index: 7, x: 3, y: 3 },
+
+  // Hemmelig nivå
+  "the-veiled-abyss":   { index: 8,  x: 2,  y: 2 },
+};
+
+
+
+// ================== QUESTER ==================
+
+
+
+// ========= LYD =========
+const sounds = {
+  music: {
+    0: new Audio("musikk/introVoidQuestMusic.wav"),
+    //1: new Audio("musikk/music_house.mp3"),
+    //2: new Audio("musikk/music.wav"),
+    //3: new Audio("musikk/music.wav"),
+    //4: new Audio("musikk/sti1Musikk.wav"),
+    5: new Audio("musikk/yurborgMusic.wav"),
+
+  },
+  sfx: {
+    startFishing: new Audio("lyder/kasteFiskeStang.wav"),
+    gotBite: new Audio("lyder/fiskNapper.wav"),
+    catchSuccess: new Audio("lyder/fangetFisk.wav"),
+    catchFail: new Audio("lyder/mistetFisk.wav")
+  }
+};
+
+let masterVolume = 0.5;
+
+const savedVolume = localStorage.getItem('voidquest_volume');
+if (savedVolume !== null) {
+  masterVolume = parseFloat(savedVolume);
+}
+
+function toggleSettings() {
+  const settings = document.getElementById('settingsMenu');
+  settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+}
+
+function confirmDeleteSave() {
+  const confirmDelete = confirm("Are you sure you want to delete your character save?");
+  if (confirmDelete) {
+    deleteSave();
+  }
+}
+
+function deleteSave() {
+  localStorage.removeItem('voidquest_save');
+  localStorage.removeItem('voidquest_volume');
+  alert("Your save has been deleted. The game will now restart.");
+  location.reload(); // Starter spillet på nytt
+}
+
+function updateVolume(value) {
+  masterVolume = parseFloat(value);
+
+  // Juster volum på alle lyder og musikk
+  Object.values(sounds.music).forEach(audio => {
+    audio.volume = masterVolume;
+  });
+
+  Object.values(sounds.sfx).forEach(audio => {
+    audio.volume = masterVolume;
+  });
+
+  // Lagre volumvalg i localStorage
+  localStorage.setItem('voidquest_volume', masterVolume);
+}
+
+// ========= LYD FERDIG =========
+let currentMusic = null;
+
+let currentLevel = 0, map = [], mapWidth = 0, mapHeight = 0;
+let currentBackground = 'grass';
+
+let isFishing = false;
+let fishingBox = null;
+let fishTimeout = null;
+let biteTimeout = null;
+let currentFish = null;
+let fishCaught = false;
+
+let inventory = [];
+let inventoryOpen = false;
+let gold = 0;
+
+function loadLevel(levelIndex, startX = null, startY = null) {
+  const levelNames = {
+    0: "Spenningsbyen",
+    1: "Gatherers hub",
+    2: "Deep-Void-Cave",
+    3: "Trophyroom",
+    4: "Path-1",
+    5: "Yurborg",
+    6: "Casino",
+    7: "Gatherers-hub-Yurborg",
+    8: "The-Veiled-Abyss",
+  };
+  
+  const level = levels[levelIndex];
+  currentLevel = levelIndex;
+
+  const locationLabel = document.getElementById("locationLabel");
+  locationLabel.innerText = levelNames[levelIndex] || `Område ${levelIndex}`;
+
+  if (currentMusic) {
+    currentMusic.pause();
+    currentMusic.currentTime = 0;
+  }
+
+  currentMusic = sounds.music[levelIndex];
+  if (currentMusic) {
+    currentMusic.loop = true;
+    currentMusic.volume = masterVolume;
+    currentMusic.play();
+  }
+
+  map = level.layout.map(row => row.map(tile => tileMapping[tile]));
+
+  mapHeight = map.length;
+  mapWidth = map[0].length;
+
+  canvas.width = mapWidth * tileSize;
+  canvas.height = mapHeight * tileSize;
+
+  currentBackground = level.background || 'grass';
+
+  character.x = startX !== null ? startX : level.startX;
+  character.y = startY !== null ? startY : level.startY;
+
+  character.pixelX = character.x * tileSize;
+  character.pixelY = character.y * tileSize;
+
+  gameLoop();
+  // Fjern tidligere trofévisning hvis den finnes
+  const existingTrophy = document.getElementById("trophyRoom");
+  if (existingTrophy) existingTrophy.remove();
+
+}
+
+function drawMap() {
+  for (let y = 0; y < mapHeight; y++) {
+    for (let x = 0; x < mapWidth; x++) {
+      const tileType = map[y][x];
+      ctx.drawImage(tileImages[currentBackground], x * tileSize, y * tileSize, tileSize, tileSize);
+      if (tileType !== 'grass') {
+        ctx.drawImage(tileImages[tileType], x * tileSize, y * tileSize, tileSize, tileSize);
+      }
+    }
+  }
+    npcs.forEach(npc => {
+      if (npc.level === currentLevel) {
+        const img = new Image();
+        img.src = npc.image;
+        ctx.drawImage(img, npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
+      }
+  });
+    visibleBosses.forEach(boss => {
+      if (boss.level === currentLevel) {
+        const img = new Image();
+        img.src = boss.image;
+        ctx.drawImage(img, boss.x * tileSize, boss.y * tileSize, boss.width * tileSize, boss.height * tileSize);
+      }
+    });
+  // simulerer tåke for nivået(mørkere)
+  if (currentLevel === 2 || currentLevel === 8) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';  // 40% mørkt lag
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+}
+
+function changeTile(levelIndex, x, y, newTileChar) {
+  // Endre layout-dataen
+  const row = levels[levelIndex].layout[y];
+  const newRow = row.substring(0, x) + newTileChar + row.substring(x + 1);
+  levels[levelIndex].layout[y] = newRow;
+
+  // Hvis vi er på riktig nivå nå, oppdater også "map"-arrayen som brukes i spillet
+  if (currentLevel === levelIndex) {
+    map[y][x] = tileMapping[newTileChar];
+    gameLoop(); // Tegn på nytt
+  }
+}
+
+// === KARAKTERVALG ===
+// Vi lagrer karaktervalg her etter character creation
+let playerData = {
+  gender: null,
+  name: null,
+  
+};
+
+// === Karaktervalgskjerm ===
+function showCharacterCreation() {
+  const container = document.createElement("div");
+  container.id = "charCreation";
+  container.style.position = "absolute";
+  container.style.top = "0";
+  container.style.left = "0";
+  container.style.width = "100%";
+  container.style.height = "100%";
+  container.style.background = "rgba(0,0,0,0.9)";
+  container.style.zIndex = "50";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "center";
+  container.style.color = "white";
+  container.style.fontFamily = "monospace";
+
+  container.innerHTML = `
+    <h2>Create your character</h2>
+    <label>Username: <input id="charName" /></label><br>
+    <label>Gender:
+      <select id="charGender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select> <br> <br>
+      <button onclick="finishCharacterCreation()">Start</button> 
+      <button onclick="showMainMenu();">Menu</button> 
+
+    </label><br><br>
+  `;
+
+  document.body.appendChild(container);
+}
+
+function finishCharacterCreation() {
+  const gender = document.getElementById("charGender").value;
+  const name = document.getElementById("charName").value.trim();
+
+  if (!name) {
+    alert("Du må velge et navn!");
+    return;
+  }
+
+  playerData.gender = gender;
+  playerData.name = name;
+  applyCharacterAppearance();
+
+  document.getElementById("charCreation").remove();
+  
+
+  // Start spillet fra level 1
+  loadLevel(1);
+
+  // Lagre umiddelbart
+  saveGame();
+}
+
+function applyCharacterAppearance() {
+  if (!playerData || !playerData.gender) return;
+
+  if (playerData.gender === 'male') {
+    characterImages.up.src = 'images/player/man/pixelmannUp.png';
+    characterImages.down.src = 'images/player/man/pixelmannDown.png';
+    characterImages.left.src = 'images/player/man/pixelmannLeft.png';
+    characterImages.right.src = 'images/player/man/pixelmannRight.png';
+  } else {
+    characterImages.up.src = 'images/player/woman/pixelwomanUp.png';
+    characterImages.down.src = 'images/player/woman/pixelwomanDown.png';
+    characterImages.left.src = 'images/player/woman/pixelwomanLeft.png';
+    characterImages.right.src = 'images/player/woman/pixelwomanRight.png';
+  }
+}
+
+// === Karakter tegning ===
+function drawCharacter() {
+  const tileUnderPlayer = map[character.y][character.x];
+  const img = characterImages[character.direction];
+
+  if (tilesAbovePlayer.includes(tileUnderPlayer)) {
+    ctx.globalAlpha = 0.5; // Gjør spilleren halvveis gjennomsiktig
+  }
+
+  ctx.drawImage(img, character.pixelX, character.pixelY, tileSize, tileSize);
+  ctx.globalAlpha = 1.0; // Tilbakestill for resten av canvas
+}
+
+function canMoveTo(x, y) {
+  if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) return false;
+  return !nonWalkableTiles.includes(map[y][x]);
+}
+
+function moveCharacter(dx, dy) {
+  if (character.moving) return;
+
+  const newX = character.x + dx;
+  const newY = character.y + dy;
+  if (!canMoveTo(newX, newY)) return;
+
+  character.direction = dx === -1 ? 'left' : dx === 1 ? 'right' : dy === -1 ? 'up' : 'down';
+  character.moving = true;
+  character.x = newX;
+  character.y = newY;
+
+  const targetX = character.x * tileSize;
+  const targetY = character.y * tileSize;
+  const pixelsPerSecond = 200; // Justerbar hastighet (gå)
+  let previousTime = performance.now();
+  
+
+  function animate(currentTime) {
+    const deltaTime = (currentTime - previousTime) / 1000; // sekunder
+    previousTime = currentTime;
+    const speed = pixelsPerSecond * deltaTime;
+
+    let doneX = false, doneY = false;
+
+    if (character.pixelX < targetX) {
+      character.pixelX += speed;
+      if (character.pixelX >= targetX) {
+        character.pixelX = targetX;
+        doneX = true;
+      }
+    } else if (character.pixelX > targetX) {
+      character.pixelX -= speed;
+      if (character.pixelX <= targetX) {
+        character.pixelX = targetX;
+        doneX = true;
+      }
+    } else {
+      doneX = true;
+    }
+
+    if (character.pixelY < targetY) {
+      character.pixelY += speed;
+      if (character.pixelY >= targetY) {
+        character.pixelY = targetY;
+        doneY = true;
+      }
+    } else if (character.pixelY > targetY) {
+      character.pixelY -= speed;
+      if (character.pixelY <= targetY) {
+        character.pixelY = targetY;
+        doneY = true;
+      }
+    } else {
+      doneY = true;
+    }
+
+    gameLoop();
+
+    if (!doneX || !doneY) {
+      requestAnimationFrame(animate);
+    } else {
+      character.moving = false;
+      const tile = map[character.y][character.x];
+
+      const key = `${character.x},${character.y}`;
+      const door = doorMap[currentLevel]?.[key];
+      if (door) {
+        // Krever nøkkel for visse dører
+        if (door.requires && !hasItem(door.requires)) {
+          alert("You need the " + door.requires + " to enter this area.");
+          return;
+        }
+        loadLevel(door.targetLevel, door.targetX, door.targetY);
+      }
+      
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function getAllUniqueCreatures() {
+  const fish = Object.values(fishPools).flat();
+  const land = Object.values(treeCreaturePools).flat();
+  const all = [...fish, ...land];
+
+  const seen = {};
+  return all.filter(c => {
+    if (seen[c.name]) return false;
+    seen[c.name] = true;
+    return true;
+  });
+}
+function tryInteract() {
+  if (character.moving || isFishing) return;
+
+  let tx = character.x, ty = character.y;
+  if (character.direction === 'up') ty -= 1;
+  if (character.direction === 'down') ty += 1;
+  if (character.direction === 'left') tx -= 1;
+  if (character.direction === 'right') tx += 1;
+
+  const tile = map[ty]?.[tx];
+
+  // === Åpne låst gjerde hvis spiller har "Dock Key" ===
+  if (currentLevel === 5 && tx === 12 && ty === 14 && tile === 'fence') {
+    if (hasItem("Dock Key")) {
+      changeTile(currentLevel, 12, 14, 'G1'); // Bytt til 'G1' = grass
+    } else {
+      alert("Gjerdet er låst. Du trenger en Dock Key.");
+    }
+    return; // Stopp videre interaksjon
+  }
+
+  const npc = npcs.find(n => n.level === currentLevel && n.x === tx && n.y === ty);
+  if (npc) return startNPCInteraction(npc);
+
+  if (tile === 'water') return startFishing();
+  if (tile === 'tree') return startTreeHunt(); 
+
+  if (tile === 'npcShop') return openShop();
+}
+
+function startNPCInteraction(npc) {
+  const dialogBox = document.createElement("div");
+  dialogBox.id = "npcDialog";
+  dialogBox.style.position = "absolute";
+  dialogBox.style.bottom = "50px";
+  dialogBox.style.left = "50%";
+  dialogBox.style.transform = "translateX(-50%)";
+  dialogBox.style.background = "#222";
+  dialogBox.style.color = "white";
+  dialogBox.style.border = "2px solid #888";
+  dialogBox.style.padding = "20px";
+  dialogBox.style.fontFamily = "monospace";
+  dialogBox.style.zIndex = 20;
+  dialogBox.style.width = "400px";
+
+  let dialogIndex = 0;
+
+  function renderDialog() {
+    dialogBox.innerHTML = `
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <img src="${npc.image}" width="48" height="48">
+        <strong>${npc.name}</strong>
+      </div>
+      <p style="margin-top: 10px;">${npc.dialog[dialogIndex]}</p>
+      <button id="nextDialogBtn">Next</button>
+    `;
+
+    dialogBox.querySelector("#nextDialogBtn").onclick = () => {
+      dialogIndex++;
+      if (dialogIndex >= npc.dialog.length) {
+        document.body.removeChild(dialogBox);
+        if (npc.type === "shop") {
+          openShop("water");
+        } else if (npc.type === "shop_land") {
+          openShop("land");
+        } else if (npc.type === "special_shop") {
+          openSpecialShop(npc.name); 
+        }
+      } else {
+        renderDialog();
+      }
+    };
+  }
+
+  renderDialog();
+  document.body.appendChild(dialogBox);
+}
+
+function startTreeHunt() {
+  isFishing = true; // bruk samme flagg for nå
+  fishCaught = false;
+
+  showFishingBox("Searching the tree...");
+  const wait = Math.floor(Math.random() * 8000) + 2000;
+  fishTimeout = setTimeout(treeCreatureAppears, wait);
+}
+
+function treeCreatureAppears() {
+  currentFish = getRandomTreeCreature();
+  startCatchMinigame(currentFish, false); // false = er landdyr
+}
+
+function getRandomTreeCreature() {
+  const pool = treeCreaturePools[currentLevel] || [];
+
+  const totalChance = pool.reduce((sum, c) => sum + c.chance, 0);
+  const roll = Math.random() * totalChance;
+  let sum = 0;
+
+  for (const creature of pool) {
+    sum += creature.chance;
+    if (roll < sum) return creature;
+  }
+
+  return { name: "???", rarity: "secret", image: "images/defaultTree.png", price: 0 };
+}
+
+function startFishing() {
+  isFishing = true;
+
+  if (sounds.sfx.startFishing) sounds.sfx.startFishing.play();
+
+  fishCaught = false;
+  showFishingBox("Fishing...");
+  const wait = Math.floor(Math.random() * 8000) + 2000;
+  fishTimeout = setTimeout(fishGotBite, wait);
+}
+
+function showBossFightPrompt(bossKey) {
+  const boss = bosses[bossKey];
+  if (!boss) return;
+
+  const box = document.createElement("div");
+  box.id = "bossPromptBox";
+  box.style.position = "absolute";
+  box.style.top = "50%";
+  box.style.left = "50%";
+  box.style.transform = "translate(-50%, -50%)";
+  box.style.background = "#111";
+  box.style.color = "white";
+  box.style.padding = "20px";
+  box.style.border = `2px solid ${raritySettings[boss.drops[0].rarity]?.border || "white"}`;
+  box.style.fontFamily = "monospace";
+  box.style.zIndex = 9999;
+  box.style.textAlign = "center";
+
+  box.innerHTML = `
+    <h2>${boss.name}</h2>
+    <img src="${boss.image}" width="80" /><br><br>
+    <p>Prepare to battle ${boss.name}.</p>
+    <p>It can hit you for <span style="color:red">${boss.damageToPlayer}</span> damage if you miss!</p>
+    <p>You deal <span style="color:lime">${boss.damageToBoss}</span> damage per hit.</p>
+    <br>
+    <button onclick="startBossFight('${bossKey}'); document.body.removeChild(document.getElementById('bossPromptBox'));">Battle</button>
+    <button onclick="document.body.removeChild(document.getElementById('bossPromptBox'));">Cancel</button>
+  `;
+
+  document.body.appendChild(box);
+}
+
+function startBossFight(bossKey) {
+  if (document.activeElement === chatInput) return;
+
+  const boss = bosses[bossKey];
+  if (!boss) return;
+
+  let bossHP = boss.maxHP;
+  let playerHP = 200;
+
+  const fightNextRound = () => {
+    if (bossHP <= 0) {
+      endBossFight(true, boss);
+      return;
+    }
+    if (playerHP <= 0) {
+      endBossFight(false, boss);
+      return;
+    }
+
+    const baseBarTime = boss.barSpeed || 2000;
+    const barTime = baseBarTime + Math.random() * 1000;
+    let hit = false;
+    let elapsed = 0;
+
+    showFishingBox(`
+      <div>
+        <div style="margin-bottom: 8px;"><img src="${boss.image}" width="64"><br>${boss.name}</div>
+        <div>HP: You ${playerHP} | ${boss.name} ${bossHP}</div>
+        <div>Press [Space] when the bar is on the line!</div>
+        <div id="biteTimerBar" style="width: 100%; height: 20px; background: #222; position: relative;">
+          <div id="catchZone" style="position: absolute; top: 0; left: 45%; width: 10%; height: 100%; background: #fff2; border-left: 2px solid red; border-right: 2px solid red;"></div>
+          <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: red;"></div>
+        </div>
+      </div>
+    `);
+
+    const fill = document.getElementById("biteTimerFill");
+
+    const onKeyDown = (e) => {
+      if (e.code === "Space") {
+        const progress = elapsed / barTime;
+        if (progress >= 0.45 && progress <= 0.55) {
+          bossHP -= boss.damageToBoss || 1;
+        } else {
+          playerHP -= boss.damageToPlayer || 1;
+        }
+        document.removeEventListener("keydown", onKeyDown);
+        clearInterval(timer);
+        fightNextRound();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", (e) => {
+      // Ikke trigge hvis du allerede skriver
+      if (document.activeElement === chatInput) return;
+    
+      if (e.key === "t" || e.key === "T") {
+        e.preventDefault();
+        chatInput.focus();
+      }
+    });
+
+    const timer = setInterval(() => {
+      elapsed += 20;
+      fill.style.width = `${(elapsed / barTime) * 100}%`;
+      if (elapsed >= barTime) {
+        document.removeEventListener("keydown", onKeyDown);
+        clearInterval(timer);
+        playerHP -= boss.damageToPlayer || 1;
+        fightNextRound();
+      }
+    }, 20);
+  };
+
+  fightNextRound();
+}
+
+function endBossFight(playerWon, boss) {
+  if (playerWon) {
+
+      // Legg til bossen som et trofé
+    if (!trophies[boss.name]) {
+      trophies[boss.name] = new Date().toISOString();
+    }
+
+    let dropsWon = [];
+
+    for (const item of boss.drops) {
+      const roll = Math.random() * 100;
+      if (roll < item.chance) {
+        addToInventory({ ...item, count: 1 });
+        dropsWon.push(item.name);
+      }
+    }
+
+    if (dropsWon.length > 0) {
+      showFishingBox(`Boss defeated! You received: ${dropsWon.join(", ")}`);
+    } else {
+      showFishingBox("Boss defeated! But it dropped nothing...");
+    }
+  } else {
+    isDead = true;
+    showDeathScreen();
+    setTimeout(() => {
+      document.getElementById("deathScreen").remove();
+      const loc = levelDefinitions["gatherers-hub"];
+      loadLevel(loc.index, loc.x, loc.y);
+      isDead = false;
+      showFishingBox("You died... You return to Gatherers Hub.");
+    }, 3000); // vent 3 sekunder før respawn
+  }
+
+  setTimeout(cancelFishing, 3000);
+}
+
+
+function showFishingBox(text) {
+  if (!fishingBox) {
+    fishingBox = document.createElement('div');
+    fishingBox.id = 'fishingBox';
+    fishingBox.style.position = 'absolute';
+    fishingBox.style.bottom = '50px';
+    fishingBox.style.left = '50%';
+    fishingBox.style.transform = 'translateX(-50%)';
+    fishingBox.style.background = '#333';
+    fishingBox.style.color = '#fff';
+    fishingBox.style.padding = '10px';
+    fishingBox.style.border = '2px solid #aaa';
+    fishingBox.style.fontFamily = 'monospace';
+    fishingBox.style.zIndex = '10';
+    document.body.appendChild(fishingBox);
+  }
+  fishingBox.innerHTML = `${text}<br><button onclick="cancelFishing()">Avbryt</button>`;
+}
+
+function hideFishingBox() {
+  if (fishingBox) {
+    document.body.removeChild(fishingBox);
+    fishingBox = null;
+  }
+}
+
+function cancelFishing() {
+  clearTimeout(fishTimeout);
+  clearTimeout(biteTimeout);
+  hideFishingBox();
+  isFishing = false;
+}
+
+function fishGotBite() {
+  currentFish = getRandomFish();
+  if (sounds.sfx.gotBite) sounds.sfx.gotBite.play();
+
+  startCatchMinigame(currentFish, true); // true = er vann/fiske
+}
+
+function startCatchMinigame(creature, isWater) {
+  if (document.activeElement === chatInput) return;
+
+  const settings = raritySettings[creature.rarity] || { time: 4000, color: "white" };
+  const totalTime = settings.time;
+  const color = settings.color;
+
+  fishCaught = false;
+  let successZoneStart = 0.45;
+  let successZoneEnd = 0.55;
+
+  fishingBox.innerHTML = `
+    <div style="margin-bottom: 10px;">
+      <div style="border: 2px solid ${color}; padding: 4px; display:inline-block;">
+        <img src="${creature.image}" width="64" height="64" alt="${creature.name}">
+      </div>
+      <div>${creature.name}</div>
+    </div>
+    <div style="margin-bottom: 10px;">Press [Space] when the bar is on the line!</div>
+    <div id="biteTimerBar" style="width: 100%; height: 20px; background: #222; margin-top: 10px; position: relative;">
+      <div id="catchZone" style="position: absolute; top: 0; left: 45%; width: 10%; height: 100%; background: #fff2; border-left: 2px solid ${color}; border-right: 2px solid ${color}; z-index: 1;"></div>
+      <div id="biteTimerFill" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: ${color}; z-index: 2;"></div>
+    </div>
+  `;
+
+  const fill = document.getElementById("biteTimerFill");
+  let elapsed = 0;
+  const interval = 20;
+
+  function onKeyDown(event) {
+    if (event.code === "Space" && !fishCaught) {
+      const progress = elapsed / totalTime;
+      if (progress >= successZoneStart && progress <= successZoneEnd) {
+        fishCaught = true;
+        showFishingBox(`You caught a ${creature.name}!`);
+        addToInventory(creature);
+        if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+      } else {
+        fishCaught = true;
+        showFishingBox("Oh you failed! The creature fleed.");
+        if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+      }
+      document.removeEventListener("keydown", onKeyDown);
+      clearInterval(countdown);
+      setTimeout(cancelFishing, 1500);
+    }
+  }
+
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keydown", (e) => {
+    // Ikke trigge hvis du allerede skriver
+    if (document.activeElement === chatInput) return;
+  
+    if (e.key === "t" || e.key === "T") {
+      e.preventDefault();
+      chatInput.focus();
+    }
+  });
+
+  const countdown = setInterval(() => {
+    if (fishCaught) {
+      clearInterval(countdown);
+      document.removeEventListener("keydown", onKeyDown);
+      return;
+    }
+
+    elapsed += interval;
+    const progress = elapsed / totalTime;
+    fill.style.width = (progress * 100) + "%";
+
+    if (elapsed >= totalTime) {
+      clearInterval(countdown);
+      document.removeEventListener("keydown", onKeyDown);
+      showFishingBox("You didnt react in time!");
+      if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+      setTimeout(cancelFishing, 1200);
+    }
+  }, interval);
+}
+
+
+function tryCatchFish(choice) {
+  if (currentFish && currentFish.rarity === choice) {
+    showFishingBox(`Du fanget en ${currentFish.name}!`);
+    if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+    addToInventory(currentFish);
+  } else {
+    showFishingBox("Bom! Du mistet fisken.");
+    if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+  }
+  fishCaught = true;
+  setTimeout(cancelFishing, 2000);
+}
+
+function getRandomFish() {
+  const pool = fishPools[currentLevel] || [];
+
+  const totalChance = pool.reduce((sum, fish) => sum + fish.chance, 0);
+  const roll = Math.random() * totalChance;
+  let sum = 0;
+
+  for (const fish of pool) {
+    sum += fish.chance;
+    if (roll < sum) {
+      return {
+        name: fish.name,
+        rarity: fish.rarity,
+        image: fish.image,
+        price: fish.price
+      };
+    }
+  }
+
+  return { name: "???", rarity: "secret", image: "images/creatures/vann/defaultFish.png", price: 0 };
+}
+
+//removeItem("Void Key"); hvis du skal bruke den til noe annet
+function removeItem(name) {
+  const index = inventory.findIndex(i => i.name === name);
+  if (index !== -1) {
+    inventory[index].count--;
+    if (inventory[index].count <= 0) {
+      inventory.splice(index, 1);
+    }
+    if (inventoryOpen) renderInventory();
+  }
+}
+
+function hasItem(name) {
+  return inventory.some(i => i.name === name);
+}
+
+function openSpecialShop(npcName) {
+  const shopBox = document.getElementById('shopBox');
+  const items = npcShopItems[npcName] || [];
+  const ownedItems = inventory.map(i => i.name);
+
+  let html = `<h3>${npcName}</h3><p>Choose wisely...</p>`;
+
+  const filtered = items.filter(item => !(item.once && ownedItems.includes(item.name)));
+
+  if (filtered.length === 0) {
+    html += `<p>You already own everything I have...</p>`;
+  } else {
+    filtered.forEach(item => {
+      html += `<div style="margin-bottom:10px;">
+        <img src="${item.image}" width="32" height="32"> <strong>${item.name}</strong><br>
+        <small>${item.description}</small><br>
+        <button onclick="buySpecialItem('${npcName}', '${item.name}', ${item.price})">
+          Buy for ${item.price} gold
+        </button>
+      </div>`;
+    });
+  }
+
+  html += `<br><button onclick="closeShop()">Leave</button>`;
+  shopBox.innerHTML = html;
+  shopBox.style.display = 'block';
+}
+
+function buySpecialItem(npcName, itemName, price) {
+  const item = npcShopItems[npcName].find(i => i.name === itemName);
+  if (!item) return;
+
+  if (gold < price) {
+    alert("You can't afford that.");
+    return;
+  }
+
+  gold -= price;
+  inventory.push({ ...item, count: 1 });
+  if (inventoryOpen) renderInventory();
+  saveGame();
+  openSpecialShop(npcName); // Refresh shop
+}
+
+let currentShopType = "water";
+
+function openShop(type = "water") {
+  currentShopType = type;
+  const shopBox = document.getElementById('shopBox');
+  let shopHTML = `<h3 style="font-family: Cursive;"></h3><p>This is my prices:</p>`;
+  let hasFish = false;
+
+  inventory.forEach(item => {
+    if (!item) return; // 🔒 Hopp over tomme ruter
+
+    const creaturePools = type === "water" ? fishPools : treeCreaturePools;
+    const allCreatures = Object.values(creaturePools).flat();
+    const creatureInfo = allCreatures.find(c => c.name === item.name);
+    
+    if (creatureInfo) {
+      hasFish = true;
+      shopHTML += `<button onclick="sellFish('${item.name}', ${creatureInfo.price})">Sell ${item.name} (${creatureInfo.price} gold)</button><br>`;
+    }
+  });
+
+  if (!hasFish) {
+    shopHTML += `<p>You dont have any creatures, off you go!.</p>`;
+  }
+
+  shopHTML += `<br><button onclick="closeShop()">Cancel</button>`;
+  shopBox.innerHTML = shopHTML;
+
+  shopBox.style.display = 'block';
+}
+
+function closeShop() {
+  document.getElementById('shopBox').style.display = 'none';
+}
+
+function sellFish(fishName, price) {
+  const itemIndex = inventory.findIndex(i => i && i.name === fishName);
+  if (itemIndex !== -1) {
+    inventory[itemIndex].count--;
+    gold += price;
+    if (inventory[itemIndex].count <= 0) {
+      inventory.splice(itemIndex, 1);
+    }
+    renderInventory();
+    openShop(currentShopType); // Refresh shop UI
+  }
+}
+
+let showMap = false;
+const mouse = { x: 0, y: 0 };
+let hoveredLocation = null;
+
+canvas.addEventListener("mousemove", (e) => {
+  if (!showMap) return;
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+
+  gameLoop(); 
+});
+
+function renderWorldMap() {
+  const mapX = canvas.width - 200 - 20;
+  const mapY = 10;
+  const mapWidth = 200;
+  const mapHeight = 200;
+
+  ctx.fillStyle = "#111";
+  ctx.fillRect(mapX, mapY, mapWidth, mapHeight);
+  ctx.strokeStyle = "#888";
+  ctx.strokeRect(mapX, mapY, mapWidth, mapHeight);
+
+  hoveredLocation = null;
+
+  mapData.forEach(loc => {
+    const lx = mapX + loc.x;
+    const ly = mapY + loc.y;
+    const size = loc.type === "city" ? 10 : 6;
+    const shape = loc.type === "city" ? "rect" : "circle";
+
+    const isHovered = (
+      mouse.x >= lx - size && mouse.x <= lx + size &&
+      mouse.y >= ly - size && mouse.y <= ly + size
+    );
+
+    if (isHovered) hoveredLocation = loc.name;
+
+    ctx.fillStyle = loc.color;
+    if (shape === "rect") {
+      ctx.fillRect(lx - size / 2, ly - size / 2, size, size);
+    } else {
+      ctx.beginPath();
+      ctx.arc(lx, ly, size / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  if (hoveredLocation) {
+    ctx.fillStyle = "#fff";
+    ctx.font = "12px monospace";
+    ctx.fillText(hoveredLocation, mapX + 5, mapY + mapHeight - 5);
+  }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (document.activeElement === chatInput) return;
+
+  if (document.activeElement.tagName === "INPUT") return;
+  if (e.key === "m") {
+    showMap = !showMap;
+    gameLoop();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  // Ikke trigge hvis du allerede skriver
+  if (document.activeElement === chatInput) return;
+
+  if (e.key === "t" || e.key === "T") {
+    e.preventDefault();
+    chatInput.focus();
+  }
+});
+
+// === Overstyr gameLoop med kart ===
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawMap();
+  drawCharacter();
+
+  if (showMap) renderWorldMap();
+}
+
+function renderInventory() {
+  const inv = document.getElementById('inventory');
+  inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory (${playerData.name})</h3>
+                   <p style="color:gold;font-family: Cursive;">Gold: ${gold}</p>`;
+
+  const hoverInfoBox = document.getElementById("hoverInfoBox") || (() => {
+    const box = document.createElement("div");
+    box.id = "hoverInfoBox";
+    Object.assign(box.style, {
+      position: "fixed", pointerEvents: "none", background: "#222", border: "1px solid #999",
+      color: "white", padding: "8px", fontFamily: "monospace", zIndex: 1000, display: "none"
+    });
+    document.body.appendChild(box);
+    return box;
+  })();
+
+  const grid = document.createElement('div');
+  grid.style.display = 'grid';
+  grid.style.gridTemplateColumns = 'repeat(4, 64px)';
+  grid.style.gridTemplateRows = 'repeat(6, 64px)';
+  grid.style.gap = '8px';
+
+  for (let i = 0; i < 24; i++) {
+    const cell = document.createElement('div');
+    cell.dataset.index = i;
+    cell.style.width = '64px';
+    cell.style.height = '64px';
+    cell.style.background = '#111';
+    cell.style.border = '2px solid #444';
+    cell.style.display = 'flex';
+    cell.style.flexDirection = 'column';
+    cell.style.alignItems = 'center';
+    cell.style.justifyContent = 'center';
+
+    const item = inventory[i];
+    if (item) {
+      const rarity = raritySettings[item.rarity];
+      const borderColor = rarity ? rarity.border : "#666";
+      cell.style.border = `2px solid ${borderColor}`;
+      cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
+
+      if (interactableItems[item.name]) {
+        cell.style.cursor = "pointer";
+        cell.onclick = () => showItemDialog(item.name);
+      }
+
+      // === Drag & Drop ===
+      cell.draggable = true;
+      cell.ondragstart = (e) => {
+        e.dataTransfer.setData("text/plain", i);
+      };
+
+      cell.onmousemove = (e) => {
+        const rarityData = raritySettings[item.rarity];
+        const rarityColor = rarityData ? rarityData.color : "#fff";
+        const caughtDate = trophies[item.name] || "Unknown";
+        hoverInfoBox.innerHTML = `
+          <strong style="color:${rarityColor}">${item.name}</strong><br>
+          <span>Rarity: <span style="color:${rarityColor}">${item.rarity}</span></span><br>
+          <span>Price: ${item.price} gold</span><br>
+          <span style="color:gray;">First caught: ${caughtDate}</span>
+        `;
+        hoverInfoBox.style.display = "block";
+        hoverInfoBox.style.left = (e.clientX + 15) + "px";
+        hoverInfoBox.style.top = (e.clientY + 15) + "px";
+      };
+
+      cell.onmouseleave = () => {
+        hoverInfoBox.style.display = "none";
+      };
+    }
+
+    // === Drop Target ===
+    cell.ondragover = (e) => e.preventDefault();
+    cell.ondrop = (e) => {
+      e.preventDefault();
+      const fromIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      const toIndex = parseInt(cell.dataset.index, 10);
+      if (fromIndex !== toIndex) {
+        [inventory[fromIndex], inventory[toIndex]] = [inventory[toIndex], inventory[fromIndex]];
+        renderInventory(); // Oppdater visningen
+      }
+    };
+
+    grid.appendChild(cell);
+  }
+
+  inv.appendChild(grid);
+}
+
+
+function toggleInventory() {
+  inventoryOpen = !inventoryOpen;
+  document.getElementById('inventory').style.display = inventoryOpen ? 'block' : 'none';
+  if (inventoryOpen) renderInventory();
+}
+
+function showItemDialog(itemName) {
+  const data = interactableItems[itemName];
+  if (!data) return;
+
+  const existing = document.getElementById("itemDialog");
+  if (existing) existing.remove();
+
+  const box = document.createElement("div");
+  box.id = "itemDialog";
+  box.style.position = "absolute";
+  box.style.top = "50%";
+  box.style.left = "50%";
+  box.style.transform = "translate(-50%, -50%)";
+  box.style.background = "#111";
+  box.style.border = "2px solid #888";
+  box.style.padding = "20px";
+  box.style.color = "white";
+  box.style.fontFamily = "monospace";
+  box.style.zIndex = 9999;
+  box.style.maxWidth = "400px";
+  box.style.textAlign = "center";
+
+  box.innerHTML = `
+    <h3>${itemName}</h3>
+    <p>${data.message}</p>
+    <br>
+    <button onclick="document.getElementById('itemDialog').remove()">Close</button>
+  `;
+
+  document.body.appendChild(box);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
+  if (character.moving) return;
+  switch (e.key) {
+    case 'w': moveCharacter(0, -1); break;
+    case 's': moveCharacter(0, 1); break;
+    case 'a': moveCharacter(-1, 0); break;
+    case 'd': moveCharacter(1, 0); break;
+    case 'e': tryInteract(); break;
+    case 'i': toggleInventory(); break;
+    case 'c': showCharacterInfo(); break;
+
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    toggleMenu();
+  }
+});
+
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  document.getElementById('gameMenu').style.display = menuOpen ? 'flex' : 'none';
+}
+
+function closeMenu() {
+  menuOpen = false;
+  document.getElementById('gameMenu').style.display = 'none';
+}
+
+function saveGame() {
+  const saveData = {
+    character: playerData,
+    inventory,
+    trophies,
+    gold,
+    level: currentLevel,
+    position: {
+      x: character.x,
+      y: character.y,
+      direction: character.direction
+    },
+    playerLevel,
+    playerXP,
+    xpToNextLevel,
+    playTime: totalPlayTime
+  };
+
+  if (playSessionStart) {
+    totalPlayTime += Date.now() - playSessionStart;
+    playSessionStart = Date.now(); // restart måling for neste økt
+  }
+
+  localStorage.setItem('voidquest_save', JSON.stringify(saveData));
+  alert("Spillet er lagret!");
+}
+
+function loadGame() {
+  try {
+    const saved = localStorage.getItem('voidquest_save');
+    if (saved) {
+      const data = JSON.parse(saved);
+      totalPlayTime = data.playTime || 0;
+      inventory = data.inventory || [];
+      trophies = data.trophies || [];
+      gold = data.gold || 0;
+
+      playSessionStart = Date.now();
+
+      // Last nivå og XP
+      playerLevel = data.playerLevel || 1;
+      playerXP = data.playerXP || 0;
+
+      xpToNextLevel = Math.floor(100 * Math.pow(1.25, playerLevel - 1)); // beregn riktig threshold
+
+      const level = data.level ?? 0;
+      const x = data.position?.x ?? levels[level].startX;
+      const y = data.position?.y ?? levels[level].startY;
+      const dir = data.position?.direction ?? 'down';
+
+      character.direction = dir;
+      loadLevel(level, x, y);
+      createXPUI();
+      renderInventory();
+      updateXPUI(); // oppdater UI etter load
+      updateXPBar();
+    } else {
+      loadLevel(0);
+    }
+  } catch (e) {
+    console.error("Feil ved lasting av lagring:", e);
+    loadLevel(0);
+  }
+}
+
+function showDeathScreen() {
+  const overlay = document.createElement("div");
+  overlay.id = "deathScreen";
+  overlay.style.position = "absolute";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0, 0, 0, 0.8)";
+  overlay.style.backdropFilter = "blur(4px) grayscale(100%)";
+  overlay.style.display = "flex";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+  overlay.style.zIndex = "10000";
+
+  const text = document.createElement("h1");
+  text.textContent = "You died";
+  text.style.color = "white";
+  text.style.fontSize = "64px";
+  text.style.fontFamily = "monospace";
+  text.style.textShadow = "0 0 10px red";
+
+  overlay.appendChild(text);
+  document.body.appendChild(overlay);
+}
+
+// === Troféjournal ===
+let trophyJournalOpen = false;
+let currentTrophyType = "water"; // kan være "water", "land" eller "boss"
+
+function toggleTrophyJournal() {
+  trophyJournalOpen = !trophyJournalOpen;
+  const existing = document.getElementById("trophyJournal");
+  if (existing) {
+    existing.remove();
+    return;
+  }
+  renderTrophyJournal();
+}
+
+function getUniqueCreaturesFromList(list, showSecrets = false) {
+  const seen = new Set();
+  return list.filter(creature => {
+    if (seen.has(creature.name)) return false;
+    if (creature.rarity === "secret" && !showSecrets && !trophies[creature.name]) return false;
+    seen.add(creature.name);
+    return true;
+  });
+}
+
+function renderTrophyJournal() {
+  const rawFish = Object.values(fishPools).flat();
+  const rawLand = Object.values(treeCreaturePools).flat();
+  const allFish = getUniqueCreaturesFromList(rawFish, true);
+  const allLand = getUniqueCreaturesFromList(rawLand, true);
+
+  //Sorterer journal skapninger etter rarity
+  //Og fultrerer ut secret rarity
+  const allBosses = Object.values(bosses).map(b => ({
+    name: b.name,
+    image: b.image,
+    rarity: b.drops[0]?.rarity || "legendary"
+  }));
+  
+  let fullList;
+  if (currentTrophyType === "water") {
+    fullList = allFish;
+  } else if (currentTrophyType === "land") {
+    fullList = allLand;
+  } else if (currentTrophyType === "boss") {
+    fullList = allBosses;
+  }
+
+  const list = fullList
+  .filter(creature => creature.rarity !== "secret" || trophies[creature.name])
+  .slice()
+  .sort((a, b) => {
+    const order = { common: 1, rare: 2, legendary: 3, mythical: 4, secret: 5 };
+    return (order[a.rarity] || 99) - (order[b.rarity] || 99);
+
+  });
+
+
+  // === INFOBOKS hover ===
+  let hoverInfoBox = document.getElementById("hoverInfoBox");
+  if (!hoverInfoBox) {
+    hoverInfoBox = document.createElement("div");
+    hoverInfoBox.id = "hoverInfoBox";
+    hoverInfoBox.style.position = "fixed";
+    hoverInfoBox.style.pointerEvents = "none";
+    hoverInfoBox.style.background = "#222";
+    hoverInfoBox.style.border = "1px solid #999";
+    hoverInfoBox.style.color = "white";
+    hoverInfoBox.style.padding = "8px";
+    hoverInfoBox.style.fontFamily = "monospace";
+    hoverInfoBox.style.zIndex = "1000";
+    hoverInfoBox.style.display = "none";
+    document.body.appendChild(hoverInfoBox);
+  }
+
+  const journal = document.createElement("div");
+  journal.id = "trophyJournal";
+  journal.style.position = "absolute";
+  journal.style.top = "50px";
+  journal.style.left = "50%";
+  journal.style.transform = "translateX(-50%)";
+  journal.style.background = "#111";
+  journal.style.border = "2px solid #888";
+  journal.style.padding = "20px";
+  journal.style.zIndex = "30";
+  journal.style.color = "white";
+  journal.style.fontFamily = "monospace";
+  journal.style.textAlign = "center";
+
+  const caught = fullList.filter(c => trophies[c.name]).length;
+
+  const buttons = `
+  <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
+  <button onclick="currentTrophyType='land'; toggleTrophyJournal(); toggleTrophyJournal()">Land</button>
+  <button onclick="currentTrophyType='boss'; toggleTrophyJournal(); toggleTrophyJournal()">Boss</button>
+  `;
+
+  const title = `<h3>${
+    currentTrophyType === 'water' ? 'Water creatures' :
+    currentTrophyType === 'land' ? 'Land creatures' :
+    'Bosses'
+  } (${caught}/${list.length})</h3>`;
+
+  const grid = document.createElement("div");
+  grid.style.display = "grid";
+  grid.style.gridTemplateColumns = "repeat(6, 64px)";
+  grid.style.gap = "12px";
+  grid.style.marginTop = "12px";
+
+  list.forEach(creature => {
+    const hasCaught = trophies[creature.name];
+
+    const cell = document.createElement("div");
+    cell.style.width = "64px";
+    cell.style.height = "64px";
+    cell.style.background = "#222";
+    const rarity = raritySettings[creature.rarity];
+    const borderColor = hasCaught && rarity ? rarity.border : "#444";
+    cell.style.border = `2px solid ${borderColor}`;
+    cell.style.display = "flex";
+    cell.style.alignItems = "center";
+    cell.style.justifyContent = "center";
+
+    const img = document.createElement("img");
+
+    cell.onmousemove = (e) => {
+      const rarityData = raritySettings[creature.rarity];
+      const rarityColor = rarityData ? rarityData.color : "#fff";
+    
+      let html = `<strong style="color:${rarityColor}">${hasCaught ? creature.name : "???"}</strong><br>`;
+      html += `<span>Rarity: <span style="color:${rarityColor}">${creature.rarity}</span></span><br>`;
+      if (hasCaught) {
+        const caughtDate = trophies[creature.name];
+        html += `Price: ${creature.price} gold<br>`;
+        html += `<span style="color:gray;">First caught: ${caughtDate}</span>`;
+      }
+      hoverInfoBox.innerHTML = html;
+      hoverInfoBox.style.display = "block";
+      hoverInfoBox.style.left = (e.clientX + 15) + "px";
+      hoverInfoBox.style.top = (e.clientY + 15) + "px";
+    };
+    
+    cell.onmouseleave = () => {
+      hoverInfoBox.style.display = "none";
+    };
+
+    img.src = creature.image;
+    img.width = 48;
+    img.height = 48;
+    img.title = hasCaught ? creature.name : "???";
+    if (!hasCaught) img.style.filter = "grayscale(100%) brightness(50%)";
+
+    cell.appendChild(img);
+    grid.appendChild(cell);
+  });
+
+  journal.innerHTML = buttons + title;
+  journal.appendChild(grid);
+
+  const close = document.createElement("button");
+  close.textContent = "Lukk";
+  close.style.marginTop = "10px";
+  close.onclick = () => journal.remove();
+  journal.appendChild(close);
+
+  document.body.appendChild(journal);
+}
+
+// === Tast for å åpne journal ===
+document.addEventListener("keydown", (e) => {
+  if (document.activeElement === chatInput) return;
+
+  if (document.activeElement.tagName === "INPUT") return;
+  if (e.key === "j") {
+    toggleTrophyJournal();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  // Ikke trigge hvis du allerede skriver
+  if (document.activeElement === chatInput) return;
+
+  if (e.key === "t" || e.key === "T") {
+    e.preventDefault();
+    chatInput.focus();
+  }
+});
+
+
+// === XP & LEVEL SYSTEM ===
+let playerLevel = 1;
+let playerXP = 0;
+let xpToNextLevel = 100;
+
+// Hvor mye XP hver type fisk gir
+defineFishXP();
+function defineFishXP() {
+  const pool = Object.values(fishPools).flat();
+  pool.forEach(fish => {
+    if (!fish.xp) {
+      if (fish.rarity === "common") fish.xp = 10;
+      else if (fish.rarity === "rare") fish.xp = 25;
+      else if (fish.rarity === "legendary") fish.xp = 75;
+      else if (fish.rarity === "mythical") fish.xp = 250;
+      else if (fish.rarity === "secret") fish.xp = 0;
+    }
+  });
+}
+
+function gainXP(amount) {
+  playerXP += amount;
+  if (playerXP >= xpToNextLevel) {
+    playerXP -= xpToNextLevel;
+    playerLevel++;
+    xpToNextLevel = Math.floor(xpToNextLevel * 1.25);
+    alert(`You just levelled up to level ${playerLevel}!`);
+    if (sounds.sfx.levelUp) sounds.sfx.levelUp.play();
+  }
+  updateXPBar();
+}
+
+function updateXPBar() {
+  const bar = document.getElementById("xpBar");
+  const percent = Math.floor((playerXP / xpToNextLevel) * 100);
+  if (bar) {
+    bar.style.width = percent + "%";
+    bar.innerHTML = `<span style="white-space: nowrap;">XP: ${playerXP} / ${xpToNextLevel}</span>`;
+  }
+}
+
+// === Legg til HTML XP-Bar et sted i DOM ===
+function createXPUI() {
+  const xpBarWrapper = document.createElement("div");
+  xpBarWrapper.style.position = "absolute";
+  xpBarWrapper.style.bottom = "50px";
+  xpBarWrapper.style.left = "50%";
+  xpBarWrapper.style.transform = "translateX(-50%)";
+  xpBarWrapper.style.width = "300px";
+  xpBarWrapper.style.background = "#222";
+  xpBarWrapper.style.border = "2px solid #888";
+  xpBarWrapper.style.color = "white";
+  xpBarWrapper.style.fontFamily = "monospace";
+  
+
+  const xpBar = document.createElement("div");
+  xpBar.id = "xpBar";
+  xpBar.style.height = "20px";
+  xpBar.style.width = "0%";
+  xpBar.style.background = "lime";
+  xpBar.style.textAlign = "center";
+  xpBar.style.fontSize = "14px";
+  xpBar.style.lineHeight = "20px";
+
+  xpBarWrapper.appendChild(xpBar);
+  document.body.appendChild(xpBarWrapper);
+  updateXPBar();
+
+  // === Chatbox ===
+  const chatInput = document.getElementById("chatInput");
+  const chatMessages = document.getElementById("chatMessages");
+  
+  chatInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      const input = chatInput.value.trim();
+      if (input.length > 300) {
+        appendChatMessage("System: Message too long (max 300 characters).");
+        chatInput.value = "";
+        return;
+      }
+      if (!input) return;
+      
+      if (input.startsWith("/")) {
+        // Dette er en kommando – IKKE vis i chat
+        handleCommand(input);
+      } else {
+        // Vanlig melding – vis i chat
+        appendChatMessage(playerData.name + ": " + input);
+      }
+  
+      chatInput.value = "";
+      chatInput.blur();
+    }
+  });
+  
+  function appendChatMessage(text) {
+    const msg = document.createElement("div");
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  
+}
+
+function handleCommand(cmd) {
+  const args = cmd.toLowerCase().split(" ");
+  const base = args[0];
+
+  switch (base) {
+    case "/gold":
+      gold += parseInt(args[1] || "10");
+      alert(`You gained ${args[1] || 10} gold.`);
+      renderInventory();
+      break;
+
+      case "/played":
+        if (!playSessionStart) {
+          alert("Time tracking is not active.");
+          break;
+        }
+      
+        const now = Date.now();
+        const total = totalPlayTime + (now - playSessionStart);
+        const minutes = Math.floor(total / 60000);
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+      
+        console.log("Total playtime (ms):", total);
+        alert(`You have played this character for ${hours}h ${mins}m.`);
+        break;
+
+    case "/tp":
+      if (args.length >= 2) {
+        const levelName = args[1].toLowerCase();
+        const def = levelDefinitions[levelName];
+    
+        if (!def) {
+          alert(`Unknown level: "${levelName}"`);
+          break;
+        }
+    
+        const x = parseInt(args[2]) || def.x;
+        const y = parseInt(args[3]) || def.y;
+    
+        loadLevel(def.index, x, y);
+      } else {
+        alert("Usage: /tp <levelName> ");
+      }
+      break;
+
+    case "/fight":
+      const levelName = Object.entries(levelDefinitions).find(([name, def]) => def.index === currentLevel)?.[0];
+      const bossInArea = Object.entries(bosses).find(([key, boss]) => boss.level === levelName);
+    
+      if (bossInArea) {
+        const [bossKey] = bossInArea;
+        showBossFightPrompt(bossKey); // <-- NY FUNKSJON
+      } else {
+        showMessage("No boss found in this area.");
+      }
+      break;
+
+    default:
+      alert(`Unknown command: ${cmd}`);
+  }
+}
+
+// === Spill av lyd for level up ===
+sounds.sfx.levelUp = new Audio("lyder/levelUp.wav");
+
+// === Legg til XP når du fanger fisk ===
+function addToInventory(newItem) {
+  // Finn om det finnes en match fra før
+  let existingItem = inventory.find(i => i && i.name === newItem.name);
+
+  if (existingItem) {
+    existingItem.count += 1;
+  } else {
+    // Finn første tomme plass (undefined)
+    const emptyIndex = inventory.findIndex(i => !i);
+    if (emptyIndex !== -1) {
+      inventory[emptyIndex] = { ...newItem, count: 1 };
+    } else {
+      // Ingen tomme plasser, legg til på slutten
+      inventory.push({ ...newItem, count: 1 });
+    }
+  }
+  if (!trophies[newItem.name]) {
+    trophies[newItem.name] = new Date().toISOString();
+  }
+
+  if (inventoryOpen) renderInventory();
+}
+
+// === Start XP UI ved spillets start ===
+createXPUI();
+
+
+
+function showCharacterCreationWithSlot(slotKey) {
+  showCharacterCreation();
+  
+  // Vent til neste "tick" så DOM-innholdet er på plass
+  setTimeout(() => {
+    const button = document.querySelector("#charCreation button");
+    if (button) {
+      button.onclick = () => finishCharacterCreationToSlot(slotKey);
+    } else {
+      console.error("Fant ikke startknappen for karakteropprettelse!");
+    }
+  }, 0);
+}
+
+function finishCharacterCreationToSlot(slotKey) {
+  const gender = document.getElementById("charGender").value;
+  const name = document.getElementById("charName").value.trim();
+
+  if (!name) {
+    alert("Du må velge et navn!");
+    return;
+  }
+
+  playerData.gender = gender;
+  playerData.name = name;
+  applyCharacterAppearance();
+
+  localStorage.setItem(slotKey + '_character', JSON.stringify(playerData));
+  document.getElementById("charCreation").remove();
+
+  loadLevel(0);
+}
+
+
+// Prevent movement/inventory while menu is open or fishing
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === "INPUT") return;
+  if (menuOpen || isFishing) return;
+  // Your existing movement + inventory toggle logic here
+});
+
+function showCharacterInfo() {
+  // Fjern tidligere visning hvis den finnes
+  const existing = document.getElementById("characterInfoBox");
+  if (existing) existing.remove();
+
+  const box = document.createElement("div");
+  box.id = "characterInfoBox";
+  box.style.position = "absolute";
+  box.style.top = "50%";
+  box.style.left = "10%";
+  box.style.transform = "translate(-50%, -50%)";
+  box.style.background = "#222";
+  box.style.border = "2px solid #aaa";
+  box.style.padding = "20px";
+  box.style.color = "white";
+  box.style.fontFamily = "monospace";
+  box.style.zIndex = "30";
+  box.style.textAlign = "center";
+
+  const total = getAllUniqueCreatures().length;
+  const caught = Object.keys(trophies).length;
+
+  const genderImage = playerData.gender === "male" ? "images/player/man/pixelmannDown.png" : "images/pixelwomanDown.png";
+
+  box.innerHTML = `
+    <h2>${playerData.name}</h2>
+    <img src="${genderImage}" width="64" height="64"><br><br>
+    <strong>Level:</strong> ${playerLevel}<br>
+    <strong>XP:</strong> ${playerXP} / ${xpToNextLevel}<br>
+    <strong>Trophies:</strong> ${caught} / ${total}<br><br>
+    <button onclick="document.getElementById('characterInfoBox').remove()">Exit</button>
+  `;
+
+  document.body.appendChild(box);
+}
+
+const saved = localStorage.getItem("voidquest_save");
+
+if (saved) {
+  const data = JSON.parse(saved);
+
+  playerData = data.character;
+  applyCharacterAppearance();
+
+  totalPlayTime = data.playTime || 0;
+  playSessionStart = Date.now();
+
+  inventory = data.inventory || [];
+  trophies = data.trophies || [];
+  gold = data.gold || 0;
+  playerLevel = data.playerLevel || 1;
+  playerXP = data.playerXP || 0;
+  xpToNextLevel = data.xpToNextLevel || 100;
+
+  const level = data.level ?? 0;
+  const pos = data.position || { x: 0, y: 0, direction: 'down' };
+
+  character.direction = pos.direction;
+  loadLevel(level, pos.x, pos.y);
+  renderInventory();
+  //updateXPUI();
+  updateXPBar();
+} else {
+  showMainMenu();
+}
+
+//---------------MAIN MENY FØRST-----------------
+
+function showMainMenu() {
+  const menu = document.createElement("div");
+  menu.id = "mainMenu";
+  menu.style.position = "absolute";
+  menu.style.top = "0";
+  menu.style.left = "0";
+  menu.style.width = "100%";
+  menu.style.height = "100%";
+  menu.style.background = "#000";
+  menu.style.display = "flex";
+  menu.style.flexDirection = "column";
+  menu.style.alignItems = "center";
+  menu.style.justifyContent = "center";
+  menu.style.gap = "30px";
+  menu.style.zIndex = 1000;
+
+  menu.innerHTML = `
+    <img src="images/voidQuestLogo.png" style="width:128px;height:auto;" />
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="startCharacterCreationFromMenu()">Make Character</button>
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="showCredits()">Credits</button>
+    <button style="padding: 20px 40px; font-size: 24px;" onclick="quitGame()">Quit</button>
+  `;
+
+  document.body.appendChild(menu);
+}
+
+function startCharacterCreationFromMenu() {
+  document.getElementById("mainMenu").remove();
+  showCharacterCreation();
+}
+
+function showCredits() {
+  const credits = document.createElement("div");
+  credits.id = "creditsScreen";
+  credits.style.position = "absolute";
+  credits.style.top = "0";
+  credits.style.left = "0";
+  credits.style.width = "100%";
+  credits.style.height = "100%";
+  credits.style.background = "#111";
+  credits.style.color = "white";
+  credits.style.fontFamily = "monospace";
+  credits.style.display = "flex";
+  credits.style.flexDirection = "column";
+  credits.style.alignItems = "center";
+  credits.style.justifyContent = "center";
+  credits.style.zIndex = 1001;
+  credits.style.textAlign = "center";
+  credits.innerHTML = `
+    <h1>VoidQuest</h1>
+    <p>Created by: Erik Spenningsby</p>
+    <p>Every pixelart used in this game</p>
+    <p>are designed and created by our team, and for this game.</p>
+    <p>Pixel art help: Jocelyn, Isabella, Daniel</p>
+    <p>Music: Erik Spenningsby</p>
+    <p>Help/report bugs/inquiries</p>
+    <p>Discord: https://discord.gg/UP67kGYmQE</p>
+    <p>voidcrypt@hotmail.com</p>
+    
+    <br><br>
+    <button onclick="document.getElementById('creditsScreen').remove()">Tilbake</button>
+  `;
+  document.body.appendChild(credits);
+}
+
+function quitGame() {
+  window.close(); // Fungerer kun hvis siden ble åpnet av et skript
+  alert("Du må lukke fanen manuelt."); // Fallback for vanlige faner
+}
+
+toggleMenu();
+

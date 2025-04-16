@@ -67,6 +67,46 @@
       pointer-events: auto;
     }
 
+    #shopBox {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(20, 20, 20, 0.95);
+  padding: 30px;
+  border: 3px solid rgb(19, 113, 8);
+  border-radius: 20px;
+  width: 500px;
+  max-height: 80%;
+  overflow-y: auto;
+  font-family: monospace;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgb(48, 103, 14);
+}
+
+#shopBox h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: rgb(11, 119, 2);
+  text-align: center;
+}
+
+#shopBox button {
+  margin-top: 5px;
+  background: #444;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+#shopBox button:hover {
+  background: rgb(0, 122, 22);
+  color: black;
+}
 
   </style>
 </head>
@@ -103,13 +143,18 @@
     <h3>Settings</h3>
     <label for="volumeSlider">Music:</label>
     <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" onchange="updateVolume(this.value)">
+    
+    <!-- Save/Load Buttons -->
+    <div style="position: relative; top: 20px;  z-index: 1000;">
+      <button onclick="downloadSave()" style="margin-bottom: 10px;">📥 Download Save</button><br>
+      <input type="file" id="uploadSave" style="display: none;" onchange="loadFromFile(event)">
+      <button onclick="document.getElementById('uploadSave').click()">📤 Load Save</button>
+    </div>
     <br><br>
     <button style="color: rgb(255, 255, 255); font-style:oblique; background-color: rgb(255, 0, 0);" onclick="confirmDeleteSave()">DELETE CHARACTER SAVE</button>
     <br><br>
     <button onclick="toggleSettings()">Close</button>
   </div>
-
-  
 
 </body>
 <script src="js.js"></script>

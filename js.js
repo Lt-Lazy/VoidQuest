@@ -11,15 +11,19 @@ let isDead = false;
 
 let lastFrameTime = performance.now();
 
+let gameStarted = false;
+
 
 // === Kart: Lokasjoner og visning ===
 const mapData = [
-  { name: "Spenningsbyen", x: 20, y: 20, type: "city", color: "dodgerblue" },
+  { name: "Spenningsbyen", x: 20, y: 20, type: "city", color: "green" },
   { name: "Path-1", x: 35, y: 20, type: "road", color: "#8B4513" },
   { name: "Path-1", x: 50, y: 20, type: "road", color: "#8B4513" },
   { name: "Path-1", x: 65, y: 20, type: "road", color: "#8B4513" },
-  { name: "Path-1", x: 80, y: 20, type: "road", color: "#8B4513" },
-  { name: "Yurborg", x: 95, y: 20, type: "city", color: "dodgerblue" },
+  { name: "Yurborg", x: 80, y: 20, type: "city", color: "green" },
+  { name: "Path-2", x: 80, y: 35, type: "road", color: "#8B4513" },
+  { name: "Path-2", x: 80, y: 50, type: "road", color: "#8B4513" },
+  { name: "Vulcano-Hill", x: 80, y: 65, type: "city", color: "orange" },
   
 ];
 
@@ -35,10 +39,12 @@ const tileImages = {
   table: new Image(),
   door: new Image(),
   water: new Image(),
+  lava: new Image(),
   sand: new Image(),
   stoneSingle: new Image(),
   campfire: new Image(),
   stonepath: new Image(),
+  lavacoble: new Image(),
   voidgate: new Image()
 };
 
@@ -52,32 +58,35 @@ tileImages.fence.src = 'images/tiles/fenceTile.png';
 tileImages.table.src = 'images/tiles/tableTile.png';
 tileImages.coblestone.src = 'images/tiles/coblestoneTile.png';
 tileImages.water.src = 'images/tiles/waterTile.png';
+tileImages.lava.src = 'images/tiles/lavaTile.png';
 tileImages.sand.src = 'images/tiles/sandPathTile.png';
 tileImages.stoneSingle.src = 'images/tiles/stoneSingleTile.png';
 tileImages.campfire.src = 'images/tiles/campfireStill.png';
 tileImages.stonepath.src = 'images/tiles/stonePathTile.png';
+tileImages.lavacoble.src = 'images/tiles/lavaCobleTile.png';
 tileImages.voidgate.src = 'images/tiles/voidgateTile.png';
 
 const nonWalkableTiles = ['tree', 'brick', 'fence', 'table', 'water', 'stoneSingle','campfire',];
-const tilesAbovePlayer = ['roof', 'tree'];
+const tilesAbovePlayer = ['roof'];
 
 const tileMapping = {
-  'G': 'grass',
-  'C': 'coblestone',
-  'T': 'tree',
-  'B': 'brick',
-  'R': 'roof',
-  'P': 'plank',
-  'F': 'fence',
-  'F': 'fence',
-  '1': 'table', 
-  'D': 'door',
-  'W': 'water',
-  'S': 'sand',
-  'p': 'stonepath',
-  's': 'stoneSingle',
-  'c': 'campfire',
-  'V': 'voidgate',
+  'G1': 'grass',
+  'C1': 'coblestone',
+  'LC': 'lavacoble',
+  'T1': 'tree',
+  'B1': 'brick',
+  'R1': 'roof',
+  'P1': 'plank',
+  'F1': 'fence',
+  'T2': 'table', 
+  'D1': 'door',
+  'W1': 'water',
+  'L1': 'lava',
+  'S1': 'sand',
+  'P2': 'stonepath',
+  'S2': 'stoneSingle',
+  'C2': 'campfire',
+  'V1': 'voidgate',
 };
 
 const characterImages = {
@@ -138,6 +147,10 @@ const treeCreaturePools = {
     { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
     { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
     { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
+    { name: "Golden Beetle", rarity: "legendary", image: "images/creatures/land/goldenBeetle.png", chance: 14, price: 370},
+    { name: "Beetle", rarity: "common", image: "images/creatures/land/beetle.png", chance: 400, price: 25},
+
+
   ],
   5: [ // Yurborg
     { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
@@ -160,7 +173,7 @@ const bosses = {
         image: "images/creatures/boss/theAbyssBeast/abyssEye.png",
         rarity: "rare",
         price: 875,
-        chance: 50  // 20% sjanse
+        chance: 20  // 20% sjanse
       },
     ],
     barSpeed: 1500,       // Tid for bar i ms
@@ -250,18 +263,6 @@ const npcs = [
     ]
   },
   {
-    name: "Deep Void Lure",
-    image: "images/creatures/vann/deepVoidLure.png",
-    x: 22,
-    y: 2,
-    level: 0,
-    type: "creature",
-    dialog: ["You are not supposed to be here...",
-      "And you are not supposed to know that i ca-",
-      "Eh? i feel the.. you.. are.."
-    ]
-  },
-  {
     name: "Oleander the Hunter",
     image: "images/npc/oleanderDown.png",
     x: 1,
@@ -275,14 +276,17 @@ const npcs = [
   {
     name: "Voidlore Merchant",
     image: "images/npc/voidloreMerchantRight.png",
-    x: 0,
-    y: 0,
+    x: 6,
+    y: 4,
     level: 5,
     type: "special_shop",
     dialog: ["No one sells goods like mine!",
       "Take a look."
     ]
   },
+  
+  //----------SKAPNINGER----------
+  
   {
     name: "Poisetle",
     image: "images/creatures/land/poisetle.png",
@@ -292,6 +296,29 @@ const npcs = [
     type: "creature",
     dialog: ["SSSsSsssSssSSS",
       "SSssssSSSsss"
+    ]
+  },
+  {
+    name: "Deep Void Lure",
+    image: "images/creatures/vann/deepVoidLure.png",
+    x: 22,
+    y: 2,
+    level: 0,
+    type: "creature",
+    dialog: ["You are not supposed to be here...",
+      "And you are not supposed to know that i ca-",
+      "Eh? i feel the.. you.. are.."
+    ]
+  },
+  {
+    name: "Skuggosk",
+    image: "images/creatures/vann/skuggosk.png",
+    x: 2,
+    y: 4,
+    level: 2,
+    type: "creature",
+    dialog: ["krk-kvak-kvek",
+      "kvekek-krk-kvekek",
     ]
   },
   // Legg til flere her!
@@ -361,14 +388,14 @@ const doorMap = {
   },
   5: { //YURBORG
     '0,5': { targetLevel: 4, targetX: 22, targetY: 3 },  // TIL STI-1
-    '25,10': { targetLevel: 7, targetX: 7, targetY: 5 }, // TIL GATHERERS HUB 
+    '26,11': { targetLevel: 7, targetX: 7, targetY: 6 }, // TIL GATHERERS HUB 
     //'5,5': { targetLevel: 0, targetX: 22, targetY: 5 }  // TIL CASINO-1
   },
   6: { //CASINO-1
     '5,5': { targetLevel: 5, targetX: 5, targetY: 2 }  // TIL YURBORG
   },
   7: { //GATHERERS HUB YURBORG
-    '7,6': { targetLevel: 5, targetX: 25, targetY: 11 }  // TIL YURBORG
+    '7,7': { targetLevel: 5, targetX: 26, targetY: 12 }  // TIL YURBORG
   }
 };
 
@@ -376,18 +403,20 @@ const levels = [
   {
     //Spenningsbyen "0"
     layout: [
-      'TTTTTTTTTTTTTTTTTTsCCCCC',
-      'TGGGGGGGGGGGGGGGGGGsCRRR',
-      'TGGGGGTTTTpppGGGGGGsCPPP',
-      'TGGGTTTTTGpcpGGGGGGGsPDP',
-      'TGGGGTTTTGpppppGGGGGGsGs',
-      'TGGGGGGTTTGGpppppppppppV',
-      'TRRRRGGGGGGGGpppGGGGGGGT',
-      'TRRRRGTTGGGGGGpGGGGGGGGT',
-      'TBBBBTTTTTTGGGpGGGGGSSSS',
-      'TBDBBFFFFFGppppGGGGSWWWW',
-      'TpppppppppppGGGGGGSWWWWW',
-      'TTTTTTTTTTTTTTTTTSWWWWWW'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'S2', 'C1', 'C1', 'C1', 'C1', 'C1'],//0
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'S2', 'C1', 'R1', 'R1', 'R1'],//1
+      ['T1', 'G1', 'G1', 'G1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'S2', 'C1', 'P1', 'P1', 'P1'],//2
+      ['T1', 'G1', 'G1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'S2', 'P1', 'D1', 'P1'],//3
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'P2', 'C2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'S2', 'G1', 'S2'],//4
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'G1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2'],//5
+      ['T1', 'R1', 'R1', 'R1', 'R1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//6
+      ['T1', 'R1', 'R1', 'R1', 'R1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//7
+      ['T1', 'B1', 'B1', 'B1', 'B1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'S1', 'S1', 'S1', 'S1'],//8
+      ['T1', 'B1', 'D1', 'B1', 'B1', 'F1', 'F1', 'F1', 'F1', 'F1', 'F1', 'F1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'S1', 'W1', 'W1', 'W1', 'W1'],//9
+      ['T1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'S1', 'W1', 'W1', 'W1', 'W1', 'W1'],//10
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'S1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//11
+
     ],
     startX: 4,
     startY: 10,
@@ -396,14 +425,15 @@ const levels = [
   {
     //GATHERERS HUB "1"
     layout: [
-      'BBBBBBBBBBBB',
-      'BBBBBBBDBBDB',
-      'BPPPPPPPPPPB',
-      'B111PPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//0
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'D1', 'B1', 'B1', 'D1', 'B1'],//1
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//2
+      ['B1', 'T2', 'T2', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//3
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//4
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//5
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//6
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//7
     ],
     startX: 5,
     startY: 5,
@@ -412,14 +442,15 @@ const levels = [
   {
     // DEEP VOID CAVE SPENNINGSBYEN "2"
     layout: [
-      'CCsssVssCsWW',
-      'CsCssCCsCCsW',
-      'CsCCCCCCCCCC',
-      'CCCsCCCCCCsC',
-      'CsCsssCCCCsC',
-      'CCCCsCCssCsC',
-      'CCCCsCCCCCsC',
-      'CCCCsCCCCCCC'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['S2', 'S2', 'S2', 'P2', 'C1', 'V1', 'C1', 'C1', 'C1', 'S2', 'S2', 'S2'],//0
+      ['S2', 'S2', 'P2', 'C1', 'C1', 'P2', 'C1', 'S2', 'C1', 'C1', 'C1', 'C1'],//1
+      ['S2', 'P2', 'C1', 'C1', 'C1', 'P2', 'C1', 'C1', 'C1', 'S2', 'C1', 'C1'],//2
+      ['P2', 'C1', 'C1', 'C1', 'P2', 'P2', 'P2', 'C1', 'C1', 'C1', 'C1', 'C1'],//3
+      ['P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2'],//4
+      ['W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//5
+      ['W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//6
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//7
     ],
     startX: 5,
     startY: 5,
@@ -428,14 +459,15 @@ const levels = [
   {
     // HUS HUB TROFE ROM "3"
     layout: [
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BPPPPPPPPPPB',
-      'BBBBBBBDBBBB'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//0
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//1
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//2
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//3
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//4
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//5
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//6
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'V1', 'P1', 'P1', 'P1', 'B1'],//7
     ],
     startX: 5,
     startY: 5,
@@ -444,13 +476,14 @@ const levels = [
   {
     // STI-1 "4"
     layout: [
-      'TTTTTTTTTTTTTWWWTTTTTTTT',
-      'TTTGGppppGGTTWWWGGTTTGGT',
-      'TGGGppGGppGGTWWWGGGGGGGT',
-      'VppppGTTGpppGWWWFFFFFppV',
-      'TGGGGTTTTGGppPPPppGGppGT',
-      'TGGGTTTTTTGGpPPPpppppGGT',
-      'TTTTTTTTTTTTTWWWTTTTTTTT'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'W1', 'W1', 'W1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//0
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'S2', 'W1', 'W1', 'W1', 'S2', 'T1', 'T1', 'G1', 'T1', 'G1', 'G1', 'T1'],//1
+      ['T1', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'W1', 'W1', 'W1', 'G1', 'G1', 'G1', 'G1', 'T1', 'G1', 'G1', 'T1'],//2
+      ['V1', 'P2', 'P2', 'T1', 'G1', 'P2', 'P2', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'W1', 'W1', 'W1', 'F1', 'F1', 'F1', 'G1', 'G1', 'P2', 'P2', 'P2'],//3
+      ['T1', 'G1', 'T1', 'T1', 'T1', 'G1', 'P2', 'P2', 'P2', 'G1', 'G1', 'P2', 'P2', 'P1', 'P1', 'P1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'T1', 'T1'],//4
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'S2', 'G1', 'G1', 'G1', 'G1', 'G1', 'P1', 'P1', 'P1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1', 'T1', 'T1'],//5
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'W1', 'W1', 'W1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//6
     ],
     startX: 5,
     startY: 5,
@@ -459,25 +492,28 @@ const levels = [
   {
     //YURBORG "5"
     layout: [
-      'G1GGGTTTTTTTTTTTTRRRRRRRRRRR',
-      'G1GGGGGGTTTTTTTTGRRRRRRRRRRR',
-      'GGGGGGGGGGGTTTGGGBBBBBBBBBBB',
-      'GGGGGGGGGGGGGGGGGBBBBBBBBBBB',
-      'GGGGGGGGGGGGpppGGGGGGGGGGGGG',
-      'VppppppppGGppGppGGGppppppGGG',
-      'GGGGGGGGppppGGGpppppGGGGGGGG',
-      'GGGGGGGGGGGppGppGGGGGGGRRRRR',
-      'GGGGGGGGGGGGpppppppGGGGRRRRR',
-      'GTTGGGGGGGGGGpGGGGppGGGBBBBB',
-      'TTTTGGGGGGGGppGGGGGpppGBBDBB',
-      'TTTTTTGGGGGGpGGGGGGGGppppppp',
-      'TTTTTTTTGGGGpGGGGGGGGGGGGGGG',
-      'TTTTTTTTTTTTFTTTTTTTTTTTTTTT',
-      'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
-      'WWWWWWWWWWWPPPWWWWWWWWWWWWWW',
-      'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
-      'WWWWWWWWWPPPPPPPWWWWWWWWWWWW',
-      'WWWWWWWWWWWPPPWWWWWWWWWWWWWW'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23----24----25----26----27----28
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1'],//0
+      ['T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1', 'R1'],//1
+      ['T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//2
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//3
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//4
+      ['P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//5
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//6
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//7
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'R1', 'R1'],//8
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'R1', 'R1', 'R1', 'R1', 'R1'],//9
+      ['T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'B1', 'B1', 'B1', 'B1', 'B1'],//10
+      ['T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'G1', 'B1', 'B1', 'D1', 'B1', 'B1'],//11
+      ['T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'T1'],//12
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'P2', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1'],//13
+      ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'F1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//14
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//15
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//16
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//17
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//18
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1'],//19
+
     ],
     startX: 4,
     startY: 4,
@@ -501,13 +537,15 @@ const levels = [
   {
     // GATHERERS HUB YURBORG "7"
     layout: [
-      'BBBBBBBBBBBBBBB',
-      'BBBBBBBBBBBBBBB',
-      'BPPPPPPPPPPPPPB',
-      'B11PPPPPPPPPPPB',
-      'BPPPPPPPPPPPPPB',
-      'BPPPPPPPPPPPPPB',
-      'BPPPPPPVPPPPPPB'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//0
+      ['B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1', 'B1'],//1
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//2
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//3
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//4
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//5
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'B1'],//6
+      ['B1', 'P1', 'P1', 'P1', 'P1', 'P1', 'P1', 'V1', 'P1', 'P1', 'P1', 'B1'],//7
     ],
     startX: 3,
     startY: 3,
@@ -516,23 +554,76 @@ const levels = [
   {
     // VEILED ABYSS "8"
     layout: [
-      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC',
-      'CCCCCCCCCCCCCCCCWWWWWWWCCCCCCCCCCCCC'
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23----24----25----26----27----28----29----30----31----32----33----34----35
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//0
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//1
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//2
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//3
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//4
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//5
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//6
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//7
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//8
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//9
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//10
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//11
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//12
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//14
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//15
+      ['C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1', 'C1'],//16
+
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'coblestone'
+  },
+  {
+    // Vulcano Hill "9"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23----24----25----26----27----28----29----30----31----32----33----34----35
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//0
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//1
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//2
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//3
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//4
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//5
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//6
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//7
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//8
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//9
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//10
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//11
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//12
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//14
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//15
+      ['LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC', 'LC'],//16
+
+    ],
+    startX: 5,
+    startY: 5,
+    background: 'coblestone'
+  },
+  {
+    // Path-2 "10"
+    layout: [
+      //0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15----16----17----18----19----20----21----22----23
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//0
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//1
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//2
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//3
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//4
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//5
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//6
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//7
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//8
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//9
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//10
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//11
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//12
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//14
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//15
+      ['W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'P1', 'P1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1', 'W1',],//16
+
     ],
     startX: 5,
     startY: 5,
@@ -552,7 +643,9 @@ const levelNamesToIndex = {
   "gatherers-hub-yurborg": 7,
   
   // Hemmelig nivå:
-  "the-veiled-abyss": 8 // <- hemmelig!
+  "the-veiled-abyss": 8,
+  "vulcano-hill": 9,
+  "path-2": 10,
 };
 
 const levelDefinitions = {
@@ -563,12 +656,11 @@ const levelDefinitions = {
   "path-1":             { index: 4,  x: 2,  y: 3 },
   "yurborg":            { index: 5,  x: 4,  y: 4 },
   "casino":             { index: 6,  x: 5,  y: 5 },
-  "gatherers-hub-yurborg": { index: 7, x: 3, y: 3 },
-
-  // Hemmelig nivå
-  "the-veiled-abyss":   { index: 8,  x: 2,  y: 2 },
+  "gatherers-hub-yurborg": { index: 7, x: 3, y: 3},
+  "the-veiled-abyss":   { index: 8,  x: 2,  y: 2 }, // Hemmelig nivå
+  "vulcano-hill":       { index: 9,  x: 2,  y: 2 },
+  "path-2":             { index: 10,  x: 11,  y: 0},
 };
-
 
 
 // ================== QUESTER ==================
@@ -605,6 +697,60 @@ function toggleSettings() {
   const settings = document.getElementById('settingsMenu');
   settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
 }
+
+function downloadSave() {
+  const saveData = JSON.stringify({
+    character: playerData,
+    inventory,
+    gold,
+    trophies,
+    playerLevel,
+    playerXP,
+    xpToNextLevel
+  }, null, 2);
+
+  const blob = new Blob([saveData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "voidquest_save.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function loadFromFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.character || !data.inventory) {
+        alert("Invalid save file.");
+        return;
+      }
+
+      playerData = data.character;
+      inventory = data.inventory;
+      gold = data.gold;
+      trophies = data.trophies;
+      playerLevel = data.playerLevel;
+      playerXP = data.playerXP;
+      xpToNextLevel = data.xpToNextLevel;
+      applyCharacterAppearance();
+      renderInventory();
+      updateXPBar();
+      alert("Save loaded!");
+    } catch (err) {
+      alert("Failed to load save file.");
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
 
 function confirmDeleteSave() {
   const confirmDelete = confirm("Are you sure you want to delete your character save?");
@@ -664,6 +810,7 @@ function loadLevel(levelIndex, startX = null, startY = null) {
     6: "Casino",
     7: "Gatherers-hub-Yurborg",
     8: "The-Veiled-Abyss",
+    8: "Vulcano-Hill",
   };
   
   const level = levels[levelIndex];
@@ -684,7 +831,8 @@ function loadLevel(levelIndex, startX = null, startY = null) {
     currentMusic.play();
   }
 
-  map = level.layout.map(row => row.split('').map(char => tileMapping[char]));
+  map = level.layout.map(row => row.map(tile => tileMapping[tile]));
+
   mapHeight = map.length;
   mapWidth = map[0].length;
 
@@ -738,10 +886,14 @@ function drawMap() {
 }
 
 function changeTile(levelIndex, x, y, newTileChar) {
-  // Endre layout-dataen
+  // Endre layout-dataen direkte
   const row = levels[levelIndex].layout[y];
-  const newRow = row.substring(0, x) + newTileChar + row.substring(x + 1);
-  levels[levelIndex].layout[y] = newRow;
+  if (Array.isArray(row)) {
+    row[x] = newTileChar; // riktig for array-form
+  } else {
+    const newRow = row.substring(0, x) + newTileChar + row.substring(x + 1);
+    levels[levelIndex].layout[y] = newRow;
+  }
 
   // Hvis vi er på riktig nivå nå, oppdater også "map"-arrayen som brukes i spillet
   if (currentLevel === levelIndex) {
@@ -807,8 +959,9 @@ function finishCharacterCreation() {
   applyCharacterAppearance();
 
   document.getElementById("charCreation").remove();
+  
 
-  // Start spillet fra level 0
+  // Start spillet fra level 1
   loadLevel(1);
 
   // Lagre umiddelbart
@@ -914,18 +1067,17 @@ function moveCharacter(dx, dy) {
       character.moving = false;
       const tile = map[character.y][character.x];
 
-      if (tile === 'door' || tile === 'voidgate') {
-        const key = `${character.x},${character.y}`;
-        const door = doorMap[currentLevel]?.[key];
-        if (door) {
-          // Krever nøkkel for visse dører
-          if (door.requires && !hasItem(door.requires)) {
-            alert("You need the " + door.requires + " to enter this area.");
-            return;
-          }
-          loadLevel(door.targetLevel, door.targetX, door.targetY);
+      const key = `${character.x},${character.y}`;
+      const door = doorMap[currentLevel]?.[key];
+      if (door) {
+        // Krever nøkkel for visse dører
+        if (door.requires && !hasItem(door.requires)) {
+          alert("You need the " + door.requires + " to enter this area.");
+          return;
         }
+        loadLevel(door.targetLevel, door.targetX, door.targetY);
       }
+      
     }
   }
 
@@ -956,9 +1108,9 @@ function tryInteract() {
   const tile = map[ty]?.[tx];
 
   // === Åpne låst gjerde hvis spiller har "Dock Key" ===
-  if (currentLevel === 5 && tx === 12 && ty === 13 && tile === 'fence') {
+  if (currentLevel === 5 && tx === 12 && ty === 14 && tile === 'fence') {
     if (hasItem("Dock Key")) {
-      changeTile(currentLevel, 12, 13, 'G'); // Bytt til 'G' = grass
+      changeTile(currentLevel, 12, 14, 'G1'); // Bytt til 'G1' = grass
     } else {
       alert("Gjerdet er låst. Du trenger en Dock Key.");
     }
@@ -1367,29 +1519,6 @@ function getRandomFish() {
   return { name: "???", rarity: "secret", image: "images/creatures/vann/defaultFish.png", price: 0 };
 }
 
-function addToInventory(fish) {
-  let item = inventory.find(i => i.name === fish.name);
-  if (item) {
-    item.count += 1;
-  } else {
-    inventory.push({ ...fish, count: 1 });
-  }
-
-  // Legg til i trophies hvis det er første gang du fanger denne
-  if (!trophies[fish.name]) {
-    const now = new Date();
-    const formatted = now.getFullYear() + "-" +
-                      String(now.getMonth() + 1).padStart(2, '0') + "-" +
-                      String(now.getDate()).padStart(2, '0') + " " +
-                      String(now.getHours()).padStart(2, '0') + ":" +
-                      String(now.getMinutes()).padStart(2, '0');
-  
-    trophies[fish.name] = formatted;
-  }
-
-  if (inventoryOpen) renderInventory();
-}
-
 //removeItem("Void Key"); hvis du skal bruke den til noe annet
 function removeItem(name) {
   const index = inventory.findIndex(i => i.name === name);
@@ -1429,9 +1558,46 @@ function openSpecialShop(npcName) {
     });
   }
 
+  // Vis items du kan selge også:
+  html += `<hr><h4>Sell Items</h4>`;
+
+  let hasItemsToSell = false;
+  inventory.forEach(item => {
+    const isFishOrCreature = item.rarity !== undefined; // creatures har alltid rarity
+    if (!isFishOrCreature) {
+      hasItemsToSell = true;
+      const sellPrice = item.price || 5; // fallback pris hvis item ikke har pris
+      html += `
+        <div style="margin-bottom:10px;">
+          <img src="${item.image}" width="32" height="32"> ${item.name}
+          <br><button onclick="sellToMerchant('${item.name}', ${sellPrice})">Sell for ${sellPrice} gold</button>
+        </div>
+      `;
+    }
+  });
+
+  if (!hasItemsToSell) {
+    html += `<p>You have no sellable items.</p>`;
+  }
+
   html += `<br><button onclick="closeShop()">Leave</button>`;
   shopBox.innerHTML = html;
   shopBox.style.display = 'block';
+}
+
+function sellToMerchant(itemName, price) {
+  const index = inventory.findIndex(i => i.name === itemName);
+  if (index !== -1) {
+    inventory[index].count--;
+    gold += price;
+
+    if (inventory[index].count <= 0) {
+      inventory.splice(index, 1);
+    }
+
+    renderInventory();
+    openSpecialShop("Voidlore Merchant"); // refresh shop
+  }
 }
 
 function buySpecialItem(npcName, itemName, price) {
@@ -1459,6 +1625,8 @@ function openShop(type = "water") {
   let hasFish = false;
 
   inventory.forEach(item => {
+    if (!item) return; // 🔒 Hopp over tomme ruter
+
     const creaturePools = type === "water" ? fishPools : treeCreaturePools;
     const allCreatures = Object.values(creaturePools).flat();
     const creatureInfo = allCreatures.find(c => c.name === item.name);
@@ -1475,6 +1643,7 @@ function openShop(type = "water") {
 
   shopHTML += `<br><button onclick="closeShop()">Cancel</button>`;
   shopBox.innerHTML = shopHTML;
+
   shopBox.style.display = 'block';
 }
 
@@ -1483,7 +1652,7 @@ function closeShop() {
 }
 
 function sellFish(fishName, price) {
-  const itemIndex = inventory.findIndex(i => i.name === fishName);
+  const itemIndex = inventory.findIndex(i => i && i.name === fishName);
   if (itemIndex !== -1) {
     inventory[itemIndex].count--;
     gold += price;
@@ -1494,6 +1663,8 @@ function sellFish(fishName, price) {
     openShop(currentShopType); // Refresh shop UI
   }
 }
+
+
 
 let showMap = false;
 const mouse = { x: 0, y: 0 };
@@ -1581,79 +1752,100 @@ function gameLoop() {
 
 function renderInventory() {
   const inv = document.getElementById('inventory');
-  inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory (${playerData.name})</h3><p style="color:gold;font-family: Cursive;">Gold: ${gold}</p>`;  
-  
-  let hoverInfoBox = document.getElementById("hoverInfoBox");
-  if (!hoverInfoBox) {
-    hoverInfoBox = document.createElement("div");
-    hoverInfoBox.id = "hoverInfoBox";
-    hoverInfoBox.style.position = "fixed";
-    hoverInfoBox.style.pointerEvents = "none";
-    hoverInfoBox.style.background = "#222";
-    hoverInfoBox.style.border = "1px solid #999";
-    hoverInfoBox.style.color = "white";
-    hoverInfoBox.style.padding = "8px";
-    hoverInfoBox.style.fontFamily = "monospace";
-    hoverInfoBox.style.zIndex = "1000";
-    hoverInfoBox.style.display = "none";
-    document.body.appendChild(hoverInfoBox);
-  }
+  inv.innerHTML = `<h3 style="color:white;font-family: Cursive;">Inventory (${playerData.name})</h3>
+                   <p style="color:gold;font-family: Cursive;">Gold: ${gold}</p>`;
+
+  const hoverInfoBox = document.getElementById("hoverInfoBox") || (() => {
+    const box = document.createElement("div");
+    box.id = "hoverInfoBox";
+    Object.assign(box.style, {
+      position: "fixed", pointerEvents: "none", background: "#222", border: "1px solid #999",
+      color: "white", padding: "8px", fontFamily: "monospace", zIndex: 1000, display: "none"
+    });
+    document.body.appendChild(box);
+    return box;
+  })();
 
   const grid = document.createElement('div');
   grid.style.display = 'grid';
-  grid.style.gridTemplateColumns = 'repeat(5, 64px)';
+  grid.style.gridTemplateColumns = 'repeat(4, 64px)';
+  grid.style.gridTemplateRows = 'repeat(6, 64px)';
   grid.style.gap = '8px';
 
-  inventory.forEach(item => {
-    const cell = document.createElement('div'); 
-    const rarity = raritySettings[item.rarity];
-    const borderColor = rarity ? rarity.border : "#666";
-
+  for (let i = 0; i < 24; i++) {
+    const cell = document.createElement('div');
+    cell.dataset.index = i;
     cell.style.width = '64px';
     cell.style.height = '64px';
     cell.style.background = '#111';
-    cell.style.border = `2px solid ${borderColor}`;
+    cell.style.border = '2px solid #444';
     cell.style.display = 'flex';
     cell.style.flexDirection = 'column';
     cell.style.alignItems = 'center';
     cell.style.justifyContent = 'center';
 
-    cell.onmousemove = (e) => {
-      const rarityData = raritySettings[item.rarity];
-      const rarityColor = rarityData ? rarityData.color : "#fff";
-      const caughtDate = trophies[item.name] || "Unknown";
-      hoverInfoBox.innerHTML = `
-        <strong style="color:${rarityColor}">${item.name}</strong><br>
-        <span>Rarity: <span style="color:${rarityColor}">${item.rarity}</span></span><br>
-        <span>Price: ${item.price} gold</span><br>
-        <span style="color:gray;">First caught: ${caughtDate}</span>
-      `;
-      hoverInfoBox.style.display = "block";
-      hoverInfoBox.style.left = (e.clientX + 15) + "px";
-      hoverInfoBox.style.top = (e.clientY + 15) + "px";
-    };
+    const item = inventory[i];
+    if (item) {
+      const rarity = raritySettings[item.rarity];
+      const borderColor = rarity ? rarity.border : "#666";
+      cell.style.border = `2px solid ${borderColor}`;
+      cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
 
-    cell.onmouseleave = () => {
-      hoverInfoBox.style.display = "none";
-    };
+      if (interactableItems[item.name]) {
+        cell.style.cursor = "pointer";
+        cell.onclick = () => showItemDialog(item.name);
+      }
 
-    cell.innerHTML = `<img src="${item.image}" width="32" height="32"><div style="color:white;">x${item.count}</div>`;
-    if (interactableItems[item.name]) {
-      cell.style.cursor = "pointer";
-      cell.onclick = () => {
-        showItemDialog(item.name);
+      // === Drag & Drop ===
+      cell.draggable = true;
+      cell.ondragstart = (e) => {
+        e.dataTransfer.setData("text/plain", i);
+      };
+
+      cell.onmousemove = (e) => {
+        const rarityData = raritySettings[item.rarity];
+        const rarityColor = rarityData ? rarityData.color : "#fff";
+        const caughtDate = trophies[item.name] || "Unknown";
+        hoverInfoBox.innerHTML = `
+          <strong style="color:${rarityColor}">${item.name}</strong><br>
+          <span>Rarity: <span style="color:${rarityColor}">${item.rarity}</span></span><br>
+          <span>Price: ${item.price} gold</span><br>
+          <span style="color:gray;">First caught: ${caughtDate}</span>
+        `;
+        hoverInfoBox.style.display = "block";
+        hoverInfoBox.style.left = (e.clientX + 15) + "px";
+        hoverInfoBox.style.top = (e.clientY + 15) + "px";
+      };
+
+      cell.onmouseleave = () => {
+        hoverInfoBox.style.display = "none";
       };
     }
+
+    // === Drop Target ===
+    cell.ondragover = (e) => e.preventDefault();
+    cell.ondrop = (e) => {
+      e.preventDefault();
+      const fromIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      const toIndex = parseInt(cell.dataset.index, 10);
+      if (fromIndex !== toIndex) {
+        [inventory[fromIndex], inventory[toIndex]] = [inventory[toIndex], inventory[fromIndex]];
+        renderInventory(); // Oppdater visningen
+      }
+    };
+
     grid.appendChild(cell);
-  });
+  }
 
   inv.appendChild(grid);
 }
 
+
 function toggleInventory() {
   inventoryOpen = !inventoryOpen;
-  document.getElementById('inventory').style.display = inventoryOpen ? 'block' : 'none';
-  if (inventoryOpen) renderInventory();
+  document.getElementById("inventory").style.display = inventoryOpen ? "block" : "none";
+  document.getElementById("goldDisplay").style.display = inventoryOpen ? "block" : "none";
+  
 }
 
 function showItemDialog(itemName) {
@@ -1858,6 +2050,7 @@ function renderTrophyJournal() {
   } else if (currentTrophyType === "boss") {
     fullList = allBosses;
   }
+  
 
   const list = fullList
   .filter(creature => creature.rarity !== "secret" || trophies[creature.name])
@@ -2170,23 +2363,26 @@ function handleCommand(cmd) {
 sounds.sfx.levelUp = new Audio("lyder/levelUp.wav");
 
 // === Legg til XP når du fanger fisk ===
-function addToInventory(fish) {
-  let item = inventory.find(i => i.name === fish.name);
-  if (item) {
-    item.count += 1;
+function addToInventory(newItem) {
+  // Finn om det finnes en match fra før
+  let existingItem = inventory.find(i => i && i.name === newItem.name);
+
+  if (existingItem) {
+    existingItem.count += 1;
   } else {
-    inventory.push({ ...fish, count: 1 });
-  }if (!trophies[fish.name]) {
-    const now = new Date();
-    const formatted = now.getFullYear() + "-" +
-                      String(now.getMonth() + 1).padStart(2, '0') + "-" +
-                      String(now.getDate()).padStart(2, '0') + " " +
-                      String(now.getHours()).padStart(2, '0') + ":" +
-                      String(now.getMinutes()).padStart(2, '0');
-  
-    trophies[fish.name] = formatted;
+    // Finn første tomme plass (undefined)
+    const emptyIndex = inventory.findIndex(i => !i);
+    if (emptyIndex !== -1) {
+      inventory[emptyIndex] = { ...newItem, count: 1 };
+    } else {
+      // Ingen tomme plasser, legg til på slutten
+      inventory.push({ ...newItem, count: 1 });
+    }
   }
-  gainXP(fish.xp || 10); // Få XP basert på fisken
+  if (!trophies[newItem.name]) {
+    trophies[newItem.name] = new Date().toISOString();
+  }
+
   if (inventoryOpen) renderInventory();
 }
 
