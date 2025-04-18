@@ -1322,7 +1322,8 @@ function startCatchMinigame(creature, isWater) {
       const progress = elapsed / totalTime;
       if (progress >= successZoneStart && progress <= successZoneEnd) {
         fishCaught = true;
-        showFishingBox(`You caught a ${creature.name}!`);
+        showFishingBox(`You caught a ${creature.name} and earned ${creature.xp} XP!`);
+        gainXP(fish.xp);
         addToInventory(creature);
         if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
       } else {
@@ -2042,8 +2043,8 @@ let playerXP = 0;
 let xpToNextLevel = 100;
 
 // Hvor mye XP hver type fisk gir
-defineFishXP();
-function defineFishXP() {
+defineCreatureXP();
+function defineCreatureXP() {
   const pool = Object.values(fishPools).flat();
   pool.forEach(fish => {
     if (!fish.xp) {
