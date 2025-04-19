@@ -2,7 +2,14 @@ Oppdateringer fra Sandefjord
 
 - Lagt til lavaTile, LavaCoble
 - Lagt til Beetle og golden beetle, (bare finnes i paths)
+- Grobbe the gambler lagt til
+- vulcano-hill og path-2 lagt til
+- lagt til molten muck mob
+- Når man loader en save fra pcen så saver spillet automatisk etter den er loadet
+så den saven man loadet overskriver den nåværende saven
 
+TRENGER Å FIKSE:
+voidlore merchant shop er litt rar, se feilmeldinger i consol
 
 
 

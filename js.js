@@ -355,7 +355,7 @@ const fishPools = {
   ],
   5: [ // Yurborg
     { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19 },
-    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 87 },
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 92 },
     { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743 },
     { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217 },
     { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
@@ -374,7 +374,7 @@ const fishPools = {
   ],
   10: [ // Path-2
     { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19 },
-    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 87 },
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 92 },
     { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743 },
     { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217 },
     { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
@@ -477,7 +477,7 @@ const npcs = [
       "You can interact with others by pressing E, like you just found out...",
       "Be sure to use your map by pressing M, to navigate through Voidlore.",
       "The fellow over there is Morgan, i dont know much about the man. But i got some gold by giving him some grodr fish!",
-      "To fish you just have to go up to any lake or ocean and interact.",
+      "To fish you just have to go up to any lake or ocean and interact. But first you need a fishing rod, you can buy one from the Voidlore merchant in Yurborg, to the east. To get gold you can start by searching some bushes for creatures and sell them to Oleander the Hunter, he is also in Yurborg in the shack.",
       "I myself only hunt rare land creatures.",
       "Be sure to keep track of your inventory by pressing i. I like to have it open almost always, the inventory shows important info.",
       "And ofcourse press TAB to se the menu.",
@@ -503,7 +503,7 @@ const npcs = [
       "He is a good man.",
       "You look like a happy and hopeful person yourself! Let me give you a piece of advice my friend.",
       "If you havent yet seen it. There is a trophy hanging over the door in to the cave, that is the legendary Deep Void Lure! I caught it myself.",
-      "My tip was to fish in my old pear here, you will get many trophies to show off.",
+      "My tip was to fish in my old pearl here, you will get many trophies to show off.",
       "Now.. take care mye friend."
 
     ]
@@ -528,6 +528,17 @@ const npcs = [
     type: "special_shop",
     dialog: ["No one sells goods like mine!",
       "Take a look."
+    ]
+  },
+
+  {
+    name: "Grobbe the gambler",
+    image: "images/player/man/pixelmannUp.png",
+    x: 12,
+    y: 4,
+    level: 9,
+    type: "special_shop",
+    dialog: ["I am not addicted to these boxes, i have opened boxes every day for 10 years, and i can stop at my will!"
     ]
   },
   
@@ -575,7 +586,7 @@ const npcShopItems = {
     {
       name: "Dock Key",
       image: "images/items/dockKey.png",
-      price: 1,
+      price: 600,
       description: "Unlocks fence to dock in Yurborg.",
       once: true // Bare én gang per spiller
     },
@@ -589,12 +600,43 @@ const npcShopItems = {
     {
       name: "Molten Fishing rod",
       image: "images/items/moltenFishingRod.png",
-      price: 1,
+      price: 2000,
       description: "Rod that can withstand high temperatures!",
       once: true // Bare én gang per spiller
     },
+    {
+      name: "Fishing rod",
+      image: "images/items/fishingRod.png",
+      price: 50,
+      description: "Rod used to fish in lakes and oceans",
+      once: true // Bare én gang per spiller
+    },
     // Flere varer kan enkelt legges til her senere
-  ]
+  ],
+  "Grobbe the gambler": [
+    {
+      name: "Void Box",
+      image: "images/items/boxes/voidBox.png",
+      price: 20,
+      description: "common box for the common man.",
+      once: false // Bare én gang per spiller
+    },
+    {
+      name: "Rare Box",
+      image: "images/items/boxes/rareBox.png",
+      price: 80,
+      description: "Rare Box, im surely not addicted.",
+      once: false // Bare én gang per spiller
+    },
+    {
+      name: "Legendary Box",
+      image: "images/items/boxes/legendaryBox.png",
+      price: 500,
+      description: "Legendary Box! This is not a hobby anymore!",
+      once: false // Bare én gang per spiller
+    },
+
+  ],
 };
 
 //KLIKKBARE ITEMS I INVENTORY
@@ -602,7 +644,57 @@ const interactableItems = {
   "The Veiled Abyss Location": {
     message: "To enter The Veiled Abyss, tp to the-veiled-abyss"
   },
+  "Void Box": {
+    action: () => tryOpenMysteryBox("Void Box")
+  },
+  "Rare Box": {
+    action: () => tryOpenMysteryBox("Rare Box")
+  },
+  "Legendary Box": {
+    action: () => tryOpenMysteryBox("Legendary Box")
+  },
   // Du kan lett legge til flere spesialgjenstander her etterpå
+};
+
+// === Mystery Boxes ===
+const mysteryBoxes = {
+  "Void Box": {
+    price: 20, 
+    image: "images/items/boxes/voidBox.png",
+    items: [
+      { name: "Grodr", image: "images/creatures/vann/grodr.png", chance: 200,},
+      { name: "Grauder", image: "images/creatures/vann/grauder.png", chance: 100},
+      { name: "Krap", image: "images/creatures/vann/krap.png", chance: 70},
+      { name: "Molten Muck", image: "images/creatures/vann/moltenMuck.png", chance: 60},
+      { name: "Grey Mouse", image: "images/creatures/land/mouseGrey.png", chance: 90},
+      { name: "Beetle", image: "images/creatures/land/beetle.png", chance: 60},
+      { name: "Skuggosk", image: "images/creatures/vann/skuggosk.png", chance: 20},
+    ]
+  },
+  "Rare Box": {
+    price: 80, 
+    image: "images/items/boxes/rareBox.png",
+    items: [
+      { name: "Poisetle", image: "images/creatures/land/poisetle.png", chance: 200 },
+      { name: "Albino Grodr", image: "images/creatures/vann/albinoGrodr.png", chance: 100 },
+      { name: "Skuggosk", image: "images/creatures/vann/skuggosk.png", chance: 200 },
+      { name: "Blue Krap", image: "images/creatures/vann/blueKrap.png", chance: 70 },
+      { name: "Albino Mouse", image: "images/creatures/land/albinoMouse.png", chance: 100 },
+      { name: "Golden Beetle", image: "images/creatures/land/goldenBeetle.png", chance: 14},
+
+    ]
+  },
+  "Legendary Box": {
+    price: 500, 
+    image: "images/items/boxes/legendaryBox.png",
+    items: [
+      { name: "Deep Void Lure", image: "images/creatures/vann/deepVoidLure.png", chance: 100},
+      { name: "Albino Krap", image: "images/creatures/vann/albinoKrap.png", chance: 50},
+      { name: "Great White", image: "images/creatures/vann/greatWhite.png", chance: 200},
+      { name: "Elder Great White", image: "images/creatures/vann/elderGreatWhite.png", chance: 10},
+
+    ]
+  },
 };
 
 let trophies = {}; // Navn på fiskene du har fanget før
@@ -697,6 +789,163 @@ const levelDefinitions = {
 };
 
 
+// === Når spiller klikker på en box i inventory ===
+function tryOpenMysteryBox(boxName) {
+  const box = mysteryBoxes[boxName];
+  if (!box) return;
+
+  const confirm = window.confirm(`Are you sure you want to open a ${boxName}?`);
+  if (!confirm) return;
+
+  openMysteryBoxAnimation(boxName);
+}
+
+function findCreatureByName(name) {
+  for (const pool of Object.values(fishPools)) {
+    const match = pool.find(c => c.name === name);
+    if (match) return match;
+  }
+
+  for (const pool of Object.values(treeCreaturePools)) {
+    const match = pool.find(c => c.name === name);
+    if (match) return match;
+  }
+
+  return null;
+}
+
+function getFullCreatureData(name) {
+  const pools = [...Object.values(fishPools).flat(), ...Object.values(treeCreaturePools).flat()];
+  return pools.find(creature => creature.name === name);
+}
+
+
+function openMysteryBoxAnimation(boxName) {
+  const box = mysteryBoxes[boxName];
+  if (!box || !box.items) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "mysteryBoxOverlay";
+  overlay.style.position = "absolute";
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0,0,0,0.85)";
+  overlay.style.zIndex = 999;
+  overlay.innerHTML = `<canvas id="boxWheelCanvas" width="600" height="600" style="margin:auto; display:block;"></canvas>`;
+  document.body.appendChild(overlay);
+
+  const canvas = document.getElementById("boxWheelCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const items = box.items;
+  const segmentAngle = (2 * Math.PI) / items.length;
+  const radius = 200;
+  let currentAngle = 0;
+  let selectedIndex = null;
+
+  // Bestem vinner basert på sjanser
+  const pool = [];
+  items.forEach((item, index) => {
+    for (let i = 0; i < item.chance; i++) {
+      pool.push(index);
+    }
+  });
+  selectedIndex = pool[Math.floor(Math.random() * pool.length)];
+
+  // 💡 Beregn hvilken vinkel som trengs for at vinneren havner øverst
+  const targetAngle = (3 * Math.PI / 2) - (selectedIndex * segmentAngle);
+  const spins = 5; // antall runder før stopp
+  const finalAngle = (2 * Math.PI * spins) + targetAngle;
+
+  let rotation = 0;
+  let startTime = null;
+  const duration = 4000;
+
+  function drawWheel(angle) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Sirkel rundt hjulet
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, radius + 50, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#ccc";
+    ctx.lineWidth = 8;
+    ctx.stroke();
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const theta = i * segmentAngle + angle;
+      const x = canvas.width / 2 + Math.cos(theta) * radius;
+      const y = canvas.height / 2 + Math.sin(theta) * radius;
+
+      const img = new Image();
+      img.src = item.image;
+      ctx.drawImage(img, x - 24, y - 24, 48, 48);
+    }
+
+    // Pil
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, canvas.height / 2 - radius - 60);
+    ctx.lineTo(canvas.width / 2 - 15, canvas.height / 2 - radius - 30);
+    ctx.lineTo(canvas.width / 2 + 15, canvas.height / 2 - radius - 30);
+    ctx.closePath();
+    ctx.fillStyle = "red";
+    ctx.fill();
+  }
+
+  function animateWheel(timestamp) {
+    if (sounds.sfx.boxWheelSpinStart) sounds.sfx.boxWheelSpinStart.play();
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+
+    if (elapsed < duration) {
+      const progress = elapsed / duration;
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      rotation = finalAngle * easeOut;
+      drawWheel(rotation);
+
+      requestAnimationFrame(animateWheel);
+    } else {
+      rotation = finalAngle;
+      drawWheel(rotation);
+
+      const wonItem = items[selectedIndex];
+      const fullCreature = getFullCreatureData(wonItem.name);
+      selectedIndex = pool[Math.floor(Math.random() * pool.length)];
+
+      if (!fullCreature) {
+        alert("Something went wrong, could not find full creature data.");
+        return;
+      }
+      setTimeout(() => {
+        removeItem(boxName); // Fjern brukt box
+        if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+        alert(`You won: ${wonItem.name}!`);
+        addToInventory({
+          name: fullCreature.name,
+          type: "creature",
+          rarity: fullCreature.rarity,
+          image: fullCreature.image,
+          price: fullCreature.price
+        });
+
+        if (!trophies[wonItem.name]) {
+          trophies[wonItem.name] = new Date().toLocaleDateString();
+        }
+
+        document.body.removeChild(overlay);
+        renderInventory();
+      }, 1000);
+    }
+  }
+
+  requestAnimationFrame(animateWheel);
+}
+
+
+
+
 // ================== QUESTER ==================
 
 
@@ -716,7 +965,8 @@ const sounds = {
     startFishing: new Audio("lyder/kasteFiskeStang.wav"),
     gotBite: new Audio("lyder/fiskNapper.wav"),
     catchSuccess: new Audio("lyder/fangetFisk.wav"),
-    catchFail: new Audio("lyder/mistetFisk.wav")
+    catchFail: new Audio("lyder/mistetFisk.wav"),
+    boxWheelSpinStart: new Audio("lyder/boxWheelSpinStart.wav"),
   }
 };
 
@@ -783,6 +1033,7 @@ function loadFromFile(event) {
     }
   };
   reader.readAsText(file);
+  saveGame();
 }
 
 
@@ -1001,6 +1252,7 @@ function finishCharacterCreation() {
 
   // Lagre umiddelbart
   saveGame();
+  renderInventory();
 }
 
 function applyCharacterAppearance() {
@@ -1155,11 +1407,29 @@ function tryInteract() {
   const npc = npcs.find(n => n.level === currentLevel && n.x === tx && n.y === ty);
   if (npc) return startNPCInteraction(npc);
 
-  if (tile === 'water') return startFishing();
-  if (tile === 'lava' && hasItem("Molten Fishing rod"))
-     return startFishing();
-  if (tile === 'lava' && !hasItem("Molten Fishing rod"))
-    return appendChatMessage("System: You cant fish in lava without (Molten Fishing rod)!");
+  if (tile === "water") {
+    const hasWaterRod = inventory.some(
+      item => item && item.name.toLowerCase().includes("fishing rod") && !item.name.toLowerCase().includes("molten")
+    );
+  
+    if (hasWaterRod) {
+      return startFishing();
+    } else {
+      return appendChatMessage("System: You can't fish without a fishing rod!");
+    }
+  }
+  
+  if (tile === "lava") {
+    const hasLavaRod = inventory.some(
+      item => item && item.name.toLowerCase().includes("molten fishing rod")
+    );
+  
+    if (hasLavaRod) {
+      return startFishing();
+    } else {
+      return appendChatMessage("System: You can't fish in lava without a Molten Fishing Rod!");
+    }
+  }
 
   if (tile === 'tree') return startTreeHunt(); 
 
@@ -1470,6 +1740,7 @@ function startCatchMinigame(creature, isWater) {
         fishCaught = true;
         showFishingBox(`You caught a ${creature.name}!`);
         addToInventory(creature);
+        gainXP(creature.xp);
         
         if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
       } else {
@@ -1570,7 +1841,7 @@ function hasItem(name) {
 function openSpecialShop(npcName) {
   const shopBox = document.getElementById('shopBox');
   const items = npcShopItems[npcName] || [];
-  const ownedItems = inventory.map(i => i.name);
+  const ownedItems = inventory.filter(item => item && item.name).map(item => item.name);
 
   let html = `<h3>${npcName}</h3><p>Choose wisely...</p>`;
 
@@ -1595,7 +1866,9 @@ function openSpecialShop(npcName) {
 
   let hasItemsToSell = false;
   inventory.forEach(item => {
-    const isFishOrCreature = item.rarity !== undefined; // creatures har alltid rarity
+    if (!item || typeof item !== "object") return;
+    const isFishOrCreature = item.rarity !== undefined; 
+    
     if (!isFishOrCreature) {
       hasItemsToSell = true;
       const sellPrice = item.price || 5; // fallback pris hvis item ikke har pris
@@ -1622,13 +1895,14 @@ function sellToMerchant(itemName, price) {
   if (index !== -1) {
     inventory[index].count--;
     gold += price;
-
+    
     if (inventory[index].count <= 0) {
       inventory.splice(index, 1);
     }
 
     renderInventory();
-    openSpecialShop("Voidlore Merchant"); // refresh shop
+    saveGame();
+    openSpecialShop(npcName); // refresh shop
   }
 }
 
@@ -1642,8 +1916,11 @@ function buySpecialItem(npcName, itemName, price) {
   }
 
   gold -= price;
+
   inventory.push({ ...item, count: 1 });
+  
   if (inventoryOpen) renderInventory();
+  if (!inventoryOpen) renderInventory();
   saveGame();
   openSpecialShop(npcName); // Refresh shop
 }
@@ -1872,6 +2149,11 @@ function showItemDialog(itemName) {
   const data = interactableItems[itemName];
   if (!data) return;
 
+  if (mysteryBoxes[itemName]) {
+    tryOpenMysteryBox(itemName);
+    return;
+  }
+
   const existing = document.getElementById("itemDialog");
   if (existing) existing.remove();
 
@@ -1959,6 +2241,8 @@ function saveGame() {
   localStorage.setItem('voidquest_save', JSON.stringify(saveData));
   appendChatMessage("System: Game Saved!");
 }
+
+defineAllCreatureXP();
 
 function loadGame() {
   try {
@@ -2210,16 +2494,19 @@ let playerXP = 0;
 let xpToNextLevel = 100;
 
 // Hvor mye XP hver type fisk gir
-defineFishXP();
-function defineFishXP() {
-  const pool = Object.values(fishPools).flat();
-  pool.forEach(fish => {
-    if (!fish.xp) {
-      if (fish.rarity === "common") fish.xp = 10;
-      else if (fish.rarity === "rare") fish.xp = 25;
-      else if (fish.rarity === "legendary") fish.xp = 75;
-      else if (fish.rarity === "mythical") fish.xp = 250;
-      else if (fish.rarity === "secret") fish.xp = 0;
+function defineAllCreatureXP() {
+  const allFish = Object.values(fishPools).flat();
+  const allLand = Object.values(treeCreaturePools).flat();
+  const allCreatures = [...allFish, ...allLand];
+
+  allCreatures.forEach(c => {
+    if (!c.xp) {
+      if (c.rarity === "common") c.xp = 10;
+      else if (c.rarity === "rare") c.xp = 25;
+      else if (c.rarity === "legendary") c.xp = 75;
+      else if (c.rarity === "mythical") c.xp = 250;
+      else if (c.rarity === "secret") c.xp = 0;
+      else c.xp = 5; // fallback
     }
   });
 }
@@ -2400,6 +2687,7 @@ function addToInventory(newItem) {
   }
 
   if (inventoryOpen) renderInventory();
+  if (!inventoryOpen) renderInventory();
 }
 
 // === Start XP UI ved spillets start ===
