@@ -112,9 +112,9 @@
         position: fixed;
         top: 20px;
         left: 20px;
-        background-color: #333;
+        background-color: #5865F2; /* Discord blå */
         color: white;
-        border: 1px solid #666;
+        border: none;
         padding: 10px 15px;
         font-weight: bold;
         cursor: pointer;
@@ -124,15 +124,14 @@
     }
 
     #downloadButton:hover {
-        background-color: #444;
+        background-color: #4752c4;
     }
 
 
   </style>
 </head>
 <body>
-    <button id="downloadButton" onclick="confirmDownload()">⬇️ Download Game</button>
-
+    <button id="downloadButton" onclick="joinDiscord()">Beta testing? <br>💬 Join our Discord </button>
 
     <header>
         <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
@@ -513,16 +512,16 @@
 </div>
   <script>
 
-    function confirmDownload() {
-    const message = `Download VoidQuest\n\nSize: ~273MB\nPlay: Unpack zip file -> find "VoidQuest.exe" inside "VoidQuest-win32-x64" -> make a shortcut to "VoidQuest.exe" on your dashboard -> have fun :)\n\nDo you want to continue?`;
+    function joinDiscord() {
+    const message = `Join the VoidQuest Community on Discord?\n\nThere you'll get access to the game download, updates, bug reports, and talk with other players.\n\nDo you want to open the invite link?`;
         if (confirm(message)) {
-            window.location.href = 'files/voidQuestGame.zip'; // <-- Bytt ut med riktig filsti
+            window.open('https://discord.gg/UP67kGYmQE', '_blank'); // <- Bytt ut med din faktiske invite link
         }
     }
 
     function showSection(id) {
-      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
     function filterContent() {
