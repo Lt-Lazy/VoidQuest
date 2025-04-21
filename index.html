@@ -1,162 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>VoidQuest!</title>
-  <link rel="icon" type="image/png" href="images/creatures/vann/skuggosk.png">
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoidQuest Wiki</title>
   <style>
     body {
+      font-family: monospace;
+      background: #111;
+      color: white;
       margin: 0;
-      height: 100vh;
+      padding: 0 20px;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0;
+    }
+    header img {
+      width: 120px;
+      margin-bottom: 10px;
+    }
+    nav {
       display: flex;
       justify-content: center;
-      align-items: center;
-      background: #000000;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
     }
-
-    #gameCanvas {
-      background: #252525;
-      border: 4px solid #444;
-      image-rendering: pixelated;
-    }
-
-    #fishingBox button {
-      margin: 5px;
-      padding: 5px 10px;
-      border: none;
+    nav button {
+      background: #333;
+      color: white;
+      border: 1px solid #888;
+      padding: 10px 20px;
       cursor: pointer;
     }
-
-    #chatContainer {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      width: 300px;
-      max-height: 200px;
-      display: flex;
-      flex-direction: column;
-      z-index: 100;
-      pointer-events: none;
+    section {
+      margin-bottom: 60px;
+      display: none;
     }
-
-    #chatMessages {
-      background-color: rgba(0, 0, 0, 0.6);
+    section.active {
+      display: block;
+    }
+    h2 {
+      border-bottom: 1px solid #666;
+      padding-bottom: 5px;
+    }
+    .creature, .npc, .location {
+      display: inline-block;
+      width: 150px;
+      margin: 10px;
+      text-align: center;
+    }
+    .creature img, .npc img, .location img {
+      width: 64px;
+      height: 64px;
+      border: 2px solid #555;
+      background: #222;
+    }
+    input[type="text"] {
+      padding: 5px;
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      display: block;
+      background: #222;
       color: white;
-      font-family: monospace;
-      font-size: 14px;
-      overflow-y: auto;
-      padding: 10px;
-      border-radius: 4px 4px 0 0;
-      max-height: 160px;
-      pointer-events: auto;
-      white-space: pre-wrap; /* <- gjør at lange meldinger brytes */
-      word-wrap: break-word; /* <- bryter ord om nødvendig */
-      overflow-x: hidden; /* <- skjuler horisontal scrollbar */
+      border: 1px solid #666;
     }
-
-    #chatInput {
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      font-family: monospace;
-      font-size: 14px;
-      padding: 8px;
-      border: none;
-      outline: none;
-      border-radius: 0 0 4px 4px;
-      pointer-events: auto;
-    }
-
-    #shopBox {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(20, 20, 20, 0.95);
-  padding: 30px;
-  border: 3px solid rgb(19, 113, 8);
-  border-radius: 20px;
-  width: 500px;
-  max-height: 80%;
-  overflow-y: auto;
-  font-family: monospace;
-  color: white;
-  z-index: 1000;
-  box-shadow: 0 0 20px rgb(48, 103, 14);
-}
-
-#shopBox h3 {
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: rgb(11, 119, 2);
-  text-align: center;
-}
-
-#shopBox button {
-  margin-top: 5px;
-  background: #444;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-family: monospace;
-}
-
-#shopBox button:hover {
-  background: rgb(0, 122, 22);
-  color: black;
-}
-
   </style>
 </head>
-
 <body>
+  <br>
+  Link: https://lt-lazy.github.io/VoidQuest/
 
-  <canvas id="gameCanvas"></canvas>
+  <header>
+    <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
+    <h1>VoidQuest Wiki</h1>
+    <p>Your guide to exploring the world of Voidlore</p>
+    <p>Game status: Online🟢</p>
+  </header>
 
-  <div id="chatContainer">
-    <div id="chatMessages"></div>
-    <input type="text" id="chatInput" placeholder="Type command or message..." />
-  </div>
+ 
 
-  <div id="locationLabel" style="position: absolute; top: 20px; right: 20px; color: white; font-family: monospace; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 6px; border: 1px solid #888; z-index: 20;">
-    Laster...
-  </div>
+  <nav>
+    <button onclick="showSection('intro')">🧭 Intro</button>
+    <button onclick="showSection('creatures')">🐟 Creatures</button>
+    <button onclick="showSection('npcs')">🧑‍🌾 NPCs</button>
+    <button onclick="showSection('locations')">🗺️ Locations</button>
+    <button onclick="showSection('lore')">📜 Lore</button>
+    <button onclick="showSection('community')">Community</button>
 
-  <div id="inventory" style="display:none; position:absolute; top:50px; left:50px; background:#222; padding:10px; border:2px solid #555; z-index:15;"></div>
-  <div id="shopBox" style="display:none; position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px; border:2px solid #aaa; font-family:monospace; z-index:10;"></div>
+  </nav>
+
+  <input type="text" id="searchBox" placeholder="Filter..." oninput="filterContent()">
+
+  <section id="intro" class="active">
+    <h2>What is VoidQuest?</h2>
+    <p>VoidQuest is a retro-style RPG filled with unique creatures, mysterious NPCs, and a world full of secrets.</p>
+    <p>This wiki provides an overview of everything from fish and monsters to locations, characters, tips, information and the story behind the game.</p>
+    <h2>Tips!</h2>
+    <p>Movement and interaction:</p>
+    <p>The game is played by moving around with "w", "s", "a" and "d".</p>
+    <p>You can use your mouse to click on buttons and "e" to interact.</p>
+    <p>"j" opens journal, "m" opens map, "i", opens inventory, "c" opens character interface and "TAB" opens menu.</p>
 
 
-  <div id="gameMenu" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:20; color:white; font-family:sans-serif; align-items:center; justify-content:center; flex-direction:column; gap:20px;">
-    <button onclick="closeMenu()" style="padding: 20px 40px; font-size: 24px;">Continue</button>
-    <button onclick="saveGame()" style="padding: 20px 40px; font-size: 24px;">Save Game</button>
-    <button onclick="showCharacterInfo()" style="padding: 20px 40px; font-size: 24px;">Character</button>
-    <button onclick="toggleSettings()" style="padding: 20px 40px; font-size: 24px;">Settings</button>
-    <button style="padding: 20px 40px; font-size: 24px;" onclick="showCredits()">Credits</button>
-    <button style="padding: 20px 40px; font-size: 24px;" onclick="quitGame()">Quit</button>
+  </section>
 
-  </div>
-
-  <!-- Innstillinger -->
-  <div id="settingsMenu" style="display:none; position:absolute; top:10%; left:50%; transform:translateX(-50%); background:#222; color:white; padding:20px; border:2px solid #888; z-index:21;">
-    <h3>Settings</h3>
-    <label for="volumeSlider">Music:</label>
-    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" onchange="updateVolume(this.value)">
-    
-    <!-- Save/Load Buttons -->
-    <div style="position: relative; top: 20px;  z-index: 1000;">
-      <button onclick="downloadSave()" style="margin-bottom: 10px;">📥 Download Save</button><br>
-      <input type="file" id="uploadSave" style="display: none;" onchange="loadFromFile(event)">
-      <button onclick="document.getElementById('uploadSave').click()">📤 Load Save</button>
+  <section id="creatures">
+    <h2>Creatures - only shows main form. Excludes rarity: "Mythical, secret"</h2>
+    <div class="creature" data-name="Grodr">
+      <img src="images/creatures/vann/grodr.png" alt="Grodr">
+      <div>Grodr<br><small>Lake creature</small></div>
     </div>
-    <br><br>
-    <button style="color: rgb(255, 255, 255); font-style:oblique; background-color: rgb(255, 0, 0);" onclick="confirmDeleteSave()">DELETE CHARACTER SAVE</button>
-    <br><br>
-    <button onclick="toggleSettings()">Close</button>
-  </div>
+    <div class="creature" data-name="Poisetle">
+      <img src="images/creatures/land/poisetle.png" alt="Poisetle">
+      <div>Poisetle<br><small>Land creature</small></div>
+    </div>
+    <div class="creature" data-name="Grey Mouse">
+        <img src="images/creatures/land/mouseGrey.png" alt="Grey Mouse">
+        <div>Grey Mouse<br><small>Land creature</small></div>
+    </div>
+    <div class="creature" data-name="Grauder">
+        <img src="images/creatures/vann/grauder.png" alt="Grauder">
+        <div>Grauder<br><small>Lake creature</small></div>
+    </div>
+    <div class="creature" data-name="Krap">
+        <img src="images/creatures/vann/krap.png" alt="Krap">
+        <div>Krap<br><small>Ocean creature</small></div>
+    </div>
+    <div class="creature" data-name="Skuggosk">
+        <img src="images/creatures/vann/skuggosk.png" alt="Skuggosk">
+        <div>Skuggosk<br><small>Lake creature</small></div>
+    </div>
+    <div class="creature" data-name="Deep Void Lure">
+        <img src="images/creatures/vann/deepVoidLure.png" alt="Deep Void Lure">
+        <div>Deep Void Lure<br><small>Lake creature</small></div>
+    </div>
+    <!-- Add more creatures here -->
+  </section>
+
+  <section id="npcs">
+    <h2>NPCs</h2>
+    <div class="npc" data-name="Morgan the sailor">
+      <img src="images/npc/morganSailorDown.png" alt="Morgan">
+      <div>Morgan the Sailor</div>
+    </div>
+    <div class="npc" data-name="Voidlore Merchant">
+      <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
+      <div>Voidlore Merchant</div>
+    </div>
+    <div class="npc" data-name="Nocturne">
+      <img src="images/npc/nocturneDown.png" alt="Nocturne">
+      <div>Nocturne</div>
+    </div>
+    <div class="npc" data-name="Oleander the hunter">
+      <img src="images/npc/oleanderDown.png" alt="Oleander the hunter">
+      <div>Oleander the hunter</div>
+    </div>
+  </section>
+
+</section>
+
+  <section id="locations">
+    <h2>Locations</h2>
+    <div class="location" data-name="Spenningsbyen">
+      <img src="images/tiles/grassTile.png" alt="Spenningsbyen">
+      <div>Spenningsbyen</div>
+    </div>
+    <div class="location" data-name="Yurborg">
+      <img src="images/tiles/brickTile.png" alt="Yurborg">
+      <div>Yurborg</div>
+    </div>
+  </section>
+
+  <section id="community">
+    <h2>Secrets (rarity) found</h2>
+    <div class="creature" data-name="defaultTree">
+        <img src="images/creatures/land/defaultTree.png" alt="defaultTree">
+        <div>defaultTree<br><small>Error creature</small></div>
+    </div>
+    <p>Found by user: anonymous</p>
+    <p>Date: 09.04.25</p>
+    <p>Basis: Between two updates in the game the player was farming land creatures in Path-1.</p>
+    <p>The update rolled out to the playerbase before the creatures that could be farmed in Path-1 was ready.</p>
+    <p>Leaving a window of 5 minutes to get the default skin creature. This is an error type land creature.</p>
+    <p>And only shows when no creatures have been coded in a area where players can hunt land creatures.</p>
+
+  </section>
+
+  <section id="lore">
+    <h2>Lore</h2>
+    <p>...</p>
+  </section>
+
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function filterContent() {
+      const term = document.getElementById('searchBox').value.toLowerCase();
+      document.querySelectorAll('.creature, .npc, .location').forEach(el => {
+        const name = el.dataset.name.toLowerCase();
+        el.style.display = name.includes(term) ? 'inline-block' : 'none';
+      });
+    }
+  </script>
 
 </body>
-<script src="js.js"></script>
-<script src="levels.js"></script>
 </html>
