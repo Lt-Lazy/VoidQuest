@@ -67,134 +67,459 @@
       color: white;
       border: 1px solid #666;
     }
+    .creature {
+        position: relative;
+    }
+
+    .creature .tooltip {
+        visibility: hidden;
+        background-color: #222;
+        color: #fff;
+        text-align: left;
+        padding: 10px;
+        border-radius: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: pre-line;
+        width: 180px;
+        font-size: 12px;
+        border: 1px solid #555;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .creature:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .creature.common img {
+        border-color: gray;
+    }
+
+    .creature.rare img {
+        border-color: rgb(0, 68, 114);
+    }
+
+    .creature.legendary img {
+        border-color: gold;
+    }
+
+    #downloadButton {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: #333;
+        color: white;
+        border: 1px solid #666;
+        padding: 10px 15px;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 6px;
+        z-index: 1000;
+        transition: background-color 0.2s;
+    }
+
+    #downloadButton:hover {
+        background-color: #444;
+    }
+
+
   </style>
 </head>
 <body>
-  <br>
-  Link: https://lt-lazy.github.io/VoidQuest/
+    <button id="downloadButton" onclick="confirmDownload()">⬇️ Download Game</button>
 
-  <header>
-    <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
-    <h1>VoidQuest Wiki</h1>
-    <p>Your guide to exploring the world of Voidlore</p>
-    <p>Game status: Online🟢</p>
-  </header>
+
+    <header>
+        <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
+        <h1>VoidQuest Wiki</h1>
+        <p>Your guide to exploring the world of Voidlore</p>
+        <!--<p>Game status: Online🟢</p>-->
+    </header>
 
  
 
-  <nav>
-    <button onclick="showSection('intro')">🧭 Intro</button>
-    <button onclick="showSection('creatures')">🐟 Creatures</button>
-    <button onclick="showSection('npcs')">🧑‍🌾 NPCs</button>
-    <button onclick="showSection('locations')">🗺️ Locations</button>
-    <button onclick="showSection('lore')">📜 Lore</button>
-    <button onclick="showSection('community')">Community</button>
-
-  </nav>
-
-  <input type="text" id="searchBox" placeholder="Filter..." oninput="filterContent()">
-
-  <section id="intro" class="active">
-    <h2>What is VoidQuest?</h2>
-    <p>VoidQuest is a retro-style RPG filled with unique creatures, mysterious NPCs, and a world full of secrets.</p>
-    <p>This wiki provides an overview of everything from fish and monsters to locations, characters, tips, information and the story behind the game.</p>
-    <h2>Tips!</h2>
-    <p>Movement and interaction:</p>
-    <p>The game is played by moving around with "w", "s", "a" and "d".</p>
-    <p>You can use your mouse to click on buttons and "e" to interact.</p>
-    <p>"j" opens journal, "m" opens map, "i", opens inventory, "c" opens character interface and "TAB" opens menu.</p>
+    <nav>
+        <button onclick="showSection('intro')">🧭 Intro</button>
+        <button onclick="showSection('creatures')">🐟 Creatures</button>
+        <button onclick="showSection('npcs')">🧑‍🌾 NPCs</button>
+        <button onclick="showSection('locations')">🗺️ Locations</button>
+        <button onclick="showSection('items')">🔧 Items</button>
+        <button onclick="showSection('community')">Community</button>
+        <button onclick="showSection('boxes')">Boxes</button>
 
 
-  </section>
+    </nav>
 
-  <section id="creatures">
-    <h2>Creatures - only shows main form. Excludes rarity: "Mythical, secret"</h2>
-    <div class="creature" data-name="Grodr">
-      <img src="images/creatures/vann/grodr.png" alt="Grodr">
-      <div>Grodr<br><small>Lake creature</small></div>
-    </div>
-    <div class="creature" data-name="Poisetle">
-      <img src="images/creatures/land/poisetle.png" alt="Poisetle">
-      <div>Poisetle<br><small>Land creature</small></div>
-    </div>
-    <div class="creature" data-name="Grey Mouse">
-        <img src="images/creatures/land/mouseGrey.png" alt="Grey Mouse">
-        <div>Grey Mouse<br><small>Land creature</small></div>
-    </div>
-    <div class="creature" data-name="Grauder">
-        <img src="images/creatures/vann/grauder.png" alt="Grauder">
-        <div>Grauder<br><small>Lake creature</small></div>
-    </div>
-    <div class="creature" data-name="Krap">
-        <img src="images/creatures/vann/krap.png" alt="Krap">
-        <div>Krap<br><small>Ocean creature</small></div>
-    </div>
-    <div class="creature" data-name="Skuggosk">
-        <img src="images/creatures/vann/skuggosk.png" alt="Skuggosk">
-        <div>Skuggosk<br><small>Lake creature</small></div>
-    </div>
-    <div class="creature" data-name="Deep Void Lure">
-        <img src="images/creatures/vann/deepVoidLure.png" alt="Deep Void Lure">
-        <div>Deep Void Lure<br><small>Lake creature</small></div>
-    </div>
-    <!-- Add more creatures here -->
-  </section>
+    <section id="intro" class="active">
+        <h2>What is VoidQuest?</h2>
+        <p>VoidQuest is a retro-style RPG filled with unique creatures, mysterious NPCs, and a world full of secrets.</p>
+        <p>This wiki provides an overview of everything from fish and monsters to locations, characters, tips, information and the story behind the game.</p>
+        <h2>Tips!</h2>
+        <p>Movement and interaction:</p>
+        <p>The game is played by moving around with "w", "s", "a" and "d".</p>
+        <p>You can use your mouse to click on buttons and "e" to interact.</p>
+        <p>"j" opens journal, "m" opens map, "i", opens inventory, "c" opens character interface and "TAB" opens menu.</p>
 
-  <section id="npcs">
-    <h2>NPCs</h2>
-    <div class="npc" data-name="Morgan the sailor">
-      <img src="images/npc/morganSailorDown.png" alt="Morgan">
-      <div>Morgan the Sailor</div>
-    </div>
-    <div class="npc" data-name="Voidlore Merchant">
-      <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
-      <div>Voidlore Merchant</div>
-    </div>
-    <div class="npc" data-name="Nocturne">
-      <img src="images/npc/nocturneDown.png" alt="Nocturne">
-      <div>Nocturne</div>
-    </div>
-    <div class="npc" data-name="Oleander the hunter">
-      <img src="images/npc/oleanderDown.png" alt="Oleander the hunter">
-      <div>Oleander the hunter</div>
-    </div>
-  </section>
+
+    </section>
+
+    <section id="creatures">
+        <h2>Creatures: Only lists main form. Excludes rarity: "Mythical, secret"</h2>
+        <h2>Water/Lava Creatures</h2>
+
+        <div class="creature common" data-name="Grodr">
+            <img src="images/creatures/vann/grodr.png" alt="Grodr">
+            <div>Grodr<br><small>Lake creature</small></div>
+            <div class="tooltip">
+            Location: Lakes and rivers<br>
+            Rarity: Common<br>
+            Requires: Fishing rod
+            </div>
+        </div>
+        <div class="creature rare" data-name="Albino Grodr">
+            <img src="images/creatures/vann/albinoGrodr.png" alt="Albino Grodr">
+            <div>Albino Grodr<br><small>Lake creature</small></div>
+            <div class="tooltip">
+                Location: Lakes and rivers<br>
+                Rarity: Rare<br>
+                Requires: Fishing rod
+            </div>
+        </div>
+        <div class="creature common" data-name="Grauder">
+            <img src="images/creatures/vann/grauder.png" alt="Grauder">
+            <div>Grauder<br><small>Lake creature</small></div>
+            <div class="tooltip">
+                Location: Lakes and rivers<br>
+                Rarity: Common<br>
+                Requires: Fishing rod
+            </div>
+        </div>
+        <div class="creature common" data-name="Krap">
+            <img src="images/creatures/vann/krap.png" alt="Krap">
+            <div>Krap<br><small>Ocean creature</small></div>
+            <div class="tooltip">
+                Location: Oceans<br>
+                Rarity: Common<br>
+                Requires: Fishing rod
+            </div>
+        </div>
+        <div class="creature rare" data-name="Blue Krap">
+            <img src="images/creatures/vann/blueKrap.png" alt="Blue Krap">
+            <div>Blue Krap<br><small>Ocean creature</small></div>
+            <div class="tooltip">
+                Location: Oceans<br>
+                Rarity: Rare<br>
+                Requires: Fishing rod
+            </div>
+        </div>
+        <div class="creature legendary" data-name="Albino Krap">
+            <img src="images/creatures/vann/albinoKrap.png" alt="Albino Krap">
+            <div>Albino Krap<br><small>Ocean creature</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Rarity: Legendary<br>
+                Requires: ?
+            </div>
+        </div>
+        <div class="creature rare" data-name="Skuggosk">
+            <img src="images/creatures/vann/skuggosk.png" alt="Skuggosk">
+            <div>Skuggosk<br><small>Lake creature</small></div>
+            <div class="tooltip">
+                Location: Caves<br>
+                Rarity: Rare<br>
+                Requires: Fishing rod
+            </div>
+        </div>
+        <div class="creature legendary" data-name="Deep Void Lure">
+            <img src="images/creatures/vann/deepVoidLure.png" alt="Deep Void Lure">
+            <div>Deep Void Lure<br><small>Lake creature</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Rarity: Legendary<br>
+                Requires: ?
+            </div>
+        </div>
+        <div class="creature common" data-name="Molten Muck">
+            <img src="images/creatures/vann/moltenMuck.png" alt="Molten Muck">
+            <div>Molten Muck<br><small>Lava creature</small></div>
+            <div class="tooltip">
+                Location: Lava lakes<br>
+                Rarity: Legendary<br>
+                Requires: Molten Fishing rod
+            </div>
+        </div>
+        <div class="creature legendary" data-name="Great White">
+            <img src="images/creatures/vann/greatWhite.png" alt="Great White">
+            <div>Great White<br><small>Ocean creature</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Rarity: Legendary<br>
+                Requires: ?
+            </div>
+        </div>
+
+
+        <h2>Land Creatures</h2>
+
+
+        <div class="creature rare" data-name="Poisetle">
+        <img src="images/creatures/land/poisetle.png" alt="Poisetle">
+        <div>Poisetle<br><small>Land creature</small></div>
+        <div class="tooltip">
+            Location: Green terrain<br>
+            Rarity: Rare<br>
+            Requires: 
+        </div>
+        </div>
+        <div class="creature common" data-name="Grey Mouse">
+            <img src="images/creatures/land/mouseGrey.png" alt="Grey Mouse">
+            <div>Grey Mouse<br><small>Land creature</small></div>
+            <div class="tooltip">
+            Location: Green terrain<br>
+            Rarity: Common<br>
+            Requires: 
+            </div>
+        </div>
+        <div class="creature rare" data-name="Albino Mouse">
+            <img src="images/creatures/land/albinoMouse.png" alt="Albino Mouse">
+            <div>Albino Mouse<br><small>Land creature</small></div>
+            <div class="tooltip">
+                Location: Green terrain<br>
+                Rarity: Rare<br>
+                Requires: 
+            </div>
+        </div>
+
+        <div class="creature common" data-name="Snail">
+            <img src="images/creatures/land/snail.png" alt="Snail">
+            <div>Deep Void Lure<br><small>Land Creature</small></div>
+            <div class="tooltip">
+                Location: Land, near water<br>
+                Rarity: Common<br>
+                Requires: Some places fishing rod
+            </div>
+        </div>
+        <div class="creature legendary" data-name="Golden Snail">
+            <img src="images/creatures/land/goldenSnail.png" alt="Golden Snail">
+            <div>Golden Snail<br><small>Land Creature</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Rarity: Common<br>
+                Requires: ?
+            </div>
+        </div>
+        <div class="creature common" data-name="Beetle">
+            <img src="images/creatures/land/beetle.png" alt="Beetle">
+            <div>Beetle<br><small>Bug Creature</small></div>
+            <div class="tooltip">
+                Location: Paths, green terrain<br>
+                Rarity: Common<br>
+                Requires: 
+            </div>
+        </div>
+        <div class="creature legendary" data-name="Golden Beetle">
+            <img src="images/creatures/land/goldenBeetle.png" alt="Golden Beetle">
+            <div>Golden Beetle<br><small>Bug Creature</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Rarity: Legendary<br>
+                Requires: ?
+            </div>
+        </div>
+
+        <!-- Add more creatures here -->
+    </section>
+
+    <section id="npcs">
+        <h2>NPCs</h2>
+        <div class="npc" data-name="Morgan the sailor">
+        <img src="images/npc/morganSailorDown.png" alt="Morgan">
+        <div>Morgan the Sailor</div>
+        </div>
+        <div class="npc" data-name="Merchant">
+        <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
+        <div>Merchant</div>
+        </div>
+        <div class="npc" data-name="Merchant Vulcano-hill">
+            <img src="images/npc/voidloreMerchantVulcanoRight.png" alt="Merchant">
+            <div>Merchant Vulcano</div>
+        </div>
+        <div class="npc" data-name="Nocturne">
+        <img src="images/npc/nocturneDown.png" alt="Nocturne">
+        <div>Nocturne</div>
+        </div>
+        <div class="npc" data-name="Oleander the hunter">
+        <img src="images/npc/oleanderDown.png" alt="Oleander the hunter">
+        <div>Oleander the hunter</div>
+        </div>
+    </section>
 
 </section>
 
-  <section id="locations">
-    <h2>Locations</h2>
-    <div class="location" data-name="Spenningsbyen">
-      <img src="images/tiles/grassTile.png" alt="Spenningsbyen">
-      <div>Spenningsbyen</div>
-    </div>
-    <div class="location" data-name="Yurborg">
-      <img src="images/tiles/brickTile.png" alt="Yurborg">
-      <div>Yurborg</div>
-    </div>
-  </section>
+    <section id="locations">
+        <h2>Locations</h2>
+        <div class="location" data-name="Spenningsbyen">
+        <img src="images/locations/locationSpenningsbyen.png" alt="Spenningsbyen">
+        <div>Spenningsbyen</div>
+        </div>
+        <div class="location" data-name="Path-1">
+            <img src="images/locations/locationPath1.png" alt="Path-1">
+            <div>Path-1</div>
+        </div>
+        <div class="location" data-name="Yurborg">
+        <img src="images/locations/locationYurborg.png" alt="Yurborg">
+        <div>Yurborg</div>
+        </div>
+        <div class="location" data-name="Path-2">
+            <img src="images/locations/locationPath2.png" alt="Path-2">
+            <div>Path-2</div>
+        </div>
+        <div class="location" data-name="Vulcano-Hill">
+            <img src="images/locations/locationVulcanoHill.png" alt="Vulcano-Hill">
+            <div>Vulcano-Hill</div>
+        </div>
+    </section>
 
-  <section id="community">
-    <h2>Secrets (rarity) found</h2>
-    <div class="creature" data-name="defaultTree">
-        <img src="images/creatures/land/defaultTree.png" alt="defaultTree">
-        <div>defaultTree<br><small>Error creature</small></div>
-    </div>
-    <p>Found by user: anonymous</p>
-    <p>Date: 09.04.25</p>
-    <p>Basis: Between two updates in the game the player was farming land creatures in Path-1.</p>
-    <p>The update rolled out to the playerbase before the creatures that could be farmed in Path-1 was ready.</p>
-    <p>Leaving a window of 5 minutes to get the default skin creature. This is an error type land creature.</p>
-    <p>And only shows when no creatures have been coded in a area where players can hunt land creatures.</p>
+    <section id="community">
+        <h2>Secrets (rarity) found</h2>
+        <div class="creature" data-name="defaultTree">
+            <img src="images/creatures/land/defaultTree.png" alt="defaultTree">
+            <div>defaultTree<br><small>Error creature</small></div>
+        </div>
+        <p>Found by user: anonymous</p>
+        <p>Date: 09.04.25</p>
+        <p>Basis: Between two updates in the game the player was farming land creatures in Path-1.</p>
+        <p>The update rolled out to the playerbase before the creatures that could be farmed in Path-1 was ready.</p>
+        <p>Leaving a window of 5 minutes to get the default skin creature. This is an error type land creature.</p>
+        <p>And only shows when no creatures have been coded in a area where players can hunt land creatures.</p>
 
-  </section>
+    </section>
 
-  <section id="lore">
-    <h2>Lore</h2>
-    <p>...</p>
-  </section>
+    <section id="items">
+        <h2>Items</h2>
+        <div class="creature common" data-name="Dock Key">
+            <img src="images/items/dockKey.png" alt="Dock Key">
+            <div>Dock Key<br><small>Key</small></div>
+            <div class="tooltip">
+                Location: Voidlore Merchants<br>
+                Price: 600 gold
+            </div>
+        </div>
+        <div class="creature common" data-name="Fishing Rod">
+            <img src="images/items/fishingRod.png" alt="Fishing Rod">
+            <div>Fishing Rod<br><small>Rod</small></div>
+            <div class="tooltip">
+                Location: Merchant Yurborg<br>
+                Price: 50 gold
+            </div>
+        </div>
+        <div class="creature common" data-name="Molten Fishing Rod">
+            <img src="images/items/moltenFishingRod.png" alt="Molten Fishing Rod">
+            <div>Molten Fishing Rod<br><small>Rod</small></div>
+            <div class="tooltip">
+                Location: Merchant Vulcano-Hill<br>
+                Price: 2000 gold
+            </div>
+        </div>
+        <h2>Books</h2>
+        <div class="creature common" data-name="Abyss Seekers">
+        <img src="images/items/book.png" alt="Abyss Seekers">
+        <div>Abyss Seekers<br><small>Book</small></div>
+        <div class="tooltip">
+            Location: Merchant Yurborg<br>
+            Price: 1500 gold
+            Description:
+            Unlocks location knowledge.
+        </div>
+        </div>
+    </section>
 
+    <section id="boxes">
+        <h2>Main Boxes</h2>
+        <div class="creature common" data-name="Void Box">
+            <img src="images/items/boxes/voidBox.png" alt="Void Box">
+            <div>Void Box<br><small>Crate</small></div>
+            <div class="tooltip">
+                Location: Grobbe the gambler<br>
+                Price: 20 gold <br>
+                Description:
+                common box for the common man.
+            </div>
+        </div>
+        <div class="creature rare" data-name="Rare Box">
+            <img src="images/items/boxes/rareBox.png" alt="Void Box">
+            <div>Rare Box<br><small>Crate</small></div>
+            <div class="tooltip">
+                Location: Grobbe the gambler<br>
+                Price: 80 gold <br>
+                Description:
+                Rare Box, im surely not addicted.
+            </div>
+        </div>
+        <div class="creature legendary" data-name="legendary Box">
+            <img src="images/items/boxes/legendaryBox.png" alt="legendary Box">
+            <div>Legendary Box<br><small>Crate</small></div>
+            <div class="tooltip">
+                Location: Grobbe the gambler<br>
+                Price: 80 gold <br>
+                Description:
+                Rare Box, im surely not addicted.
+            </div>
+        </div>
+
+        <h2>Event Boxes</h2>
+
+        <div class="creature rare" data-name="Easter Box">
+            <img src="images/items/boxes/easterBox.png" alt="Easter Box">
+            <div>Easter Box<br><small>Crate</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Price: ? gold <br>
+                Description:
+                ?
+            </div>
+        </div>
+        <div class="creature rare" data-name="Halloween Box">
+            <img src="images/items/boxes/halloweenBox.png" alt="Halloween Box">
+            <div>Halloween Box<br><small>Crate</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Price: ? gold <br>
+                Description:
+                ?
+            </div>
+        </div>
+
+        <div class="creature rare" data-name="Xmas Box">
+            <img src="images/items/boxes/xmasBox.png" alt="Xmas Box">
+            <div>Xmas Box<br><small>Crate</small></div>
+            <div class="tooltip">
+                Location: ?<br>
+                Price: ? gold <br>
+                Description:
+                ?
+            </div>
+        </div>
+
+    </section>
+
+
+
+</div>
   <script>
+
+    function confirmDownload() {
+    const message = `Download VoidQuest\n\nSize: ~273MB\nPlay: Unpack zip file -> find "VoidQuest.exe" inside "VoidQuest-win32-x64" -> make a shortcut to "VoidQuest.exe" on your dashboard -> have fun :)\n\nDo you want to continue?`;
+        if (confirm(message)) {
+            window.location.href = 'files/voidQuestGame.zip'; // <-- Bytt ut med riktig filsti
+        }
+    }
+
     function showSection(id) {
       document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
