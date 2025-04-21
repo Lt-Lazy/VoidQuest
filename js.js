@@ -336,48 +336,48 @@ characterImages.right.src = 'images/player/man/pixelmannRight.png';
 
 const fishPools = {
   0: [ // Utenfor
-    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5},
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10},
     { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 49, price: 74 },
 
     // { name: "Mørkål", rarity: "rare", image: "images/morkaal.png", chance: 2, price: 55 }
   ],
   2: [ // Cave
-    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
-    { name: "Deep Void Lure", rarity: "legendary", image: "images/creatures/vann/deepVoidLure.png", chance: 10, price: 418 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5},
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10},
+    { name: "Deep Void Lure", rarity: "legendary", image: "images/creatures/vann/deepVoidLure.png", chance: 10, price: 418},
     { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42 },
   ],
   4: [ // Path-1
-    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 95, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 80, price: 10 },
-    { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 1, price: 74 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 95, price: 5},
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 80, price: 10},
+    { name: "Albino Grodr", rarity: "rare", image: "images/creatures/vann/albinoGrodr.png", chance: 1, price: 74},
   ],
   5: [ // Yurborg
-    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19 },
-    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 92 },
-    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743 },
-    { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217 },
-    { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
+    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19},
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 92},
+    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743},
+    { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217},
+    { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953},
 
   ],
   8: [ // The-Veiled-Abyss
-    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5 },
-    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10 },
-    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42 },
+    { name: "Grodr", rarity: "common", image: "images/creatures/vann/grodr.png", chance: 900, price: 5},
+    { name: "Grauder", rarity: "common", image: "images/creatures/vann/grauder.png", chance: 800, price: 10},
+    { name: "Skuggosk", rarity: "rare", image: "images/creatures/vann/skuggosk.png", chance: 80, price: 42},
 
   ],
   9: [ // Vulcano-Hill
-    { name: "Molten Muck", rarity: "common", image: "images/creatures/vann/moltenMuck.png", chance: 900, price: 25 },
+    { name: "Molten Muck", rarity: "common", image: "images/creatures/vann/moltenMuck.png", chance: 900, price: 25},
 
 
   ],
   10: [ // Path-2
-    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19 },
-    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 92 },
-    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743 },
-    { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217 },
-    { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953 },
+    { name: "Krap", rarity: "common", image: "images/creatures/vann/krap.png", chance: 900, price: 19},
+    { name: "Blue Krap", rarity: "rare", image: "images/creatures/vann/blueKrap.png", chance: 45, price: 92},
+    { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743},
+    { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217},
+    { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953},
 
   ],
 };
@@ -385,13 +385,13 @@ const fishPools = {
 const treeCreaturePools = {
   0: [ // Level 0 – Spenningsbyen
     { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46},
     { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
 
   ],
   4: [ // Sti-1
     { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46},
     { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
     { name: "Golden Beetle", rarity: "legendary", image: "images/creatures/land/goldenBeetle.png", chance: 14, price: 370},
     { name: "Beetle", rarity: "common", image: "images/creatures/land/beetle.png", chance: 400, price: 25},
@@ -400,11 +400,13 @@ const treeCreaturePools = {
   ],
   5: [ // Yurborg
     { name: "Grey Mouse", rarity: "common", image: "images/creatures/land/mouseGrey.png", chance: 800, price: 16},
-    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46 },
+    { name: "Poisetle", rarity: "rare", image: "images/creatures/land/poisetle.png", chance: 100, price: 46},
     { name: "Albino Mouse", rarity: "rare", image: "images/creatures/land/albinoMouse.png", chance: 60, price: 74},
 
   ],
 };
+
+defineAllCreatureXP();
 
 const bosses = {
   "abyssBeast": {
@@ -660,6 +662,7 @@ const interactableItems = {
 const mysteryBoxes = {
   "Void Box": {
     price: 20, 
+    rarity: "common",
     image: "images/items/boxes/voidBox.png",
     items: [
       { name: "Grodr", image: "images/creatures/vann/grodr.png", chance: 200,},
@@ -673,6 +676,7 @@ const mysteryBoxes = {
   },
   "Rare Box": {
     price: 80, 
+    rarity: "rare",
     image: "images/items/boxes/rareBox.png",
     items: [
       { name: "Poisetle", image: "images/creatures/land/poisetle.png", chance: 200 },
@@ -686,6 +690,7 @@ const mysteryBoxes = {
   },
   "Legendary Box": {
     price: 500, 
+    rarity: "legendary",
     image: "images/items/boxes/legendaryBox.png",
     items: [
       { name: "Deep Void Lure", image: "images/creatures/vann/deepVoidLure.png", chance: 100},
@@ -1824,13 +1829,20 @@ function getRandomFish() {
 
 //removeItem("Void Key"); hvis du skal bruke den til noe annet
 function removeItem(name) {
-  const index = inventory.findIndex(i => i.name === name);
+  const index = inventory.findIndex(i => i && i.name === name);
   if (index !== -1) {
-    inventory[index].count--;
-    if (inventory[index].count <= 0) {
+    if (inventory[index].count !== undefined) {
+      inventory[index].count--;
+      if (inventory[index].count <= 0) {
+        inventory.splice(index, 1);
+      }
+    } else {
+      // Hvis item ikke har count, fjern det direkte
       inventory.splice(index, 1);
     }
     if (inventoryOpen) renderInventory();
+  } else {
+    console.warn(`removeItem: Fant ikke item med navn '${name}' i inventory.`);
   }
 }
 
@@ -1875,7 +1887,7 @@ function openSpecialShop(npcName) {
       html += `
         <div style="margin-bottom:10px;">
           <img src="${item.image}" width="32" height="32"> ${item.name}
-          <br><button onclick="sellToMerchant('${item.name}', ${sellPrice})">Sell for ${sellPrice} gold</button>
+          <br><button onclick="sellToMerchant('${npcName}', '${item.name}', ${sellPrice})">Sell for ${sellPrice} gold</button>
         </div>
       `;
     }
@@ -1890,19 +1902,14 @@ function openSpecialShop(npcName) {
   shopBox.style.display = 'block';
 }
 
-function sellToMerchant(itemName, price) {
-  const index = inventory.findIndex(i => i.name === itemName);
+function sellToMerchant(npcName, itemName, price) {
+  const index = inventory.findIndex(item => item && item.name === itemName);
   if (index !== -1) {
-    inventory[index].count--;
     gold += price;
-    
-    if (inventory[index].count <= 0) {
-      inventory.splice(index, 1);
-    }
-
+    inventory.splice(index, 1); // Fjern item
+    appendChatMessage(`You sold ${itemName} for ${price} gold.`);
     renderInventory();
-    saveGame();
-    openSpecialShop(npcName); // refresh shop
+    openSpecialShop(npcName); // 🔄 Oppdater butikken etterpå!
   }
 }
 
@@ -1915,13 +1922,13 @@ function buySpecialItem(npcName, itemName, price) {
     return;
   }
 
+  appendChatMessage(`System: You bought ${itemName} for ${price} gold.`);
+
   gold -= price;
 
   inventory.push({ ...item, count: 1 });
   
-  if (inventoryOpen) renderInventory();
-  if (!inventoryOpen) renderInventory();
-  saveGame();
+  renderInventory();
   openSpecialShop(npcName); // Refresh shop
 }
 
@@ -1947,7 +1954,7 @@ function openShop(type = "water") {
   });
 
   if (!hasFish) {
-    shopHTML += `<p>You dont have any creatures, off you go!.</p>`;
+    shopHTML += `<p>System You dont have any creatures, off you go!.</p>`;
   }
 
   shopHTML += `<br><button onclick="closeShop()">Cancel</button>`;
@@ -2241,8 +2248,6 @@ function saveGame() {
   localStorage.setItem('voidquest_save', JSON.stringify(saveData));
   appendChatMessage("System: Game Saved!");
 }
-
-defineAllCreatureXP();
 
 function loadGame() {
   try {
