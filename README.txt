@@ -1,10 +1,12 @@
 ----------------------SOCIALS---------------------------
 Discord: https://discord.gg/UP67kGYmQE
 Reddit: r/VoidQuestRPG
+Patreon: Voidquest
 
 
 ----------------------ting som må fikses-----------------
 Lage skin for Nodin
+voidlore merchant shop er litt rar, se feilmeldinger i consol
 
 
 
