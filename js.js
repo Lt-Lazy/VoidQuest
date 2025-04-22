@@ -2967,7 +2967,7 @@ function showCredits() {
 }
 
 function quitGame() {
-  alert("Farewell Path seeker!"); // Fallback for vanlige faner
+  alert("Farewell Path seeker! You have to close the tab manually..."); // Fallback for vanlige faner
   window.close(); // Fungerer kun hvis siden ble åpnet av et skript
 }
 
