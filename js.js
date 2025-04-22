@@ -2967,8 +2967,8 @@ function showCredits() {
 }
 
 function quitGame() {
-  window.close(); // Fungerer kun hvis siden ble åpnet av et skript
   alert("Farewell Path seeker!"); // Fallback for vanlige faner
+  window.close(); // Fungerer kun hvis siden ble åpnet av et skript
 }
 
 toggleMenu();
