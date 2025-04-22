@@ -2967,7 +2967,6 @@ function showCredits() {
 }
 
 function quitGame() {
-  saveGame();
   window.close(); // Fungerer kun hvis siden ble åpnet av et skript
   //alert("Du må lukke fanen manuelt."); // Fallback for vanlige faner
 }
