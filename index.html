@@ -127,6 +127,25 @@
         background-color: #4752c4;
     }
 
+    footer {
+        background-color: #1a1a1a;
+        color: #ccc;
+        text-align: center;
+        padding: 20px 10px;
+        font-size: 14px;
+        border-top: 1px solid #333;
+        margin-top: 40px;
+    }
+
+    footer a {
+        color: #58a6ff;
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        text-decoration: underline;
+    }
+
 
   </style>
 </head>
@@ -137,7 +156,7 @@
         <img src="images/voidQuestLogo.png" alt="VoidQuest Logo">
         <h1>VoidQuest Wiki</h1>
         <p>Your guide to exploring the world of Voidlore</p>
-        <!--<p>Game status: Online🟢</p>-->
+        <p>Beta test status: Online🟢</p>
     </header>
 
  
@@ -330,31 +349,57 @@
                 Requires: ?
             </div>
         </div>
+        <div class="creature common" data-name="Molten Golem">
+            <img src="images/creatures/land/moltenGolem.png" alt="Molten Golem">
+            <div>Molten Golem<br><small>Molten tree Creature</small></div>
+            <div class="tooltip">
+                Location: Molten vegetation<br>
+                Rarity: Common<br>
+                Requires: 
+            </div>
+        </div>
 
         <!-- Add more creatures here -->
     </section>
 
     <section id="npcs">
         <h2>NPCs</h2>
+        <h2>Creature Shops</h2>
+
         <div class="npc" data-name="Morgan the sailor">
-        <img src="images/npc/morganSailorDown.png" alt="Morgan">
-        <div>Morgan the Sailor</div>
+            <img src="images/npc/morganSailorDown.png" alt="Morgan">
+            <div>Morgan the Sailor</div>
         </div>
+        <div class="npc" data-name="Oleander the hunter">
+            <img src="images/npc/oleanderDown.png" alt="Oleander the hunter">
+            <div>Oleander the hunter</div>
+        </div>
+
+        <h2>Special Shops</h2>
+
         <div class="npc" data-name="Merchant">
-        <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
-        <div>Merchant</div>
+            <img src="images/npc/voidloreMerchantRight.png" alt="Merchant">
+            <div>Merchant</div>
         </div>
         <div class="npc" data-name="Merchant Vulcano-hill">
             <img src="images/npc/voidLoreMerchantVulcanoRight.png" alt="Merchant">
             <div>Merchant Vulcano</div>
         </div>
-        <div class="npc" data-name="Nocturne">
-        <img src="images/npc/nocturneDown.png" alt="Nocturne">
-        <div>Nocturne</div>
+        <div class="npc" data-name="Grobbe the gambler">
+            <img src="images/testIMG.png" alt="Grobbe the gambler">
+            <div>Grobbe the gambler</div>
         </div>
-        <div class="npc" data-name="Oleander the hunter">
-        <img src="images/npc/oleanderDown.png" alt="Oleander the hunter">
-        <div>Oleander the hunter</div>
+
+        <h2>Lore</h2>
+
+        <div class="npc" data-name="Nocturne">
+            <img src="images/npc/nocturneDown.png" alt="Nocturne">
+            <div>Nocturne</div>
+        </div>
+
+        <div class="npc" data-name="Path Seeker Nodin">
+            <img src="images/testIMG.png" alt="Path Seeker Nodin">
+            <div>Path Seeker Nodin</div>
         </div>
     </section>
 
@@ -385,6 +430,13 @@
     </section>
 
     <section id="community">
+        <h2>VoidQuest now live for beta testing!</h2>
+        <div class="creature" data-name="betaTest">
+            <img src="images/admin/betaTesting.png" alt="betaTest">
+            <div>Beta test live!<br><small>22.04.25</small></div>
+        </div>
+        <p>To test the beta version join our discord!</p>
+
         <h2>Secrets (rarity) found</h2>
         <div class="creature" data-name="defaultTree">
             <img src="images/creatures/land/defaultTree.png" alt="defaultTree">
@@ -396,6 +448,7 @@
         <p>The update rolled out to the playerbase before the creatures that could be farmed in Path-1 was ready.</p>
         <p>Leaving a window of 5 minutes to get the default skin creature. This is an error type land creature.</p>
         <p>And only shows when no creatures have been coded in a area where players can hunt land creatures.</p>
+        <h2></h2>
 
     </section>
 
@@ -532,6 +585,14 @@
       });
     }
   </script>
+
+    <footer>
+        <div class="footer-content">
+        <p>2025 VoidQuest</p>
+        <p>Contact: <a href="mailto:voidcrypt@hotmail.com">voidcrypt@hotmail.com</a></p>
+        <p>Website maintained by the VoidQuest dev team.</p>
+        </div>
+    </footer>
 
 </body>
 </html>

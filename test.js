@@ -1222,66 +1222,35 @@ function loadLevel(levelIndex, startX = null, startY = null) {
 }
 
 function drawMap() {
-  const level = levels[currentLevel];
-  const layout = level.layout;
-  const background = tileImages[level.background];
-
-  // Sjekk at player er definert før vi prøver å tegne rundt den
-  if (!character) return;
-
-  for (let y = 0; y < layout.length; y++) {
-    for (let x = 0; x < layout[y].length; x++) {
-      const tileCode = layout[y][x];
-      const tileName = tileMapping[tileCode];
-      const tileImg = tileImages[tileName];
-
-      const dx = Math.abs(x - character.x);
-      const dy = Math.abs(y - character.y);
-
-      // Bare i Molten Dungeon (level 11): begrens synsfelt
-      if (currentLevel === 11 && (dx > 2 || dy > 2)) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 1)';
-        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-        continue;
-      }
-
-      // Tegn bakgrunn først
-      if (background) {
-        ctx.drawImage(background, x * tileSize, y * tileSize, tileSize, tileSize);
-      }
-
-      // Deretter selve tile
-      if (tileCode !== 'G1' && tileImg) {
-        ctx.drawImage(tileImg, x * tileSize, y * tileSize, tileSize, tileSize);
+  for (let y = 0; y < mapHeight; y++) {
+    for (let x = 0; x < mapWidth; x++) {
+      const tileType = map[y][x];
+      ctx.drawImage(tileImages[currentBackground], x * tileSize, y * tileSize, tileSize, tileSize);
+      if (tileType !== 'grass') {
+        ctx.drawImage(tileImages[tileType], x * tileSize, y * tileSize, tileSize, tileSize);
       }
     }
   }
-
-  // NPCs
-  npcs.forEach(npc => {
-    if (npc.level === currentLevel) {
-      const img = new Image();
-      img.src = npc.image;
-      ctx.drawImage(img, npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
-    }
+    npcs.forEach(npc => {
+      if (npc.level === currentLevel) {
+        const img = new Image();
+        img.src = npc.image;
+        ctx.drawImage(img, npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
+      }
   });
-
-  // Bosses
-  visibleBosses.forEach(boss => {
-    if (boss.level === currentLevel) {
-      const img = new Image();
-      img.src = boss.image;
-      ctx.drawImage(img, boss.x * tileSize, boss.y * tileSize, boss.width * tileSize, boss.height * tileSize);
-    }
-  });
-
-  // Mørkt lag for spesifikke nivåer (ikke molten dungeon)
-  if ((currentLevel === 2 || currentLevel === 8 || currentLevel === 11)) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    visibleBosses.forEach(boss => {
+      if (boss.level === currentLevel) {
+        const img = new Image();
+        img.src = boss.image;
+        ctx.drawImage(img, boss.x * tileSize, boss.y * tileSize, boss.width * tileSize, boss.height * tileSize);
+      }
+    });
+  // simulerer tåke for nivået(mørkere)
+  if (currentLevel === 2 || currentLevel === 8 || currentLevel === 11) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';  // 40% mørkt lag
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
 }
-
+}
 
 function changeTile(levelIndex, x, y, newTileChar) {
   // Endre layout-dataen direkte
