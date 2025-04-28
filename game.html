@@ -124,7 +124,45 @@
     Laster...
   </div>
 
-  <div id="inventory" style="display:none; position:absolute; top:50px; left:50px; background:#222; padding:10px; border:2px solid #555; z-index:15;"></div>
+  
+  <div id="inventory" style="
+    display:none; 
+    position:absolute; 
+    top:50px; 
+    left:50px; 
+    background:#222; 
+    padding:10px; 
+    border:2px solid #555; 
+    z-index:15;
+    overflow-y: auto;
+    grid-template-columns: repeat(4, 1fr);
+    height: 550px;
+    width: 320px;
+    "></div> 
+
+
+  <!--
+  <div id="inventory" style="
+    display: none;
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 320px; /* Fast bredde */
+    height: 550px; /* Fast høyde */
+    background: #222;
+    padding: 10px;
+    border: 2px solid #555;
+    z-index: 15;
+    overflow-y: auto; /* Scrollbar når det trengs */
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 kolonner */
+    grid-auto-rows: 80px; /* Hver item-boks høyde */
+    gap: 5px;
+    border-radius: 10px;
+  ">
+  </div>
+  -->
+  
   <div id="shopBox" style="display:none; position:absolute; bottom:50px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px; border:2px solid #aaa; font-family:monospace; z-index:10;"></div>
 
 

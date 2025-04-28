@@ -13,6 +13,8 @@ let lastFrameTime = performance.now();
 
 let gameStarted = false;
 
+let playerCanMove = true;
+
 
 // === Kart: Lokasjoner og visning ===
 const mapData = [
@@ -439,8 +441,6 @@ const treeCreaturePools = {
   ],
 };
 
-defineAllCreatureXP();
-
 const bosses = {
   "abyssBeast": {
     name: "The Abyss Beast",
@@ -454,7 +454,7 @@ const bosses = {
         image: "images/creatures/boss/theAbyssBeast/abyssEye.png",
         rarity: "rare",
         price: 875,
-        chance: 10  // 20% sjanse
+        chance: 10  // % sjangse
       },
     ],
     barSpeed: 1500,       // Tid for bar i ms
@@ -975,7 +975,7 @@ function openMysteryBoxAnimation(boxName) {
   }
 
   function animateWheel(timestamp) {
-    if (sounds.sfx.boxWheelSpinStart) sounds.sfx.boxWheelSpinStart.play();
+    sounds.sfx.boxWheelSpinStart.play();
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
 
@@ -984,6 +984,7 @@ function openMysteryBoxAnimation(boxName) {
       const easeOut = 1 - Math.pow(1 - progress, 3);
       rotation = finalAngle * easeOut;
       drawWheel(rotation);
+      playerCanMove = false;
 
       requestAnimationFrame(animateWheel);
     } else {
@@ -1000,7 +1001,8 @@ function openMysteryBoxAnimation(boxName) {
       }
       setTimeout(() => {
         removeItem(boxName); // Fjern brukt box
-        if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+        sounds.sfx.catchSuccess.play();
+        playerCanMove = true;
         appendChatMessage("System: You unboxed: " + `${wonItem.name}!`);
         addToInventory({
           name: fullCreature.name,
@@ -1221,35 +1223,66 @@ function loadLevel(levelIndex, startX = null, startY = null) {
 
 }
 
+
 function drawMap() {
-  for (let y = 0; y < mapHeight; y++) {
-    for (let x = 0; x < mapWidth; x++) {
-      const tileType = map[y][x];
-      ctx.drawImage(tileImages[currentBackground], x * tileSize, y * tileSize, tileSize, tileSize);
-      if (tileType !== 'grass') {
-        ctx.drawImage(tileImages[tileType], x * tileSize, y * tileSize, tileSize, tileSize);
+  const level = levels[currentLevel];
+  const layout = level.layout;
+  const background = tileImages[level.background];
+
+  // Sjekk at player er definert før vi prøver å tegne rundt den
+  if (!character) return;
+
+  for (let y = 0; y < layout.length; y++) {
+    for (let x = 0; x < layout[y].length; x++) {
+      const tileCode = layout[y][x];
+      const tileName = tileMapping[tileCode];
+      const tileImg = tileImages[tileName];
+
+      const dx = Math.abs(x - character.x);
+      const dy = Math.abs(y - character.y);
+
+      // Bare i Molten Dungeon (level 11): begrens synsfelt
+      if (currentLevel === 11 && (dx > 2 || dy > 2)) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        continue;
+      }
+
+      // Tegn bakgrunn først
+      if (background) {
+        ctx.drawImage(background, x * tileSize, y * tileSize, tileSize, tileSize);
+      }
+
+      // Deretter selve tile
+      if (tileCode !== 'G1' && tileImg) {
+        ctx.drawImage(tileImg, x * tileSize, y * tileSize, tileSize, tileSize);
       }
     }
   }
-    npcs.forEach(npc => {
-      if (npc.level === currentLevel) {
-        const img = new Image();
-        img.src = npc.image;
-        ctx.drawImage(img, npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
-      }
+
+  // NPCs
+  npcs.forEach(npc => {
+    if (npc.level === currentLevel) {
+      const img = new Image();
+      img.src = npc.image;
+      ctx.drawImage(img, npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
+    }
   });
-    visibleBosses.forEach(boss => {
-      if (boss.level === currentLevel) {
-        const img = new Image();
-        img.src = boss.image;
-        ctx.drawImage(img, boss.x * tileSize, boss.y * tileSize, boss.width * tileSize, boss.height * tileSize);
-      }
-    });
-  // simulerer tåke for nivået(mørkere)
-  if (currentLevel === 2 || currentLevel === 8 || currentLevel === 11) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';  // 40% mørkt lag
+
+  // Bosses
+  visibleBosses.forEach(boss => {
+    if (boss.level === currentLevel) {
+      const img = new Image();
+      img.src = boss.image;
+      ctx.drawImage(img, boss.x * tileSize, boss.y * tileSize, boss.width * tileSize, boss.height * tileSize);
+    }
+  });
+
+  // Mørkt lag for spesifikke nivåer (ikke molten dungeon)
+  if ((currentLevel === 2 || currentLevel === 8 || currentLevel === 11)) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
+  }
 }
 
 function changeTile(levelIndex, x, y, newTileChar) {
@@ -1371,7 +1404,7 @@ function canMoveTo(x, y) {
 }
 
 function moveCharacter(dx, dy) {
-  if (character.moving) return;
+  if (!playerCanMove || character.moving) return;
 
   const newX = character.x + dx;
   const newY = character.y + dy;
@@ -1566,9 +1599,71 @@ function startNPCInteraction(npc) {
   document.body.appendChild(dialogBox);
 }
 
+//---------NY SKAPNIGN FISKE/JAKTE XP FIKS?-----------------------------------------
+
+function getRandomCreature(pool) {
+  if (!pool || pool.length === 0) {
+    return { 
+      name: "???", 
+      rarity: "secret", 
+      image: "images/creatures/default.png", 
+      price: 0, 
+      xp: 5 
+    };
+  }
+
+  const totalChance = pool.reduce((sum, creature) => sum + (creature.chance || 1), 0);
+  const roll = Math.random() * totalChance;
+  let sum = 0;
+
+  for (const creature of pool) {
+    sum += (creature.chance || 1);
+    if (roll < sum) {
+      return {
+        name: creature.name,
+        rarity: creature.rarity,
+        image: creature.image,
+        price: creature.price,
+        xp: typeof creature.xp === "number" ? creature.xp : calculateCreatureXP(creature)
+      };
+    }
+  }
+
+  return { 
+    name: "???", 
+    rarity: "secret", 
+    image: "images/creatures/default.png", 
+    price: 0, 
+    xp: 5 
+  };
+}
+
+function calculateCreatureXP(creature) {
+  if (!creature) return 5;
+  if (creature.rarity === "common") return 10;
+  if (creature.rarity === "rare") return 25;
+  if (creature.rarity === "legendary") return 75;
+  if (creature.rarity === "mythical") return 250;
+  if (creature.rarity === "secret") return 0;
+  return 5;
+}
+
+function getRandomFish() {
+  const pool = fishPools[currentLevel] || [];
+  return getRandomCreature(pool);
+}
+
+function getRandomTreeCreature() {
+  const pool = treeCreaturePools[currentLevel] || [];
+  return getRandomCreature(pool);
+}
+
+//---------------------------------------------------------------------------------
+
 function startTreeHunt() {
   isFishing = true; // bruk samme flagg for nå
   fishCaught = false;
+  playerCanMove = false;
 
   showFishingBox("Searching the tree...");
   const wait = Math.floor(Math.random() * 8000) + 2000;
@@ -1580,25 +1675,11 @@ function treeCreatureAppears() {
   startCatchMinigame(currentFish, false); // false = er landdyr
 }
 
-function getRandomTreeCreature() {
-  const pool = treeCreaturePools[currentLevel] || [];
-
-  const totalChance = pool.reduce((sum, c) => sum + c.chance, 0);
-  const roll = Math.random() * totalChance;
-  let sum = 0;
-
-  for (const creature of pool) {
-    sum += creature.chance;
-    if (roll < sum) return creature;
-  }
-
-  return { name: "???", rarity: "secret", image: "images/defaultTree.png", price: 0 };
-}
-
 function startFishing() {
   isFishing = true;
+  playerCanMove = false;
 
-  if (sounds.sfx.startFishing) sounds.sfx.startFishing.play();
+  sounds.sfx.startFishing.play();
 
   fishCaught = false;
   showFishingBox("Fishing...");
@@ -1630,7 +1711,7 @@ function showBossFightPrompt(bossKey) {
     <p>Prepare to battle ${boss.name}.</p>
     <p>It can hit you for <span style="color:red">${boss.damageToPlayer}</span> damage if you miss!</p>
     <p>You deal <span style="color:lime">${boss.damageToBoss}</span> damage per hit.</p>
-    <p>Drops: Abyss Eye.</p>boss.drops
+    <p>Drops: Abyss Eye.</p>
 
     <br>
     <button onclick="startBossFight('${bossKey}'); document.body.removeChild(document.getElementById('bossPromptBox'));">Battle</button>
@@ -1779,16 +1860,17 @@ function cancelFishing() {
   clearTimeout(biteTimeout);
   hideFishingBox();
   isFishing = false;
+  playerCanMove = true;
 }
 
 function fishGotBite() {
   currentFish = getRandomFish();
-  if (sounds.sfx.gotBite) sounds.sfx.gotBite.play();
+  sounds.sfx.gotBite.play();
 
   startCatchMinigame(currentFish, true); // true = er vann/fiske
 }
 
-function startCatchMinigame(creature, isWater) {
+function startCatchMinigame(creature) {
   if (document.activeElement === chatInput) return;
 
   const settings = raritySettings[creature.rarity] || { time: 4000, color: "white" };
@@ -1822,15 +1904,19 @@ function startCatchMinigame(creature, isWater) {
       const progress = elapsed / totalTime;
       if (progress >= successZoneStart && progress <= successZoneEnd) {
         fishCaught = true;
-        showFishingBox(`You caught a ${creature.name}!`);
+        appendChatMessage(`You caught a ${creature.name}!`);
         addToInventory(creature);
-        gainXP(creature.xp);
+        if (creature) {
+          const xpGained = typeof creature.xp === "number" ? creature.xp : 5; // fallback hvis xp mangler
+          gainXP(xpGained);
+          playerCanMove = true;
+        }
         
-        if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+        sounds.sfx.catchSuccess.play();
       } else {
         fishCaught = true;
         showFishingBox("Oh you failed! The creature fleed.");
-        if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+        sounds.sfx.catchFail.play();
       }
       document.removeEventListener("keydown", onKeyDown);
       clearInterval(countdown);
@@ -1864,7 +1950,7 @@ function startCatchMinigame(creature, isWater) {
       clearInterval(countdown);
       document.removeEventListener("keydown", onKeyDown);
       showFishingBox("You didnt react in time!");
-      if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+      sounds.sfx.catchFail.play();
       setTimeout(cancelFishing, 1200);
     }
   }, interval);
@@ -1874,37 +1960,17 @@ function startCatchMinigame(creature, isWater) {
 function tryCatchFish(choice) {
   if (currentFish && currentFish.rarity === choice) {
     showFishingBox(`Du fanget en ${currentFish.name}!`);
-    if (sounds.sfx.catchSuccess) sounds.sfx.catchSuccess.play();
+    sounds.sfx.catchSuccess.play();
     addToInventory(currentFish);
   } else {
     showFishingBox("Bom! Du mistet fisken.");
-    if (sounds.sfx.catchFail) sounds.sfx.catchFail.play();
+    sounds.sfx.catchFail.play();
   }
   fishCaught = true;
   setTimeout(cancelFishing, 2000);
 }
 
-function getRandomFish() {
-  const pool = fishPools[currentLevel] || [];
 
-  const totalChance = pool.reduce((sum, fish) => sum + fish.chance, 0);
-  const roll = Math.random() * totalChance;
-  let sum = 0;
-
-  for (const fish of pool) {
-    sum += fish.chance;
-    if (roll < sum) {
-      return {
-        name: fish.name,
-        rarity: fish.rarity,
-        image: fish.image,
-        price: fish.price
-      };
-    }
-  }
-
-  return { name: "???", rarity: "secret", image: "images/creatures/vann/defaultFish.png", price: 0 };
-}
 
 //removeItem("Void Key"); hvis du skal bruke den til noe annet
 function removeItem(name) {
@@ -2158,7 +2224,8 @@ function renderInventory() {
   grid.style.gridTemplateRows = 'repeat(6, 64px)';
   grid.style.gap = '8px';
 
-  for (let i = 0; i < 24; i++) {
+  const slots = Math.max(24, inventory.length);
+  for (let i = 0; i < inventory.length; i++) {
     const cell = document.createElement('div');
     cell.dataset.index = i;
     cell.style.width = '64px';
@@ -2272,14 +2339,13 @@ document.addEventListener('keydown', (e) => {
   if (document.activeElement.tagName === "INPUT") return;
   if (character.moving) return;
   switch (e.key) {
-    case 'w': moveCharacter(0, -1); break;
-    case 's': moveCharacter(0, 1); break;
-    case 'a': moveCharacter(-1, 0); break;
-    case 'd': moveCharacter(1, 0); break;
+    case 'w': moveCharacter(0, -1); closeShop(); break;
+    case 's': moveCharacter(0, 1); closeShop(); break;
+    case 'a': moveCharacter(-1, 0); closeShop(); break;
+    case 'd': moveCharacter(1, 0); closeShop(); break;
     case 'e': tryInteract(); break;
     case 'i': toggleInventory(); break;
     case 'c': showCharacterInfo(); break;
-
   }
 });
 
@@ -2341,10 +2407,10 @@ function loadGame() {
       playSessionStart = Date.now();
 
       // Last nivå og XP
-      playerLevel = data.playerLevel || 1;
-      playerXP = data.playerXP || 0;
+      playerLevel = Number(data.playerLevel) || 1;
+      playerXP = Number(data.playerXP) || 0;
 
-      xpToNextLevel = Math.floor(100 * Math.pow(1.25, playerLevel - 1)); // beregn riktig threshold
+      xpToNextLevel = Math.floor(100 * Math.pow(1.25, playerLevel - 1));// beregn riktig threshold
 
       const level = data.level ?? 0;
       const x = data.position?.x ?? levels[level].startX;
@@ -2357,12 +2423,15 @@ function loadGame() {
       renderInventory();
       updateXPUI(); // oppdater UI etter load
       updateXPBar();
+      defineAllCreatureXP();
     } else {
       loadLevel(0);
+      defineAllCreatureXP();
     }
   } catch (e) {
     console.error("Feil ved lasting av lagring:", e);
     loadLevel(0);
+    defineAllCreatureXP();
   }
 }
 
@@ -2602,7 +2671,7 @@ function gainXP(amount) {
     playerLevel++;
     xpToNextLevel = Math.floor(xpToNextLevel * 1.25);
     appendChatMessage("You just levelled up to level" + `${playerLevel}!`);
-    if (sounds.sfx.levelUp) sounds.sfx.levelUp.play();
+    sounds.sfx.levelUp.play();
   }
   updateXPBar();
 }
@@ -2612,7 +2681,7 @@ function updateXPBar() {
   const percent = Math.floor((playerXP / xpToNextLevel) * 100);
   if (bar) {
     bar.style.width = percent + "%";
-    bar.innerHTML = `<span style="white-space: nowrap;">XP: ${playerXP} / ${xpToNextLevel}</span>`;
+    bar.innerHTML = `<span style="white-space: nowrap; color: black;">XP: ${playerXP} / ${xpToNextLevel}</span>`;
   }
 }
 
@@ -2765,6 +2834,7 @@ function addToInventory(newItem) {
       inventory.push({ ...newItem, count: 1 });
     }
   }
+
   if (!trophies[newItem.name]) {
     trophies[newItem.name] = new Date().toISOString();
   }
@@ -2936,9 +3006,8 @@ function showCredits() {
 }
 
 function quitGame() {
-  saveGame();
+  alert("Farewell Path seeker! You have to close the tab manually..."); // Fallback for vanlige faner
   window.close(); // Fungerer kun hvis siden ble åpnet av et skript
-  //alert("Du må lukke fanen manuelt."); // Fallback for vanlige faner
 }
 
 toggleMenu();
