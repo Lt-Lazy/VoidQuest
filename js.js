@@ -178,7 +178,7 @@ const levels = [
       ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'W1', 'W1', 'W1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//0
       ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'S2', 'W1', 'W1', 'W1', 'S2', 'T1', 'T1', 'G1', 'T1', 'G1', 'G1', 'T1'],//1
       ['T1', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'T1', 'T1', 'T1', 'G1', 'G1', 'G1', 'W1', 'W1', 'W1', 'G1', 'G1', 'G1', 'G1', 'T1', 'G1', 'G1', 'T1'],//2
-      ['V1', 'P2', 'P2', 'T1', 'G1', 'P2', 'P2', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'W1', 'W1', 'W1', 'F1', 'F1', 'F1', 'G1', 'G1', 'P2', 'P2', 'P2'],//3
+      ['P2', 'P2', 'P2', 'T1', 'G1', 'P2', 'P2', 'G1', 'P2', 'P2', 'P2', 'P2', 'G1', 'W1', 'W1', 'W1', 'F1', 'F1', 'F1', 'G1', 'G1', 'P2', 'P2', 'P2'],//3
       ['T1', 'G1', 'T1', 'T1', 'T1', 'G1', 'P2', 'P2', 'P2', 'G1', 'G1', 'P2', 'P2', 'P1', 'P1', 'P1', 'P2', 'P2', 'P2', 'P2', 'P2', 'P2', 'T1', 'T1'],//4
       ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'G1', 'S2', 'G1', 'G1', 'G1', 'G1', 'G1', 'P1', 'P1', 'P1', 'G1', 'G1', 'G1', 'G1', 'G1', 'T1', 'T1', 'T1'],//5
       ['T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'W1', 'W1', 'W1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1', 'T1'],//6
@@ -441,6 +441,18 @@ const treeCreaturePools = {
   ],
 };
 
+
+//--------------------------EVENT-----------------------------------
+/*
+
+
+
+
+
+
+*/
+//--------------------------EVENT SLUTT-----------------------------------
+
 const bosses = {
   "abyssBeast": {
     name: "The Abyss Beast",
@@ -480,37 +492,48 @@ const visibleBosses = [
 
 const knives = [
   {
-    name: "Default Knife",
-    rarity: "secret",
-    price: 1,
-    image: "images/items/knives/defaultKnife.png",
-    description: "Well, something is wrong here...",
+    name: "Beta Life Karambit",
+    type: "knife",
+    price: 300,
+    chance: 200,
+    image: "images/items/knives/betaLifeKarambit.png",
+    description: "Everyone deserves a secound chance in life - Nocturne",
+    possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
     once: true // Bare én gang per spiller
   },
   {
-    name: "Life Karambit",
-    rarity: "rare",
-    price: 1,
-    image: "images/items/knives/lifeKarambit.png",
-    description: "Everyone deserves a secound chance in life - Nocturne",
+    name: "Beta Haste Butterfly Knife",
+    type: "knife",
+    price: 1500,
+    chance: 200,
+    image: "images/items/knives/betaHasteButterflyKnife.png",
+    description: "A knife built for swiftness, style and aura.",
+    possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
+    once: true // Bare én gang per spiller
+  },
+  {
+    name: "Beta Golden Butterfly Knife",
+    type: "knife",
+    price: 11250,
+    chance: 5,
+    image: "images/items/knives/betaGoldenButterflyKnife.png",
+    description: "Good old gem, hardcore actually.",
+    possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
+    once: true // Bare én gang per spiller
+  },
+  {
+    name: "Default Knife",
+    type: "knife",
+    price: 10,
+    chance: 200,
+    image: "images/items/knives/defaultKnife.png",
+    description: "Well, something is wrong here...",
+    possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
     once: true // Bare én gang per spiller
   },
 ];
 
-//vet ikke om denne brukes?
-function addKnifeToInventory(knifeName) {
-  const knife = knives.find(k => k.name === knifeName);
-  if (!knife) return;
 
-  inventory.push({ name: knife.name, image: knife.image, count: 1, rarity: knife.rarity, price: knife.price, type: "knife" });
-
-  if (!knivesJournal[knifeName]) {
-    knivesJournal[knifeName] = new Date().toLocaleString();
-    appendChatMessage(`You discovered a new knife: ${knife.name}!`);
-  }
-
-  renderInventory();
-}
 
 
 
@@ -732,6 +755,13 @@ const npcShopItems = {
       description: "Legendary Box! This is not a hobby anymore!",
       once: false // Bare én gang per spiller
     },
+    {
+      name: "Sharp Box",
+      image: "images/items/boxes/sharpBox.png",
+      price: 1,
+      description: "Open this with caution!",
+      once: false // Bare én gang per spiller
+    },
 
   ],
 };
@@ -750,13 +780,20 @@ const interactableItems = {
   "Legendary Box": {
     action: () => tryOpenMysteryBox("Legendary Box")
   },
+  "Sharp Box": {
+    action: () => tryOpenMysteryBox("Sharp Box")
+  },
   // Du kan lett legge til flere spesialgjenstander her etterpå
 };
 
 const inspectKnives = {
   "Default Knife": {
   },
-  "Life Karambit": {
+  "Beta Life Karambit": {
+  },
+  "Beta Haste Butterfly Knife": {
+  },
+  "Beta Golden Butterfly Knife": {
   },
 
   // Du kan lett legge til flere spesialgjenstander her etterpå
@@ -804,6 +841,43 @@ const mysteryBoxes = {
 
     ]
   },
+  "Sharp Box": {
+    price: 100,
+    rarity: "rare",
+    image: "images/items/boxes/sharpBox.png",
+    items: [
+      {
+        name: "Beta Life Karambit",
+        type: "knife",
+        price: 300,
+        chance: 200,
+        image: "images/items/knives/betaLifeKarambit.png",
+        description: "Everyone deserves a secound chance in life - Nocturne",
+        possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
+        once: true // Bare én gang per spiller
+      },
+      {
+        name: "Beta Haste Butterfly Knife",
+        type: "knife",
+        price: 1500,
+        chance: 200,
+        image: "images/items/knives/betaHasteButterflyKnife.png",
+        description: "A knife built for swiftness, style and aura.",
+        possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
+        once: true // Bare én gang per spiller
+      },
+      {
+        name: "Beta Golden Butterfly Knife",
+        type: "knife",
+        price: 11250,
+        chance: 5,
+        image: "images/items/knives/betaGoldenButterflyKnife.png",
+        description: "Good old gem, hardcore actually.",
+        possibleStates: ["New", "Tested", "Used", "Blunt", "Ruined"],
+        once: true // Bare én gang per spiller
+      },
+    ]
+  }
 };
 
 let trophies = {}; // Navn på fiskene du har fanget før
@@ -1042,33 +1116,92 @@ function openMysteryBoxAnimation(boxName) {
       drawWheel(rotation);
 
       const wonItem = items[selectedIndex];
-      const fullCreature = getFullCreatureData(wonItem.name);
-      selectedIndex = pool[Math.floor(Math.random() * pool.length)];
+      let finalItem = { ...wonItem }; // Kopiér først fra array
 
-      if (!fullCreature) {
-        appendChatMessage("Error: Something went wrong, could not find full creature data.");
-        return;
+      if (wonItem.type === "knife" && wonItem.possibleStates) {
+        const randomState = wonItem.possibleStates[Math.floor(Math.random() * wonItem.possibleStates.length)];
+        finalItem.state = randomState;
+      
+        const basePrice = wonItem.price || 1; // fallback hvis prisen mot formodning mangler
+      
+        // === Ny prisjustering basert på 5 forskjellige states ===
+        switch (randomState) {
+          case "New":
+            finalItem.price = Math.floor(basePrice * 1.2); // 46% dyrere
+            break;
+          case "Tested":
+            finalItem.price = Math.floor(basePrice * 1.1); // 12% dyrere
+            break;
+          case "Used":
+            finalItem.price = Math.floor(basePrice * 0.9); // 12% billigere
+            break;
+          case "Blunt":
+            finalItem.price = Math.floor(basePrice * 0.7); // 33% billigere
+            break;
+          case "Ruined":
+            finalItem.price = Math.floor(basePrice * 0.5); // 78% billigere
+            break;
+          default:
+            finalItem.price = basePrice; // fallback
+            break;
+        }
       }
-      setTimeout(() => {
+      
+
+      // === Nå sjekker vi hva slags item det er
+      if (finalItem.type === "knife") {
+        // Kniv: Legg direkte til inventory
         removeItem(boxName); // Fjern brukt box
         sounds.sfx.catchSuccess.play();
         playerCanMove = true;
-        appendChatMessage("System: You unboxed: " + `${wonItem.name}!`);
-        addToInventory({
-          name: fullCreature.name,
-          type: "creature",
-          rarity: fullCreature.rarity,
-          image: fullCreature.image,
-          price: fullCreature.price
+        
+        inventory.push({
+          name: finalItem.name,
+          image: finalItem.image,
+          price: finalItem.price || 0,
+          type: "knife",
+          state: finalItem.state || null,
+          count: 1
         });
 
-        if (!trophies[wonItem.name]) {
-          trophies[wonItem.name] = new Date().toLocaleDateString();
+        appendChatMessage(`You unboxed: ${finalItem.name} (${finalItem.state})!`);
+        renderInventory();
+        
+        document.body.removeChild(overlay);
+
+      } else {
+        // Creature: Bruk gammel måte
+        const fullCreature = getFullCreatureData(wonItem.name);
+
+        if (!fullCreature) {
+          appendChatMessage("Error: Something went wrong, could not find full creature data.");
+          document.body.removeChild(overlay);
+          playerCanMove = true;
+          return;
         }
 
-        document.body.removeChild(overlay);
-        renderInventory();
-      }, 1000);
+        setTimeout(() => {
+          removeItem(boxName); 
+          sounds.sfx.catchSuccess.play();
+          playerCanMove = true;
+          appendChatMessage(`System: You unboxed: ${wonItem.name}!`);
+          
+          addToInventory({
+            name: fullCreature.name,
+            type: "creature",
+            rarity: fullCreature.rarity,
+            image: fullCreature.image,
+            price: fullCreature.price
+          });
+
+          if (!trophies[wonItem.name]) {
+            trophies[wonItem.name] = new Date().toLocaleDateString();
+          }
+
+          document.body.removeChild(overlay);
+          renderInventory();
+        }, 1000);
+      }
     }
   }
 
@@ -1453,6 +1586,19 @@ function canMoveTo(x, y) {
   return !nonWalkableTiles.includes(map[y][x]);
 }
 
+function getMoveSpeed() {
+  let baseSpeed = 200; // Normal fart
+  
+  // Sjekk om spilleren har en fart-item i inventory
+  const speedItem = inventory.find(item => item.name === "Haste Butterfly Knife" || item.name === "Beta Haste Butterfly Knife"); // <-- bytt til ditt item-navn
+
+  if (speedItem) {
+    baseSpeed += 150; // Ekstra fart om de har Swift Boots
+  }
+
+  return baseSpeed;
+}
+
 function moveCharacter(dx, dy) {
   if (!playerCanMove || character.moving) return;
 
@@ -1467,7 +1613,7 @@ function moveCharacter(dx, dy) {
 
   const targetX = character.x * tileSize;
   const targetY = character.y * tileSize;
-  const pixelsPerSecond = 200; // Justerbar hastighet (gå)
+  const pixelsPerSecond = getMoveSpeed();
   let previousTime = performance.now();
   
 
@@ -1786,16 +1932,16 @@ function startBossFight(bossKey) {
       return;
     }
     if (playerHP <= 0) {
-      // === Sjekk om spilleren har Default Knife i inventory ===
-      const hasLifeKarambit = inventory.some(item => item.name === "Life Karambit");
+      // === Sjekk om spilleren har Life Karambit i inventory ===
+      const hasLifeKarambit = inventory.some(item => item.name === "Life Karambit" || item.name === "Beta Life Karambit");
     
       if (hasLifeKarambit) {
         // Spilleren får liv tilbake!
         playerHP = 200; // Eller hva full HP er
-        appendChatMessage("Your Default Knife saved you! Your health is fully restored!");
+        appendChatMessage("Your Life Karambit saved you! Your health is fully restored!");
         
-        // Fjern Default Knife fra inventory etter bruk 
-        const index = inventory.findIndex(item => item.name === "Life Karambit");
+        // Fjern Life Karambit fra inventory etter bruk 
+        const index = inventory.findIndex(item => item.name === "Life Karambit" || item.name === "Beta Life Karambit");
         if (index !== -1) {
           inventory.splice(index, 1);
           renderInventory(); // Oppdater visningen
@@ -1803,7 +1949,7 @@ function startBossFight(bossKey) {
         
         return fightNextRound(); // Restart runden med nytt liv
       } else {
-        // Spilleren har ikke Default Knife – dør som normalt
+        // Spilleren har ikke Life Karambit – dør som normalt
         endBossFight(false, boss);
         return;
       }
@@ -2334,12 +2480,18 @@ function renderInventory() {
       cell.onmousemove = (e) => {
         const rarityData = raritySettings[item.rarity];
         const rarityColor = rarityData ? rarityData.color : "#fff";
-        const caughtDate = trophies[item.name] || "Unknown"; //???
-        hoverInfoBox.innerHTML = `
-          <strong style="color:${rarityColor}">${item.name}</strong><br>
-          <span>Price: ${item.price} gold</span><br>
-          
-        `;
+      
+        let html = `<strong style="color:${rarityColor}">${item.name}</strong><br>`;
+      
+        if (item.type === "knife" && item.state) {
+          html += `<span>State: ${item.state}</span><br>`;
+        } else if (item.rarity) {
+          html += `<span>Rarity: <span style="color:${rarityColor}">${item.rarity}</span></span><br>`;
+        }
+      
+        html += `Price: ${item.price || 0} gold<br>`;
+      
+        hoverInfoBox.innerHTML = html;
         hoverInfoBox.style.display = "block";
         hoverInfoBox.style.left = (e.clientX + 15) + "px";
         hoverInfoBox.style.top = (e.clientY + 15) + "px";
@@ -2387,6 +2539,9 @@ function inspectItem(item) {
   inspectBox.style.minWidth = "300px";
   inspectBox.style.maxWidth = "90%";
 
+  inspectBox.style.opacity = "0";
+  inspectBox.style.transition = "opacity 0.3s ease";
+
   inspectBox.innerHTML = `
     <h2 style="color:white;">${item.name}</h2>
     <div style="perspective: 800px;">
@@ -2395,6 +2550,7 @@ function inspectItem(item) {
     </div>
     <input id="rotationSlider" type="range" min="-60" max="60" value="0" style="width: 80%; margin: 10px 0;">
     <div style="color:lightgray;">
+      ${item.type === "knife" && item.state ? `<div>State: <strong>${item.state}</strong></div>` : ''}
       ${item.rarity ? `Rarity: <span style="color:${raritySettings[item.rarity]?.color || 'white'}">${item.rarity}</span><br>` : ''}
       Price: ${item.price || 0} gold<br>
       ${item.description ? `<p style="margin-top:10px;">${item.description}</p>` : ''}
@@ -2403,6 +2559,10 @@ function inspectItem(item) {
   `;
 
   document.body.appendChild(inspectBox);
+    // === Fade inn ===
+    setTimeout(() => {
+      inspectBox.style.opacity = "1";
+    }, 10);
 
   // === Legg til slider-kontroll ===
   const rotationSlider = document.getElementById("rotationSlider");
@@ -2685,8 +2845,6 @@ function renderTrophyJournal() {
   <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
   <button onclick="currentTrophyType='land'; toggleTrophyJournal(); toggleTrophyJournal()">Land</button>
   <button onclick="currentTrophyType='boss'; toggleTrophyJournal(); toggleTrophyJournal()">Boss</button>
-  <button onclick="currentTrophyType='items'; toggleTrophyJournal()">Items</button>
-
   `;
 
   const title = `<h3>${
