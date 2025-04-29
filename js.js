@@ -444,7 +444,7 @@ const treeCreaturePools = {
 const bosses = {
   "abyssBeast": {
     name: "The Abyss Beast",
-    maxHP: 300,
+    maxHP: 100,
     level: "the-veiled-abyss",
     rarity: "rare",
     image: "images/creatures/boss/theAbyssBeast/theAbyssBeastDown.png",
@@ -476,6 +476,47 @@ const visibleBosses = [
   // du kan legge til flere bosser her!
 ];
 
+//---------------KNIVER-------------------------------
+
+const knives = [
+  {
+    name: "Default Knife",
+    rarity: "secret",
+    price: 1,
+    image: "images/items/knives/defaultKnife.png",
+    description: "Well, something is wrong here...",
+    once: true // Bare én gang per spiller
+  },
+  {
+    name: "Life Karambit",
+    rarity: "rare",
+    price: 1,
+    image: "images/items/knives/lifeKarambit.png",
+    description: "Everyone deserves a secound chance in life - Nocturne",
+    once: true // Bare én gang per spiller
+  },
+];
+
+//vet ikke om denne brukes?
+function addKnifeToInventory(knifeName) {
+  const knife = knives.find(k => k.name === knifeName);
+  if (!knife) return;
+
+  inventory.push({ name: knife.name, image: knife.image, count: 1, rarity: knife.rarity, price: knife.price, type: "knife" });
+
+  if (!knivesJournal[knifeName]) {
+    knivesJournal[knifeName] = new Date().toLocaleString();
+    appendChatMessage(`You discovered a new knife: ${knife.name}!`);
+  }
+
+  renderInventory();
+}
+
+
+
+
+
+//--------------KNVIER SLUTT----------------------------
 
 
 const raritySettings = {
@@ -709,6 +750,15 @@ const interactableItems = {
   "Legendary Box": {
     action: () => tryOpenMysteryBox("Legendary Box")
   },
+  // Du kan lett legge til flere spesialgjenstander her etterpå
+};
+
+const inspectKnives = {
+  "Default Knife": {
+  },
+  "Life Karambit": {
+  },
+
   // Du kan lett legge til flere spesialgjenstander her etterpå
 };
 
@@ -1736,8 +1786,27 @@ function startBossFight(bossKey) {
       return;
     }
     if (playerHP <= 0) {
-      endBossFight(false, boss);
-      return;
+      // === Sjekk om spilleren har Default Knife i inventory ===
+      const hasLifeKarambit = inventory.some(item => item.name === "Life Karambit");
+    
+      if (hasLifeKarambit) {
+        // Spilleren får liv tilbake!
+        playerHP = 200; // Eller hva full HP er
+        appendChatMessage("Your Default Knife saved you! Your health is fully restored!");
+        
+        // Fjern Default Knife fra inventory etter bruk 
+        const index = inventory.findIndex(item => item.name === "Life Karambit");
+        if (index !== -1) {
+          inventory.splice(index, 1);
+          renderInventory(); // Oppdater visningen
+        }
+        
+        return fightNextRound(); // Restart runden med nytt liv
+      } else {
+        // Spilleren har ikke Default Knife – dør som normalt
+        endBossFight(false, boss);
+        return;
+      }
     }
 
     const baseBarTime = boss.barSpeed || 1000;
@@ -1826,6 +1895,7 @@ function endBossFight(playerWon, boss) {
   }
 
   setTimeout(cancelFishing, 3000);
+  saveGame();
 }
 
 
@@ -2223,6 +2293,8 @@ function renderInventory() {
   grid.style.gridTemplateColumns = 'repeat(4, 64px)';
   grid.style.gridTemplateRows = 'repeat(6, 64px)';
   grid.style.gap = '8px';
+  
+
 
   const slots = Math.max(24, inventory.length);
   for (let i = 0; i < inventory.length; i++) {
@@ -2248,6 +2320,10 @@ function renderInventory() {
         cell.style.cursor = "pointer";
         cell.onclick = () => showItemDialog(item.name);
       }
+      if (inspectKnives[item.name]) {
+        cell.style.cursor = "pointer";
+        cell.onclick = () => inspectItem(item);
+      }
 
       // === Drag & Drop ===
       cell.draggable = true;
@@ -2258,7 +2334,7 @@ function renderInventory() {
       cell.onmousemove = (e) => {
         const rarityData = raritySettings[item.rarity];
         const rarityColor = rarityData ? rarityData.color : "#fff";
-        const caughtDate = trophies[item.name] || "Unknown";
+        const caughtDate = trophies[item.name] || "Unknown"; //???
         hoverInfoBox.innerHTML = `
           <strong style="color:${rarityColor}">${item.name}</strong><br>
           <span>Price: ${item.price} gold</span><br>
@@ -2290,6 +2366,59 @@ function renderInventory() {
   }
 
   inv.appendChild(grid);
+}
+
+function inspectItem(item) {
+  let inspectBox = document.getElementById("inspectBox");
+  if (inspectBox) inspectBox.remove();
+
+  inspectBox = document.createElement("div");
+  inspectBox.id = "inspectBox";
+  inspectBox.style.position = "fixed";
+  inspectBox.style.top = "50%";
+  inspectBox.style.left = "50%";
+  inspectBox.style.transform = "translate(-50%, -50%)";
+  inspectBox.style.background = "#222";
+  inspectBox.style.padding = "20px";
+  inspectBox.style.border = "2px solid #999";
+  inspectBox.style.borderRadius = "12px";
+  inspectBox.style.zIndex = 1001;
+  inspectBox.style.textAlign = "center";
+  inspectBox.style.minWidth = "300px";
+  inspectBox.style.maxWidth = "90%";
+
+  inspectBox.innerHTML = `
+    <h2 style="color:white;">${item.name}</h2>
+    <div style="perspective: 800px;">
+      <img id="inspectImage" src="${item.image}" width="128" height="128" 
+           style="margin: 10px 0; image-rendering: pixelated; transition: transform 0.2s;">
+    </div>
+    <input id="rotationSlider" type="range" min="-60" max="60" value="0" style="width: 80%; margin: 10px 0;">
+    <div style="color:lightgray;">
+      ${item.rarity ? `Rarity: <span style="color:${raritySettings[item.rarity]?.color || 'white'}">${item.rarity}</span><br>` : ''}
+      Price: ${item.price || 0} gold<br>
+      ${item.description ? `<p style="margin-top:10px;">${item.description}</p>` : ''}
+    </div>
+    <button onclick="closeInspect()" style="margin-top:15px;">Close</button>
+  `;
+
+  document.body.appendChild(inspectBox);
+
+  // === Legg til slider-kontroll ===
+  const rotationSlider = document.getElementById("rotationSlider");
+  const inspectImage = document.getElementById("inspectImage");
+  
+  rotationSlider.oninput = function() {
+    const degree = parseInt(this.value, 10);
+    inspectImage.style.transform = `rotateY(${degree}deg)`;
+  };
+}
+
+
+// Funksjon for å lukke
+function closeInspect() {
+  const inspectBox = document.getElementById("inspectBox");
+  if (inspectBox) inspectBox.remove();
 }
 
 
@@ -2329,6 +2458,7 @@ function showItemDialog(itemName) {
     <h3>${itemName}</h3>
     <p>${data.message}</p>
     <br>
+
     <button onclick="document.getElementById('itemDialog').remove()">Close</button>
   `;
 
@@ -2463,7 +2593,7 @@ function showDeathScreen() {
 
 // === Troféjournal ===
 let trophyJournalOpen = false;
-let currentTrophyType = "water"; // kan være "water", "land" eller "boss"
+let currentTrophyType = "water"; // kan være "water", "land", "boss" 
 
 function toggleTrophyJournal() {
   trophyJournalOpen = !trophyJournalOpen;
@@ -2507,7 +2637,6 @@ function renderTrophyJournal() {
   } else if (currentTrophyType === "boss") {
     fullList = allBosses;
   }
-  
 
   //filtrerer ut alle skapninger hvis de ikke er fanget
   const list = fullList
@@ -2556,6 +2685,8 @@ function renderTrophyJournal() {
   <button onclick="currentTrophyType='water'; toggleTrophyJournal(); toggleTrophyJournal()">Water</button>
   <button onclick="currentTrophyType='land'; toggleTrophyJournal(); toggleTrophyJournal()">Land</button>
   <button onclick="currentTrophyType='boss'; toggleTrophyJournal(); toggleTrophyJournal()">Boss</button>
+  <button onclick="currentTrophyType='items'; toggleTrophyJournal()">Items</button>
+
   `;
 
   const title = `<h3>${
