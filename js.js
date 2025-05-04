@@ -400,7 +400,7 @@ const fishPools = {
   ],
   9: [ // Vulcano-Hill
     { name: "Molten Muck", rarity: "common", image: "images/creatures/vann/moltenMuck.png", chance: 900, price: 25},
-
+    { name: "Ashfin", rarity: "rare", image: "images/creatures/vann/moltenMuck.png", chance: 32, price: 86},
 
   ],
   10: [ // Path-2
@@ -409,6 +409,7 @@ const fishPools = {
     { name: "Albino Krap", rarity: "legendary", image: "images/creatures/vann/albinoKrap.png", chance: 7, price: 743},
     { name: "Great White", rarity: "legendary", image: "images/creatures/vann/greatWhite.png", chance: 15, price: 217},
     { name: "Elder Great White", rarity: "mythical", image: "images/creatures/vann/elderGreatWhite.png", chance: 4, price: 1953},
+    { name: "Mega Crab", rarity: "mythical", image: "images/creatures/vann/megaCrab.png", chance: 2, price: 3853},
 
   ],
 };
@@ -563,7 +564,7 @@ const npcs = [
   },
   {
     name: "Path Seeker Nodin",
-    image: "images/player/man/pixelmannDown.png",
+    image: "images/npc/nodin.png",
     x: 10,
     y: 6,
     level: 1,
@@ -758,7 +759,7 @@ const npcShopItems = {
     {
       name: "Sharp Box",
       image: "images/items/boxes/sharpBox.png",
-      price: 1,
+      price: 1600,
       description: "Open this with caution!",
       once: false // Bare én gang per spiller
     },
