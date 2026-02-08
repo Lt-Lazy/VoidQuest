@@ -1,0 +1,277 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  display: grid;
+  place-items: center;
+  padding-bottom: 74px;
+}
+
+#game-wrap {
+  position: relative;
+  width: min(92vw, 900px);
+  aspect-ratio: 16 / 9;
+  border: 2px solid #1f2937;
+  background: #000;
+}
+
+#game {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+#hud {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background: rgba(17, 24, 39, 0.75);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.35;
+  min-width: 190px;
+  backdrop-filter: blur(4px);
+}
+
+#hud .hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* --- Hotbar: global nederst på skjermen --- */
+#hotbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  padding: 10px 16px;
+  display: flex;
+  justify-content: flex-end; /* knapper fra høyre -> venstre */
+  gap: 10px;
+
+  background: rgba(17, 24, 39, 0.75);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+.hotbar-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.hotbar-btn:active {
+  transform: translateY(1px);
+}
+
+#btn-inventory-icon {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+}
+
+
+/* --- Inventory panel --- */
+#inventory.panel {
+  position: absolute;
+  inset: auto;
+  right: 10px;
+  bottom: 10px;
+  display: block;
+  pointer-events: none;
+  z-index: 40;
+  image-rendering: pixelated;
+}
+
+#inventory.hidden {
+  display: none;
+}
+
+/* MINI variant */
+#inventory.mini .inventory-inner {
+  width: 260px;          /* juster etter smak */
+  height: 210px;         /* juster etter smak */
+  background-image: url("assets/ui/inventoryWindow.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 10px 25px rgba(0,0,0,0.55));
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Grid inni scrollen (må nesten alltid finjusteres litt) */
+#inventory.mini .inventory-grid {
+  position: absolute;
+  left: 14%;
+  top: 18%;
+  width: 72%;
+  height: 68%;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+
+  gap: 6px;
+}
+
+/* Slot-click area (du ser ikke ruten, men den finnes) */
+.inv-slot {
+  position: relative;
+  border-radius: 8px;
+}
+
+/* Item icon (når vi legger items senere) */
+.inv-item {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.inv-item:active {
+  cursor: grabbing;
+}
+
+.inv-item img {
+  width: 80%;
+  height: 80%;
+  image-rendering: pixelated;
+}
+
+/* Drag & drop feedback */
+.inv-slot.drag-over {
+  outline: 2px dashed rgba(255,255,255,0.45);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* --- Context menu (RuneScape-ish) --- */
+.context-menu {
+  position: absolute;
+  min-width: 160px;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  padding: 6px;
+  z-index: 60;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+}
+
+.context-menu.hidden {
+  display: none;
+}
+
+.context-menu .cm-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+}
+
+.context-menu .cm-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.context-menu .cm-title {
+  padding: 6px 10px 8px;
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
+}
+
+/* --- Chat log (read-only) --- */
+#chatlog {
+  position: fixed;
+  left: 14px;
+  bottom: 74px; /* over hotbar (som har plass via body padding) */
+  width: min(420px, 40vw);
+  height: 170px;
+
+  background: rgba(17, 24, 39, 0.55);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  backdrop-filter: blur(4px);
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  z-index: 45;
+}
+
+#chatlog-messages {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chatline {
+  color: rgba(229, 231, 235, 0.95);
+  font-size: 13px;
+  line-height: 1.35;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+
+  white-space: normal;        /*  tillat linjeskift */
+  overflow-wrap: anywhere;    /* bryt lange ord */
+  word-break: break-word;     /* fallback */
+}
+
+.chatline .time {
+  color: rgba(156, 163, 175, 0.9);
+  margin-right: 8px;
+}
+
+.chatline.system {
+  color: rgba(229, 231, 235, 0.95);
+}
+
+.chatline.error {
+  color: rgba(248, 113, 113, 0.95);
+}
+
+.chatline.loot {
+  color: rgba(110, 231, 183, 0.95);
+}
+
+/* På veldig små skjermer: litt mindre */
+@media (max-width: 700px) {
+  #chatlog {
+    width: min(360px, 92vw);
+    height: 150px;
+  }
+}
+
+

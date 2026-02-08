@@ -1,0 +1,1733 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --z-canvas: 1;
+  --z-hud: 20;      /* hearts / hotbar / chat */
+  --z-menu: 120;    /* dialog / pause / context */
+  --chat-left: 14px;
+  --chat-bottom: 74px;
+  --chat-height: 170px;
+  --xp-gap: 8px; /* luft over chat */
+  --bank-bg: url("assets/ui/bankWindow.png"); 
+
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  overflow: hidden; /*ingen scrolling i fullskjerm */
+}
+
+#game-wrap {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+
+  border: 0;
+  background: #000;
+}
+
+#game {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+  position: relative;
+  z-index: var(--z-canvas);
+}
+
+#hud {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background: rgba(17, 24, 39, 0.75);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.35;
+  min-width: 190px;
+  backdrop-filter: blur(4px);
+}
+
+#hud .hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* --- Hotbar: global nederst på skjermen --- */
+#hotbar {
+  position: fixed;
+  height: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  padding: 10px 16px;
+  display: flex;
+  justify-content: flex-end; /* knapper fra høyre -> venstre */
+  gap: 10px;
+
+  background: rgba(17, 24, 39, 0.75);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-hud);
+}
+
+.hotbar-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.hotbar-btn:active {
+  transform: translateY(1px);
+}
+
+
+
+/* --- Context menu (RuneScape-ish) --- */
+.context-menu {
+  position: absolute;
+  min-width: 160px;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 6px;
+  z-index: 60;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+}
+
+.context-menu.hidden {
+  display: none;
+}
+
+.context-menu .cm-item {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+  font: inherit;
+}
+
+.context-menu .cm-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.context-menu .cm-title {
+  padding: 6px 10px 8px;
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
+}
+
+#dialog { z-index: var(--z-menu); bottom: 80px; }
+#pause-menu { z-index: calc(var(--z-menu) + 10); }
+#context-menu { z-index: 2001; }
+
+#hearts, #hotbar, #chatlog {
+  position: fixed; /* eller absolute hvis de ligger inni game-wrap */
+}
+
+/* --- Chat log (read-only) --- */
+#chatlog {
+  position: fixed;
+  left: var(--chat-left);
+  bottom: var(--chat-bottom);
+  width: min(420px, 40vw);
+  height: var(--chat-height);
+
+  background: rgba(0, 0, 0, 0.55);
+  border: 3px solid rgba(255, 255, 255, 0.12);
+ 
+  
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  overflow: hidden;
+  z-index: var(--z-hud);
+}
+
+#chatlog-messages {
+  flex: 1;
+  min-height: 0;   
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.chatline {
+  color: rgba(229, 231, 235, 0.95);
+  font-size: 13px;
+  line-height: 1.35;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+
+  white-space: normal;        /*  tillat linjeskift */
+  overflow-wrap: anywhere;    /* bryt lange ord */
+  word-break: break-word;     /* fallback */
+}
+
+.chatline .time {
+  color: rgba(156, 163, 175, 0.9);
+  margin-right: 8px;
+}
+
+.chatline.system {
+  color: rgba(229, 231, 235, 0.95);
+}
+
+.chatline.error {
+  color: rgba(248, 113, 113, 0.95);
+}
+
+.chatline.loot {
+  color: rgba(110, 231, 183, 0.95);
+}
+
+/* På veldig små skjermer: litt mindre */
+@media (max-width: 700px) {
+  #chatlog {
+    width: min(360px, 92vw);
+    height: 150px;
+  }
+}
+
+.hotbar-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+#btn-save:active {
+  transform: translateY(1px);
+}
+
+/* Global hidden utility */
+.hidden { display: none !important; }
+
+
+/* --- Fullscreen screens (menu / character select) --- */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.65);
+  z-index: 100;
+}
+
+
+
+#screen-menu .start-grid {
+  align-self: center;
+}
+
+.screen-card {
+  width: min(520px, 92vw);
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(6px);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+#menu-logo-img {
+  width: 220px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.screen-title {
+  margin: 0;
+  font-size: 40px;
+  letter-spacing: 1px;
+}
+
+.screen-subtitle {
+  margin: 0;
+  font-size: 22px;
+}
+
+.screen-btn {
+  width: 220px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.screen-btn.secondary {
+  opacity: 0.85;
+}
+
+.char-box {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.char-small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.char-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.char-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  color: var(--text);
+  padding: 0 10px;
+  font: inherit;
+}
+
+
+/* Pause menu overlay */
+.pause {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.65);
+  z-index: 130; /* over dialog/context */
+}
+
+.pause-card {
+  width: min(420px, 92vw);
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  
+  background: rgb(74, 69, 15);
+  display: grid;
+  gap: 10px;
+}
+
+.pause-title {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.pause-items {
+  display: grid;
+  gap: 6px;
+}
+
+.pause-item {
+  height: 40px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(204, 187, 0, 0.2);
+}
+
+.pause-item.selected {
+  border-color: rgba(255,255,255,0.30);
+  background: rgba(255,255,255,0.08);
+}
+
+.pause-item:hover {
+  border-color: rgba(255,255,255,0.30);
+  background: rgba(255,255,255,0.08);
+}
+
+.pause-hint {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* Hearts / HP */
+.hearts {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 60; /* over canvas */
+  pointer-events: none;
+}
+
+.hearts img {
+  width: 50px;
+  height: 50px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.hearts img.empty {
+  opacity: 0.25;
+}
+
+/* ---------------- Dialog ---------------- */
+.dialog {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px;
+  z-index: 120; /* under pause (130), over context/hearts */
+  pointer-events: none; /* vi slår på pointer på card */
+}
+
+.dialog.hidden {
+  display: none !important;
+}
+
+.dialog-card {
+  pointer-events: auto;
+  width: 100%;
+  background: rgba(17, 24, 39, 0.92);
+  border: 2px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+}
+
+.dialog-top {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.dialog-portrait {
+  width: 56px;
+  height: 56px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+
+  background-color: rgba(0,0,0,0.35);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  image-rendering: pixelated;
+}
+
+.dialog-name {
+  font-weight: 900;
+  font-size: 14px;
+  opacity: 0.95;
+  margin-bottom: 4px;
+}
+
+.dialog-text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(229, 231, 235, 0.98);
+  overflow-wrap: anywhere;
+}
+
+.dialog-options {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.dialog-option {
+  height: auto;
+  border: none;
+  background: transparent;
+  padding: 6px 2px;
+  border-radius: 0;
+  cursor: pointer;
+
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(209, 213, 219, 0.90); 
+  text-align: left;
+}
+
+.dialog-option:hover {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.98);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dialog-option.selected {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.98);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dialog-hint {
+  opacity: 0;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(156, 163, 175, 0.9);
+}
+
+/* --- XP pop (top-right) --- ???
+.xp-pop {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: var(--z-hud);
+  pointer-events: none;
+} */
+
+/* XP emblem over chatten */
+#xp-pop {
+  position: absolute;
+
+  /* Plasser det rett over chat-boksen */
+  left: calc(var(--chat-left) + 10px); /* 10px matcher chat padding */
+  bottom: calc(var(--chat-bottom) + var(--chat-height) + var(--xp-gap));
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+
+.xp-pop img {
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.xp-pop.show {
+  animation: xpPopFade 1.6s ease-out forwards;
+}
+
+@keyframes xpPopFade {
+  0%   { opacity: 0; transform: translateY(-2px) scale(0.98); }
+  12%  { opacity: 1; transform: translateY(0) scale(1.00); }
+  70%  { opacity: 1; transform: translateY(0) scale(1.00); }  /* holder seg synlig */
+  100% { opacity: 0; transform: translateY(-2px) scale(0.98); } /* fade ut */
+}
+
+/* --- Skills window overlay --- */
+.skills {
+  position: fixed;
+  inset: auto;
+
+  left: 14px;
+  top: 74px;  
+
+  background: transparent;
+  z-index: calc(var(--z-menu) + 25);
+  display: block;
+  pointer-events: none;
+}
+
+.skills.hidden {
+  display: none !important;
+}
+
+/* Selve scrollen (lik inventory-card) */
+.skills-card {
+  position: relative;
+  width: 360px;     /* ⬅ SAMME som inventory */
+  height: 360px;    /* ⬅ SAMME som inventory */
+
+  background-image: url("assets/ui/inventoryScroll.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+
+  pointer-events: auto;
+}
+
+/* Topp-linje (tittel + close) ligger oppå scrollen */
+.skills-top {
+  position: absolute;
+  left: 35px;
+  right: 0;
+  top: 40px;
+
+  height: 60px;           /* matcher ca “toppen” på scrollen */
+  display: flex;
+  pointer-events: none;   /* så du ikke klikker på toppen ved uhell */
+}
+
+.skills-title {
+  font-weight: 900;
+  font-size: 18px;
+  color: #111;
+  text-transform: lowercase; /* valgfritt, matcher scroll-feel */
+  opacity: 0.9;
+}
+
+.skills-subline {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* Close-knapp (samme stil som inventory-close) */
+.skills-close {
+  position: absolute;
+  top: -20px;
+  right: 25px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 1;
+  background: rgb(255, 58, 58);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+
+  pointer-events: auto;
+}
+
+/* Skills-lista: plasseres inni “innmaten” på scrollen */
+.skills-list {
+  position: absolute;
+
+  /* 👇 TUNE DISSE for perfekt plassering (samme prinsipp som inventory-grid) */
+  left: 10%;
+  right: 25%;
+  top: 32%;
+  bottom: 18%;
+
+  
+  gap: 10px;
+}
+
+/* Skill row: transparent og mørk tekst (passer på lys scroll) */
+.skill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 6px 2px;
+  border: none;
+  background: transparent;
+}
+
+.skill-name {
+  color: rgba(17, 24, 39, 0.95);
+  font-weight: 800;
+}
+
+.skill-meta {
+  color: rgba(17, 24, 39, 0.75);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.skills-hint {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+
+  font-size: 12px;
+  color: rgba(0,0,0,0.75);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* litt mindre på små skjermer */
+@media (max-width: 700px) {
+  .skills-card { width: 320px; height: 180px; }
+}
+
+
+/* ---------------- Inventory window overlay ---------------- 
+.inventory {
+  position: fixed;
+
+   Nede til høyre, over hotbar
+  right: 14px;
+  bottom: 84px;  hotbar er 70px + litt margin 
+
+  Ikke dekk hele skjermen 
+  inset: auto;
+
+   Ingen mørk overlay 
+  background: transparent;
+
+  
+
+   Viktig: klikk går gjennom vinduet, bortsett fra selve scrollen 
+  pointer-events: none;
+}
+*/
+
+#game-wrap {
+  position: relative;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.inventory {
+  position: fixed;
+  inset: 1;
+  
+  right: 14px;
+  bottom: 84px;
+  background: transparent;
+  z-index: calc(var(--z-menu) + 25); /* over dialog/context/skills */
+}
+
+.inventory.hidden {
+  display: none !important;
+}
+
+/* Selve scrollen */
+.inventory-card {
+  position: relative;
+  width: 320px;
+  height: 360px;
+
+  background-image: url("assets/ui/inventoryScroll.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+
+  pointer-events: auto;
+}
+
+@media (max-width: 700px) {
+  .inventory-card { width: 280px; height: 320px; }
+}
+
+/* Close-knapp */
+.inventory-close {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 1;
+  background: rgb(255, 58, 58);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+
+  pointer-events: auto;
+}
+
+/* Grid-laget som ligger oppå scrollen */
+/* VIKTIG: her finjusterer du plasseringen av inventory på scrollen */
+.inventory-grid {
+  position: absolute;
+
+  /* 👇 TUNE DISSE for å få perfekt plassering på scrollen */
+  left: 18%;
+  right: 18%;
+  top: 18%;
+  bottom: 18%;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 10px;
+
+  /* usynlig */
+}
+
+/* Slot er kun en drop-sone – ingen border, ingen bakgrunn */
+.inv-slot {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+/* Item-ikonet (det eneste som skal synes) */
+.inv-item {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.inv-item img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.inv-item:active {
+  cursor: grabbing;
+}
+
+/* Hint-tekst */
+.inventory-hint {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  color: rgba(0,0,0,0.75);
+  text-align: center;
+  pointer-events: none;
+}
+
+.inv-qty {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+
+  padding: 1px 4px;
+  font-size: 12px;
+  font-weight: 800;
+
+  color: #fff;
+  background: rgba(0,0,0,0.65);
+  border-radius: 6px;
+
+  pointer-events: none;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.9);
+}
+
+/* ---------------- SHOP ---------------- */
+.shop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.65);
+  z-index: calc(var(--z-menu) + 20);
+}
+
+.shop.hidden { display: none !important; }
+
+.shop-card {
+  position: relative;
+  width: 360px;
+  height: 360px;
+
+  background-image: url("assets/ui/inventoryScroll.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.shop-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0,0,0,0.25);
+  background: rgba(255,255,255,0.15);
+  color: #111;
+  cursor: pointer;
+  font: inherit;
+}
+
+.shop-top {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 18%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-title {
+  font-weight: 900;
+  color: #111;
+  opacity: 0.95;
+}
+
+.shop-coins {
+  font-weight: 900;
+  color: rgba(0,0,0,0.75);
+  font-size: 12px;
+}
+
+.shop-list {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 26%;
+  bottom: 16%;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.shop-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(255,255,255,0.10);
+}
+
+.shop-row img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.shop-meta {
+  display: grid;
+  gap: 2px;
+}
+
+.shop-name {
+  font-weight: 900;
+  color: #111;
+}
+
+.shop-price {
+  font-size: 12px;
+  color: rgba(0,0,0,0.70);
+  font-weight: 800;
+}
+
+.shop-buy {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.10);
+  cursor: pointer;
+  font: inherit;
+  color: #111;
+  font-weight: 900;
+}
+
+.shop-buy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.shop-hint {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(0,0,0,0.70);
+}
+
+.shop-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.70);
+  line-height: 1.2;
+}
+
+.shop-stats {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.85);
+}
+
+
+#equip-window.equip {
+  position: fixed;
+  inset: auto;
+
+  right: 350px;
+  bottom: 100px;
+
+  background: transparent;
+
+  /* over inventory */
+  z-index: 1000;
+
+  /* klikk går gjennom, bortsett fra selve kortet */
+  pointer-events: auto;
+}
+
+
+.equip.hidden {
+  display: none !important;
+}
+
+.equip-card {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  pointer-events: auto;
+
+  background-image: url("assets/ui/characterWindow.png"); /* <-- bytt hvis annet navn */
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+
+/* litt mindre på små skjermer */
+@media (max-width: 700px) {
+  #equip-window .equip-card { width: 280px; height: 280px; }
+}
+
+.equip-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  pointer-events: auto;
+
+  width: 36px;
+  height: 36px;
+
+  border: 1px solid rgba(0,0,0,0.25);
+  background: rgb(255, 58, 58);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  z-index: 50;
+}
+
+/* Slots */
+.equip-slots {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Disse 4 er "drop zones" / klikk-soner, men vi viser kun item-ikonet */
+.equip-slot {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  background: transparent;
+  border: none;
+}
+
+/* Plassering (TUNE DISSE for å treffe slots i bildet ditt) */
+.equip-slot[data-eq="tool"]   { left: 49%; top: 18%; transform: translate(-50%, -50%); }
+.equip-slot[data-eq="weapon"] { left: 18%; top: 49%; transform: translate(-50%, -50%); }
+.equip-slot[data-eq="armor"]  { left: 49%; top: 49%; transform: translate(-50%, -50%); }
+.equip-slot[data-eq="ring"]   { left: 82%; top: 49%; transform: translate(-50%, -50%); }
+
+/* Item i equip-slot */
+.eq-item {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.eq-item img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.equip-hint {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  color: rgba(0,0,0,0.75);
+  text-align: center;
+  pointer-events: none;
+}
+
+#minimap-wrap {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+
+  width: 250px;
+  height: 250px;
+
+  z-index: var(--z-hud);
+  pointer-events: none;
+}
+
+/* canvas inni wrapper */
+#minimap {
+  position: absolute;
+  inset: 5px;             /* juster etter ramma di */
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Rammen på toppen */
+#minimap-wrap::after {
+  content: "";
+  position: absolute;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  inset: 0;
+  background: url("assets/ui/minimapWin.png") no-repeat center / contain;
+}
+
+/* ---------------- LOGIN PORTAL (index.html) ---------------- */
+
+.portal-body {
+  background:
+    radial-gradient(1200px 600px at 50% 20%, rgba(90, 170, 255, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 30% 80%, rgba(255, 220, 120, 0.10), transparent 55%),
+    var(--bg);
+  overflow: auto;
+}
+
+.portal-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 30px 14px;
+}
+
+.portal-card {
+  width: min(980px, 96vw);
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(10, 14, 20, 0.72);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+}
+
+.portal-top {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  grid-template-rows: auto auto;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.portal-logo {
+  width: 56px;
+  height: 56px;
+  image-rendering: pixelated;
+  grid-row: 1 / span 2;
+}
+
+.portal-title {
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.portal-sub {
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
+}
+
+.portal-main {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+}
+
+.portal-panel {
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(17, 24, 39, 0.55);
+  padding: 14px;
+}
+
+.portal-panel-title {
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.88);
+}
+
+.portal-label {
+  display: block;
+  margin: 10px 0 6px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.70);
+}
+
+.portal-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  color: var(--text);
+  font: inherit;
+}
+
+.portal-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.portal-btn {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.25);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.portal-btn.secondary {
+  opacity: 0.85;
+}
+
+.portal-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.70);
+}
+
+.portal-side {
+  display: grid;
+  gap: 16px;
+}
+
+.portal-kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.10);
+}
+
+.portal-kv .ok {
+  color: rgba(110, 231, 183, 0.95);
+}
+
+.portal-news {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  padding: 6px 0;
+}
+
+.portal-footer {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
+
+@media (max-width: 860px) {
+  .portal-main { grid-template-columns: 1fr; }
+}
+
+
+/* ---------- NEW START HUB (voidquest.html) ---------- */
+
+.start-card{
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+
+#screen-menu{
+  background-image: url("assets/ui/testMenyBack.png");
+  image-rendering: pixelated;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  
+
+  /* Fyll resten */
+  background-color: #0b0f14;
+}
+
+#screen-menu{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Baklag: cover + blur */
+#screen-menu::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: url("assets/ui/testMenyBack.png") center / cover no-repeat;
+  filter: blur(12px) brightness(0.8);
+  transform: scale(1.05);
+}
+
+/* Forlag: contain (hele bildet synlig) */
+#screen-menu::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: url("assets/ui/testMenyBack.png") center / contain no-repeat;
+}
+
+/* Sørg for at UI ligger over */
+#screen-menu .start-card{
+  position: relative;
+  z-index: 1;
+  background: transparent; /* viktig */
+}
+
+
+
+#screen-menu .start-card {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+  padding: 28px;
+  background: transparent;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.start-top{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom: 14px;
+}
+
+.start-brand{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+
+.start-logo{
+  width: 44px;
+  height: 44px;
+  image-rendering: pixelated;
+}
+
+.start-title{
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 2px;
+  font-size: 32px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+}
+
+.start-grid{
+  display:grid;
+  grid-template-columns: 220px 1fr 220px;
+  gap: 18px;
+  align-items: center;
+}
+
+.start-left, .start-right{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  text-align: center;
+}
+
+.start-btn{
+  padding: 14px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(12,16,24,0.65);
+  color: rgba(255,255,255,0.9);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 1px;
+  cursor:pointer;
+}
+
+.start-btn:hover{
+  background: rgba(18,24,36,0.75);
+}
+
+.start-btn.secondary{
+  opacity: 0.9;
+}
+
+.start-btn:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.start-center{
+  display:flex;
+  justify-content:center;
+}
+
+.start-preview{
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.start-sprite{
+  width: 350px;   /* juster: 220–360 */
+  height: 350px;
+  image-rendering: pixelated;
+  transform: translateZ(0);
+}
+
+.start-nochar{
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  opacity: 0.7;
+}
+
+.start-charbox{
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.22);
+  margin-bottom: 10px;
+}
+
+.start-charname{
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 22px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.start-charlvl{
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  opacity: 0.9;
+}
+
+.modal-card{
+  width: min(420px, 92vw);
+  padding: 18px;
+  border-radius: 12px;
+  background: rgba(10,14,20,0.98);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.65);
+}
+
+.modal-title{
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 1px;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.modal-actions{
+  display:flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.menu-btn {
+  width: 320px;
+  height: 180px;
+
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+
+  image-rendering: pixelated;
+
+  /* SKALERING */
+  transform: scale(1);
+  transform-origin: center;
+
+  display: inline-block;
+}
+
+
+.menu-btn span {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: white;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+.menu-btn-start {
+  background-image: url("assets/ui/menyStartBtn.png");
+}
+
+.menu-btn-settings {
+  background-image: url("assets/ui/menySettingsBtn.png");
+  width: 450px;
+  height: 180px;
+}
+
+.menu-btn-credits {
+  background-image: url("assets/ui/menyCreditsBtn.png");
+  width: 390px;
+  height: 180px;
+}
+
+.menu-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.1);
+}
+
+.menu-btn:active {
+  transform: translateY(1px) scale(0.98);
+  filter: brightness(0.9);
+}
+
+/* ---------------- BANK (TEMP UI) ---------------- */
+.bank {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  z-index: calc(var(--z-menu) + 25);
+  pointer-events: none;
+}
+
+.bank.hidden { display: none !important; }
+
+.bank-card.bank-skin {
+  position: relative;
+  width: 660px;              /* tilpass til bildet ditt */
+  height: 660px;             /* tilpass til bildet ditt */
+  background: var(--bank-bg) no-repeat;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+
+  pointer-events: auto; /* gjør at denne tar input */
+}
+
+/* Close-knapp som "hitbox" over X i bildet */
+.bank-card.bank-skin .bank-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  pointer-events: auto;
+
+  width: 36px;
+  height: 36px;
+
+  border: 1px solid rgba(0,0,0,0.25);
+  background: rgb(255, 58, 58);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  z-index: 50;
+}
+
+/* Grid-området: plasseres nøyaktig oppå "slot-området" i bank.png */
+.bank-grid.bank-grid--skinned {
+  position: absolute;
+
+  /* JUSTER disse fire så grid treffer riktig område i bakgrunnsbildet */
+  left: 90px;
+  right: 72px;
+  top: 120px;
+  bottom: 48px;
+
+  display: grid;
+  grid-template-columns: repeat(10, 40px);
+  grid-auto-rows: 40px;
+  gap: 4px;
+
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+
+  overflow: auto;
+}
+
+.bank-card {
+  width: min(680px, 92vw);
+  height: min(520px, 72vh);
+  background: rgba(17, 24, 39, 0.92);
+  border: 2px solid rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+  pointer-events: auto;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+}
+
+.bank-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-right: 44px;
+}
+
+.bank-title { font-weight: 900; font-size: 18px; }
+.bank-sub { opacity: 0.8; font-size: 12px; }
+
+.bank-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  pointer-events: auto;
+
+  width: 36px;
+  height: 36px;
+
+  border: 1px solid rgba(0,0,0,0.25);
+  background: rgb(255, 58, 58);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  z-index: 50;
+}
+
+.bank-grid {
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(10, 48px);
+  grid-auto-rows: 48px;
+  gap: 8px;
+  padding: 6px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+}
+
+.bank-slot {
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-style: solid;
+  border-color: rgb(255, 222, 180);
+  border-radius: 0;
+  position: relative;
+}
+
+/* Items */
+.bank-item {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bank-grid.bank-grid--skinned::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.35);
+}
+
+.bank-grid.bank-grid--skinned::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.35);
+  border: 3px solid rgba(0,0,0,0.35);
+  border-radius: 12px;
+}
+
+/* Firefox */
+.bank-grid.bank-grid--skinned {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(255,255,255,0.35) rgba(0,0,0,0.35);
+}
+
+.bank-item img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Qty kan være en liten pixel-plate (kan også gjøres helt transparent) */
+.bank-qty {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 1px 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0,0,0,0.65);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+
+
+#food-cd-img {
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

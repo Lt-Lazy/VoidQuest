@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="no">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>VoidQuest 32-bit</title>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="manifest" href="manifest.json">
+        <meta name="theme-color" content="#0b0f14">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    </head>
+    <body>
+
+        <!-- SCREEN: Start / Character Hub -->
+        <div id="screen-menu" class="screen">
+        <div class="start-card">
+
+            <div class="start-top">
+            <div class="start-brand">
+                <img class="start-logo" src="assets/ui/logo.png" alt="VoidQuest logo" />
+                <div class="start-title">VOIDQUEST</div>
+            </div>
+            </div>
+
+            <div class="start-grid">
+            <!-- LEFT -->
+            <div class="start-left">
+                <button id="btn-start" class="menu-btn menu-btn-start">
+                </button>
+
+                <button id="btn-settings" class="menu-btn menu-btn-settings">
+                </button>
+
+                <button id="btn-credits" class="menu-btn menu-btn-credits">
+                </button>
+            </div>
+
+            <!-- CENTER -->
+            <div class="start-center">
+                <div class="start-preview">
+                <img id="start-char-sprite" class="start-sprite hidden" alt="Character" />
+                <div id="start-no-char" class="start-nochar">No character</div>
+                </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="start-right">
+                <div id="start-char-box" class="start-charbox hidden">
+                <div class="start-charname" id="start-char-name">-</div>
+                <div class="start-charlvl">LVL: <span id="start-char-lvl">1</span></div>
+                </div>
+
+                <button id="btn-create-character" class="start-btn hidden">CREATE CHARACTER</button>
+            </div>
+            </div>
+
+        </div>
+        </div>
+
+        <!-- MODAL: Create character -->
+        <div id="screen-character" class="screen hidden" aria-hidden="true">
+        <div class="modal-card">
+            <div class="modal-title">Create character</div>
+
+            <label class="char-label" for="input-name">Name</label>
+            <input id="input-name" class="char-input" type="text" maxlength="16" placeholder="Your name." />
+
+            <div class="modal-actions">
+            <button id="btn-finish-character" class="screen-btn">Create</button>
+            <button id="btn-back-menu" class="screen-btn secondary">Cancel</button>
+            </div>
+        </div>
+        </div>
+
+
+
+        <div id="game-wrap">
+            <canvas id="game"></canvas>
+
+            <div id="minimap-wrap" aria-hidden="true">
+            <canvas id="minimap" aria-label="Minimap"></canvas>
+            </div>
+
+            <!-- Hearts / HP (top-left over canvas) -->
+            <div id="hearts" class="hearts" aria-label="Health"></div>
+
+            <div id="xp-pop" class="xp-pop hidden" aria-hidden="true">
+
+                <img id="xp-pop-img" src="assets/ui/xp.png" alt="XP gained" />
+
+                <img id="food-cd-img" class="hidden" src="assets/ui/foodCooldown.png" alt="Food cooldown" />
+                
+            </div>
+
+
+            <div style="visibility: hidden;" id="hud">
+                <div><b>Zone:</b> <span id="hud-zone">-</span></div>
+                <div><b>Pos:</b> <span id="hud-pos">-</span></div>
+                <div class="hint">WASD / piltaster • Tile-for-tile</div>
+            </div>
+
+            <div id="context-menu" class="context-menu hidden" aria-hidden="true"></div>
+
+            <!-- Pause / Start menu -->
+            <div id="pause-menu" class="pause hidden" aria-hidden="true">
+                <div class="pause-card">
+                    <div class="pause-title">Menu</div>
+                    <div id="pause-items" class="pause-items"></div>
+                    <button id="btn-logout" class="screen-btn secondary">Log out</button>
+                    <div class="pause-hint"></div>
+                </div>
+            </div>
+
+            <!-- Dialog box -->
+            <div id="dialog" class="dialog hidden" aria-hidden="true">
+                <div class="dialog-card">
+                    <div class="dialog-top">
+                        <div class="dialog-portrait" aria-hidden="true"></div>
+                        <div class="dialog-meta">
+                            <div id="dialog-name" class="dialog-name">-</div>
+                            <div id="dialog-text" class="dialog-text">...</div>
+                        </div>
+                    </div>
+
+                    <div id="dialog-options" class="dialog-options"></div>
+
+                    <div class="dialog-hint">Enter/A: Velg • Esc/B: Lukk • ↑↓: Naviger</div>
+                </div>
+            </div>
+
+            <div id="skills-window" class="skills hidden" aria-hidden="true">
+                <div class="skills-card">
+                    <div class="skills-top">
+                        <div class="skills-title">Skills</div>
+                        <button id="btn-skills-close" class="skills-close" type="button">✕</button>
+                    </div>
+
+                    <div id="skills-list" class="skills-list"></div>
+
+                    <div class="skills-hint"></div>
+                </div>
+            </div>
+
+            <!-- Inventory window overlay -->
+            <div id="inventory-window" class="inventory hidden" aria-hidden="true">
+                <div class="inventory-card">
+                    <button id="btn-inventory-close" class="inventory-close" type="button">✕</button>
+
+                    <!-- Her rendrer vi items + drop-soner -->
+                    <div id="inventory-grid" class="inventory-grid" aria-label="Inventory grid"></div>
+
+                    <div class="inventory-hint"></div>
+                </div>
+            </div>
+
+            <!-- Equipment window overlay -->
+            <div id="equip-window" class="equip hidden" aria-hidden="true">
+                <div class="equip-card">
+                    <button id="btn-equip-close" class="equip-close" type="button">✕</button>
+
+                    <!-- Slots overlay: matcher bildet ditt -->
+                    <div class="equip-slots" aria-label="Equipment slots">
+                        <div class="equip-slot" data-eq="tool" aria-label="Tool slot"></div>
+                        <div class="equip-slot" data-eq="weapon" aria-label="Weapon slot"></div>
+                        <div class="equip-slot" data-eq="armor" aria-label="Armor slot"></div>
+                        <div class="equip-slot" data-eq="ring" aria-label="Ring slot"></div>
+                    </div>
+
+                    <div class="equip-hint"></div>
+                </div>
+            </div>
+
+            <!-- Bank window overlay (NY) -->
+            <div id="bank-window" class="bank hidden" aria-hidden="true">
+                <div class="bank-card bank-skin">
+                    <button id="btn-bank-close" class="bank-close" type="button" aria-label="Close bank">X</button>
+                    <div class="bank-top bank-top--ghost">
+                    </div>
+
+                    <div id="bank-grid" class="bank-grid bank-grid--skinned" aria-label="Bank grid"></div>
+                </div>
+            </div>
+
+
+            <!-- Shop window overlay -->
+            <div id="shop-window" class="shop hidden" aria-hidden="true">
+                <div class="shop-card">
+                    <button id="btn-shop-close" class="shop-close" type="button">✕</button>
+
+                    <div class="shop-top">
+                        <div id="shop-title" class="shop-title">Shop</div>
+                        <div id="shop-coins" class="shop-coins">Coins: 0</div>
+                    </div>
+
+                    <div id="shop-list" class="shop-list"></div>
+
+                </div>
+            </div>
+
+        
+        </div>
+
+        <!-- Chat / log (read-only) -->
+        <div style="visibility:visible" id="chatlog" aria-label="Chat log">
+            <div id="chatlog-messages"></div>
+        </div>
+
+        <!-- Bottom bar / hotbar -->
+        <div id="hotbar">
+
+            <button id="btn-skills" class="hotbar-btn" title="Skills">
+                <span class="hotbar-emoji" aria-hidden="true">📜</span> 
+            </button>
+
+            <button id="btn-equip" class="hotbar-btn" title="Equipment">
+                <span class="hotbar-emoji" aria-hidden="true">🛡️</span>
+            </button>
+
+            <button id="btn-inventory" class="hotbar-btn" title="Inventory">
+                <span class="hotbar-emoji" aria-hidden="true">🎒</span>
+            </button>
+
+
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+        <script>
+        window.SUPABASE_URL = "https://hxbucupshedtzyqjwfpe.supabase.co";
+        window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4YnVjdXBzaGVkdHp5cWp3ZnBlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTg0NTEsImV4cCI6MjA4NTYzNDQ1MX0.lcA06IN3RHtN8jgUvFJmXOzORHMqeAgsn4FlL2aQ0r8";
+
+        (async () => {
+            const Supa = window.supabase || window.Supabase;
+            const sb = window.__vq_sb || (window.__vq_sb = Supa.createClient(
+            window.SUPABASE_URL,
+            window.SUPABASE_ANON_KEY
+            ));
+
+            const { data } = await sb.auth.getSession();
+            if (!data?.session) window.location.href = "index.html";
+        })();
+        </script>
+
+        <script src="map.js"></script>
+        <script src="script.js"></script>
+    </body>
+</html>

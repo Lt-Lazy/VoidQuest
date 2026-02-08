@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VoidQuest 32-bit</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SCREEN: Main Menu -->
+  <div id="screen-menu" class="screen">
+    <div class="screen-card">
+      <!-- Bilde over (logo-bilde) -->
+      <img id="menu-logo-img" src="assets/ui/logo.png" alt="VoidQuest logo" />
+
+      <!-- Logo-tekst -->
+      <h1 class="screen-title">VoidQuest 32-bit</h1>
+
+      <!-- Play -->
+      <button id="btn-play" class="screen-btn">Play</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: Choose Character -->
+  <div id="screen-character" class="screen hidden" aria-hidden="true">
+    <div class="screen-card">
+      <h2 class="screen-subtitle">Choose Character</h2>
+
+      <!-- Hvis save finnes: vis info -->
+      <div id="char-has-save" class="hidden" aria-hidden="true">
+        <div class="char-box">
+          <div><b>Name:</b> <span id="char-name">-</span></div>
+          <div class="char-small"><b>Last saved:</b> <span id="char-last-saved">-</span></div>
+        </div>
+
+        <button id="btn-start-game" class="screen-btn">Start Game</button>
+      </div>
+
+      <!-- Hvis ingen save: create character -->
+      <div id="char-create" class="hidden" aria-hidden="true">
+        <div class="char-box">
+          <div class="char-small">Create character</div>
+
+          <label class="char-label" for="input-name">Name</label>
+          <input id="input-name" class="char-input" type="text" maxlength="16" placeholder="Your name..." />
+
+          <button id="btn-finish-character" class="screen-btn">Finish Character</button>
+        </div>
+      </div>
+
+      <button id="btn-back-menu" class="screen-btn secondary">Back</button>
+    </div>
+  </div>
+
+
+  <div id="game-wrap">
+    <canvas id="game"></canvas>
+
+    <!-- Hearts / HP (top-left over canvas) -->
+    <div id="hearts" class="hearts" aria-label="Health"></div>
+
+    <div style="visibility: hidden;" id="hud">
+      <div><b>Zone:</b> <span id="hud-zone">-</span></div>
+      <div><b>Pos:</b> <span id="hud-pos">-</span></div>
+      <div class="hint">WASD / piltaster • Tile-for-tile</div>
+    </div>
+
+    <div id="context-menu" class="context-menu hidden" aria-hidden="true"></div>
+
+    <!-- Pause / Start menu -->
+    <div id="pause-menu" class="pause hidden" aria-hidden="true">
+      <div class="pause-card">
+        <div class="pause-title">Menu</div>
+        <div id="pause-items" class="pause-items"></div>
+        <div class="pause-hint">D-Pad/Stick: Navigate • A: Select • Start/B: Close</div>
+      </div>
+    </div>
+
+  
+  </div>
+
+  <!-- Chat / log (read-only) -->
+  <div style="visibility:visible" id="chatlog" aria-label="Chat log">
+    <div id="chatlog-messages"></div>
+  </div>
+
+  <!-- Bottom bar / hotbar -->
+  <div id="hotbar">
+
+    <button id="btn-save" class="hotbar-btn" title="Save">
+      <span class="hotbar-emoji" aria-hidden="true">💾</span>
+    </button>
+
+  </div>
+
+  <script src="map.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VoidQuest MMO</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game"></canvas>
+
+    <div style="visibility: hidden;" id="hud">
+      <div><b>Zone:</b> <span id="hud-zone">-</span></div>
+      <div><b>Pos:</b> <span id="hud-pos">-</span></div>
+      <div class="hint">WASD / piltaster • Tile-for-tile</div>
+    </div>
+
+    <!-- Inventory UI -->
+    <div id="inventory" class="panel hidden mini" aria-hidden="true">
+      <div class="inventory-inner">
+        <div id="inventory-grid" class="inventory-grid"></div>
+      </div>
+    </div>
+
+    <div id="context-menu" class="context-menu hidden" aria-hidden="true"></div>
+  
+  </div>
+
+  <!-- Chat / log (read-only) -->
+  <div style="visibility:visible" id="chatlog" aria-label="Chat log">
+    <div id="chatlog-messages"></div>
+  </div>
+
+  <!-- Bottom bar / hotbar -->
+  <div id="hotbar">
+    <button id="btn-inventory" class="hotbar-btn" aria-pressed="false" title="Inventory">
+      <img id="btn-inventory-icon" src="assets/ui/inventoryWindow.png" alt="Inventory" />
+    </button>
+  </div>
+
+  <script src="map.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

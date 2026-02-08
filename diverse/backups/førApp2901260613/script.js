@@ -1,0 +1,1375 @@
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// Viktig: unngå subpixel "blending" som lager streker mellom tiles
+ctx.imageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+
+// --- Menu / character screen refs ---
+const screenMenu = document.getElementById("screen-menu");
+const screenCharacter = document.getElementById("screen-character");
+
+const btnPlay = document.getElementById("btn-play");
+const btnBackMenu = document.getElementById("btn-back-menu");
+
+const hasSaveBox = document.getElementById("char-has-save");
+const createBox = document.getElementById("char-create");
+
+const charNameEl = document.getElementById("char-name");
+const charLastSavedEl = document.getElementById("char-last-saved");
+
+const inputName = document.getElementById("input-name");
+const btnFinishCharacter = document.getElementById("btn-finish-character");
+const btnStartGame = document.getElementById("btn-start-game");
+
+
+const hudZone = document.getElementById("hud-zone");
+const hudPos = document.getElementById("hud-pos");
+// --- Context menu refs ---
+const gameWrap = document.getElementById("game-wrap");
+const contextMenu = document.getElementById("context-menu");
+// --- Chat log refs ---
+const chatLogEl = document.getElementById("chatlog-messages");
+//--- Save Knapp ----
+const btnSave = document.getElementById("btn-save");
+
+// --- Pause menu refs ---
+const pauseMenuEl = document.getElementById("pause-menu");
+const pauseItemsEl = document.getElementById("pause-items");
+
+// --- Player hearts ---
+const heartsEl = document.getElementById("hearts");
+
+const VIEW_TILES_X = 20;
+const VIEW_TILES_Y = 12;
+
+let animTime = 0;
+
+canvas.width = VIEW_TILES_X * TILE_SIZE;
+canvas.height = VIEW_TILES_Y * TILE_SIZE;
+
+// -------------------- CAMERA (follow player) --------------------
+let cameraPx = 0;
+let cameraPy = 0;
+
+function clampCam(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function updateCamera() {
+  // Verdens størrelse i piksler
+  const worldW = level.width * TILE_SIZE;
+  const worldH = level.height * TILE_SIZE;
+
+  // Viewport størrelse i piksler (canvas)
+  const viewW = canvas.width;
+  const viewH = canvas.height;
+
+  // Center kamera på spilleren (bruk smooth pixel-pos)
+  const targetX = player.px + TILE_SIZE / 2 - viewW / 2;
+  const targetY = player.py + TILE_SIZE / 2 - viewH / 2;
+
+  // Clamp så kamera ikke går utenfor kartet
+  cameraPx = clampCam(targetX, 0, Math.max(0, worldW - viewW));
+  cameraPy = clampCam(targetY, 0, Math.max(0, worldH - viewH));
+}
+
+function getVisibleTileBounds(camX, camY) {
+  const startX = Math.floor(camX / TILE_SIZE);
+  const startY = Math.floor(camY / TILE_SIZE);
+
+  const endX = Math.min(level.width - 1, startX + VIEW_TILES_X + 1);
+  const endY = Math.min(level.height - 1, startY + VIEW_TILES_Y + 1);
+
+  return { startX, startY, endX, endY };
+}
+
+
+// Smooth movement settings
+const BASE_MOVE_DURATION_MS = 200;   // hvor lang tid ett tile-steg tar (juster)
+const STEP_REPEAT_DELAY_MS = 0; // 0 = start neste steg umiddelbart
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+const tileImages = {};
+
+const playerImages = {};
+const PLAYER_SPRITES = {
+  down: "assets/player/pixelmannDown.png",
+  up: "assets/player/pixelmannUp.png",
+  left: "assets/player/pixelmannLeft.png",
+  right: "assets/player/pixelmannRight.png",
+};
+
+async function loadAllAssets() {
+  for (const [key, def] of Object.entries(TILE_DEFS)) {
+    if (def.animated && Array.isArray(def.frames)) {
+      // Flere PNG-filer
+      tileImages[key] = [];
+      for (const src of def.frames) {
+        tileImages[key].push(await loadImage(src));
+      }
+    } else {
+      // Vanlig tile (enkeltbilde) ELLER spritesheet (img)
+      tileImages[key] = await loadImage(def.img);
+    }
+  }
+
+  for (const [dir, src] of Object.entries(PLAYER_SPRITES)) {
+    playerImages[dir] = await loadImage(src);
+  }
+}
+
+let currentLevelId = "spenningsbyen";
+let level = LEVELS[currentLevelId];
+
+const player = {
+  // tile coords (logisk)
+  x: level.spawn.x,
+  y: level.spawn.y,
+
+  // pixel coords (smooth rendering)
+  px: level.spawn.x * TILE_SIZE,
+  py: level.spawn.y * TILE_SIZE,
+
+  maxHp: 5,
+  hp: 3,
+
+  facing: "down",
+
+  // movement state
+  moving: false,
+  fromPx: 0,
+  fromPy: 0,
+  toPx: 0,
+  toPy: 0,
+  moveElapsed: 0,
+
+  moveDuration: BASE_MOVE_DURATION_MS,
+};
+
+//HELPERS
+
+function getPortalAt(x, y) {
+  const portals = level.portals || [];
+  return portals.find(p => p.x === x && p.y === y) || null;
+}
+
+
+// -------------------- PROFILE + SAVE KEYS --------------------
+const PROFILE_KEY = "voidquest_profile_v1";
+
+function getSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function hasSave() {
+  const s = getSave();
+  const name = s?.profile?.name;
+
+  // Save er kun "gyldig" hvis den har pos + level + et ordentlig navn
+  return !!(
+    s &&
+    typeof s === "object" &&
+    s.player &&
+    s.levelId &&
+    typeof name === "string" &&
+    name.trim().length >= 2
+  );
+}
+
+function setProfileName(name) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify({ name }));
+}
+
+function getProfileName() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    return obj?.name || null;
+  } catch {
+    return null;
+  }
+}
+
+function getCharacterNameFromSaveOrProfile() {
+  const s = getSave();
+  const fromSave = s?.profile?.name || null;
+  return fromSave || getProfileName();
+}
+
+function showMenu() {
+  screenMenu.classList.remove("hidden");
+  screenCharacter.classList.add("hidden");
+  screenCharacter.setAttribute("aria-hidden", "true");
+
+  // skjul game UI mens du er i meny
+  document.getElementById("hotbar").classList.add("hidden");
+  document.getElementById("chatlog").classList.add("hidden");
+}
+
+function showCharacterScreen() {
+  screenMenu.classList.add("hidden");
+  screenCharacter.classList.remove("hidden");
+  screenCharacter.setAttribute("aria-hidden", "false");
+
+  const s = getSave();
+
+  if (hasSave()) {
+    // vis eksisterende character
+    hasSaveBox.classList.remove("hidden");
+    hasSaveBox.setAttribute("aria-hidden", "false");
+
+    createBox.classList.add("hidden");
+    createBox.setAttribute("aria-hidden", "true");
+
+    charNameEl.textContent = getCharacterNameFromSaveOrProfile() || "Unknown";
+    charLastSavedEl.textContent = s?.ts ? new Date(s.ts).toLocaleString() : "-";
+  } else {
+    // create character
+    hasSaveBox.classList.add("hidden");
+    hasSaveBox.setAttribute("aria-hidden", "true");
+
+    createBox.classList.remove("hidden");
+    createBox.setAttribute("aria-hidden", "false");
+
+    inputName.value = "";
+    held.up = held.down = held.left = held.right = false;
+    lastIntent = null;
+    inputName.focus();
+  }
+}
+
+function hideAllScreensAndShowGameUI() {
+  screenMenu.classList.add("hidden");
+  screenCharacter.classList.add("hidden");
+  screenCharacter.setAttribute("aria-hidden", "true");
+
+  document.getElementById("hotbar").classList.remove("hidden");
+  document.getElementById("chatlog").classList.remove("hidden");
+}
+
+
+
+// -------------------- SAVE / LOAD (LocalStorage) --------------------
+const SAVE_KEY = "voidquest_save_v1";
+
+function buildSaveData() {
+  return {
+    v: 1,
+    ts: Date.now(),
+
+    profile: {
+      name: getProfileName(),
+    },
+
+    // hvor du er
+    levelId: currentLevelId,
+    player: {
+      x: player.x,
+      y: player.y,
+      hp: player.hp,
+      maxHp: player.maxHp,
+      facing: player.facing,
+    },
+
+  };
+}
+
+function applySaveData(data) {
+  if (!data || typeof data !== "object") return false;
+  if (!data.levelId || !LEVELS[data.levelId]) return false;
+
+  if (Number.isFinite(data.hp)) player.hp = clamp(data.hp, 0, player.maxHp);
+  if (Number.isFinite(data.maxHp)) player.maxHp = clamp(data.maxHp, 1, 99);
+  renderHearts();
+
+  // 1) flytt til riktig level + pos
+  const px = Number(data.player?.x);
+  const py = Number(data.player?.y);
+
+  if (!Number.isFinite(px) || !Number.isFinite(py)) return false;
+
+  setLevel(data.levelId, null, { x: px, y: py });
+
+  // 2) facing
+  if (typeof data.player?.facing === "string") {
+    player.facing = data.player.facing;
+  }
+
+  return true;
+}
+
+function canWriteSave() {
+  const name = getProfileName();
+  return typeof name === "string" && name.trim().length >= 2 && gameStarted;
+}
+
+function saveGame() {
+  // IKKE lag save før character er ferdig (navn + game startet)
+  if (!canWriteSave()) return false;
+
+  try {
+    const data = buildSaveData();
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    logMessage("Game saved.", "system");
+    return true;
+  } catch (err) {
+    console.error("Save failed:", err);
+    logMessage("Save failed (see console).", "error");
+    return false;
+  }
+}
+
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+
+    const data = JSON.parse(raw);
+    const ok = applySaveData(data);
+
+    if (!ok) {
+      logMessage("Save file invalid. Starting fresh.", "error");
+      return false;
+    }
+
+    logMessage("Save loaded.", "system");
+    return true;
+  } catch (err) {
+    console.error("Load failed:", err);
+    logMessage("Load failed (see console).", "error");
+    return false;
+  }
+}
+
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
+
+function setLevel(newLevelId, entryFromDirection = null, forcedSpawn = null) {
+  currentLevelId = newLevelId;
+  level = LEVELS[currentLevelId];
+
+  // Velg tile-pos
+  if (forcedSpawn) {
+    player.x = forcedSpawn.x;
+    player.y = forcedSpawn.y;
+  } else if (entryFromDirection === "west") {
+    player.x = 1;
+    player.y = clamp(player.y, 1, level.height - 2);
+  } else if (entryFromDirection === "east") {
+    player.x = level.width - 2;
+    player.y = clamp(player.y, 1, level.height - 2);
+  } else if (entryFromDirection === "north") {
+    player.y = 1;
+    player.x = clamp(player.x, 1, level.width - 2);
+  } else if (entryFromDirection === "south") {
+    player.y = level.height - 2;
+    player.x = clamp(player.x, 1, level.width - 2);
+  } else {
+    player.x = level.spawn.x;
+    player.y = level.spawn.y;
+  }
+
+  // Snap pixel-pos til tile-pos
+  player.px = player.x * TILE_SIZE;
+  player.py = player.y * TILE_SIZE;
+
+  // stopp eventuell bevegelse
+  player.moving = false;
+  player.moveElapsed = 0;
+
+  updateHud();
+}
+
+
+function tileAtLayer(grid, x, y) {
+  if (!grid) return null;
+
+  // Bruk level.width/height som “logisk verden”
+  if (y < 0 || y >= level.height || x < 0 || x >= level.width) return null;
+
+  // SAFE: grid kan mangle rader/kolonner når du har endret størrelse
+  const row = grid[y];
+  if (!row) return null;
+
+  const v = row[x];
+  return (v === undefined ? null : v);
+}
+
+function isWalkable(x, y) {
+  const mid = tileAtLayer(level.grid_mid, x, y);
+  if (mid && mid !== EMPTY) {
+    const def = TILE_DEFS[mid];
+    return !!def?.walkable;
+  }
+
+  const base = tileAtLayer(level.grid_base, x, y);
+  if (!base || base === EMPTY) return false;
+  const def = TILE_DEFS[base];
+  return !!def?.walkable;
+}
+
+function getTopmostTileKeyAt(x, y) {
+  // Prioritet: mid først (for trees), ellers base.
+  const mid = tileAtLayer(level.grid_mid, x, y);
+  if (mid && mid !== EMPTY) return { layer: "mid", key: mid };
+
+  const base = tileAtLayer(level.grid_base, x, y);
+  if (base && base !== EMPTY) return { layer: "base", key: base };
+
+  return null;
+}
+
+function getFacedTileCoords() {
+  let dx = 0, dy = 0;
+
+  if (player.facing === "up") dy = -1;
+  else if (player.facing === "down") dy = 1;
+  else if (player.facing === "left") dx = -1;
+  else if (player.facing === "right") dx = 1;
+
+  return { x: player.x + dx, y: player.y + dy };
+}
+
+function describeFacedBlockedTile() {
+  // ikke i menyer/pause
+  if (!gameStarted) return;
+  if (isUiBlocked()) return;
+
+  const { x, y } = getFacedTileCoords();
+
+  const top = getTopmostTileKeyAt(x, y);
+  if (!top) {
+    logMessage("Nothing interesting there.", "system");
+    return;
+  }
+
+  const def = TILE_DEFS[top.key];
+  const walkable = !!def?.walkable;
+
+  // Kun “blocked” tiles som du ikke kan gå gjennom
+  if (walkable) return;
+
+  const text = def?.description || "Something is there.";
+  logMessage(text, "system");
+}
+
+
+function isAdjacentToPlayer(tx, ty) {
+  const dx = Math.abs(player.x - tx);
+  const dy = Math.abs(player.y - ty);
+  // “ved siden av” i 4-retning
+  return (dx + dy) === 1;
+}
+
+function closeContextMenu() {
+  contextMenu.classList.add("hidden");
+  contextMenu.setAttribute("aria-hidden", "true");
+  contextMenu.innerHTML = "";
+}
+
+function openContextMenu(px, py, title, entries) {
+  // entries: [{label, onClick}]
+  contextMenu.innerHTML = "";
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "cm-title";
+  titleEl.textContent = title;
+  contextMenu.appendChild(titleEl);
+
+  for (const entry of entries) {
+    const btn = document.createElement("button");
+    btn.className = "cm-item";
+    btn.type = "button";
+    btn.textContent = entry.label;
+    btn.addEventListener("click", () => {
+      closeContextMenu();
+      entry.onClick();
+    });
+    contextMenu.appendChild(btn);
+  }
+
+  // posisjon inne i game-wrap
+  const wrapRect = gameWrap.getBoundingClientRect();
+  const menuRectWidth = 180; // approx for clamp
+  const menuRectHeight = 120;
+
+  let left = px - wrapRect.left;
+  let top = py - wrapRect.top;
+
+  // clamp så menyen ikke går utenfor game-wrap
+  left = Math.max(8, Math.min(left, wrapRect.width - menuRectWidth - 8));
+  top = Math.max(8, Math.min(top, wrapRect.height - menuRectHeight - 8));
+
+  contextMenu.style.left = `${left}px`;
+  contextMenu.style.top = `${top}px`;
+
+  contextMenu.classList.remove("hidden");
+  contextMenu.setAttribute("aria-hidden", "false");
+}
+
+
+// ----------- Rendering -----------
+function drawLayer(grid, imageDict, camX, camY) {
+  const { startX, startY, endX, endY } = getVisibleTileBounds(camX, camY);
+
+  for (let y = startY; y <= endY; y++) {
+    for (let x = startX; x <= endX; x++) {
+      const key = tileAtLayer(grid, x, y);
+      if (!key || key === EMPTY) continue;
+
+      const def = TILE_DEFS[key];
+      const imgOrFrames = imageDict[key];
+
+      // 1) Separate PNG frames (Image[])
+      if (def?.animated && Array.isArray(def.frames) && Array.isArray(imgOrFrames)) {
+        const frameCount = imgOrFrames.length;
+        const dur = def.frameDuration ?? 200;
+        const frameIndex = Math.floor(animTime / dur) % frameCount;
+
+        const frameImg = imgOrFrames[frameIndex];
+        ctx.drawImage(frameImg, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        continue;
+      }
+
+      // 2) Spritesheet animasjon (ett bilde med frames på x-aksen)
+      if (def?.animated && typeof def.frames === "number" && imgOrFrames instanceof Image) {
+        const frameCount = def.frames;
+        const dur = def.frameDuration ?? 200;
+        const frameIndex = Math.floor(animTime / dur) % frameCount;
+
+        ctx.drawImage(
+          imgOrFrames,
+          frameIndex * TILE_SIZE, 0,
+          TILE_SIZE, TILE_SIZE,
+          x * TILE_SIZE, y * TILE_SIZE,
+          TILE_SIZE, TILE_SIZE
+        );
+        continue;
+      }
+
+      // 3) Vanlig tile
+      if (imgOrFrames instanceof Image) {
+        ctx.drawImage(imgOrFrames, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      } else {
+        ctx.fillStyle = "#ff00ff";
+        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      }
+    }
+  }
+}
+
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // oppdater kamera før vi tegner
+  updateCamera();
+
+  // Snap kamera til hele piksler for å unngå seams
+  const camX = Math.round(cameraPx);
+  const camY = Math.round(cameraPy);
+
+  ctx.save();
+  ctx.translate(-camX, -camY);
+
+  // base -> mid
+  drawLayer(level.grid_base, tileImages, camX, camY);
+  drawLayer(level.grid_mid, tileImages, camX, camY);
+
+  // player
+  const pImg = playerImages[player.facing];
+  if (pImg) {
+    ctx.drawImage(pImg, player.px, player.py, TILE_SIZE, TILE_SIZE);
+  } else {
+    ctx.fillStyle = "#4cc9f0";
+    ctx.fillRect(player.px, player.py, TILE_SIZE, TILE_SIZE);
+  }
+
+  // top layer (synlig område)
+  const { startX, startY, endX, endY } = getVisibleTileBounds(camX, camY);
+  for (let y = startY; y <= endY; y++) {
+    for (let x = startX; x <= endX; x++) {
+      const key = tileAtLayer(level.grid_top, x, y);
+      if (!key || key === EMPTY) continue;
+
+      const img = tileImages[key];
+      if (img) {
+        ctx.drawImage(img, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      } else {
+        ctx.fillStyle = "#ff00ff";
+        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      }
+    }
+  }
+
+  ctx.restore();
+}
+
+
+canvas.addEventListener("contextmenu", (e) => {
+  if (isUiBlocked()) return;
+  e.preventDefault();
+
+  // Finn tile-koordinat fra musepos
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  const mouseX = (e.clientX - rect.left) * scaleX;
+  const mouseY = (e.clientY - rect.top) * scaleY;
+
+  const worldX = mouseX + cameraPx;
+  const worldY = mouseY + cameraPy;
+
+  const tx = Math.floor(worldX / TILE_SIZE);
+  const ty = Math.floor(worldY / TILE_SIZE);
+
+  const target = getTopmostTileKeyAt(tx, ty);
+  if (!target) {
+    closeContextMenu();
+    return;
+  }
+
+  const tileDef = TILE_DEFS[target.key];
+  const desc = tileDef?.description || "No description.";
+
+  const portal = getPortalAt(tx, ty);
+
+  const entries = [];
+
+  // 1) Description alltid
+  entries.push({
+    label: "Description",
+    onClick: () => {
+      // Foreløpig: bare alert. (Vi kan lage et fint UI-panel senere)
+      logMessage(desc, "system");
+    }
+  });
+
+  if (portal) {
+    entries.push({
+      label: portal.label || "Enter",
+      onClick: () => {
+        // Må stå ved døra
+        if (!isAdjacentToPlayer(tx, ty)) {
+          logMessage("You need to stand next to the door.", "error");
+          return;
+        }
+
+        setLevel(portal.toLevel, null, portal.toSpawn);
+        logMessage(`You enter ${LEVELS[portal.toLevel]?.name || portal.toLevel}.`, "system");
+      }
+    });
+  }
+
+  openContextMenu(e.clientX, e.clientY, target.key, entries);
+});
+
+const CHAT_MAX_LINES = 8;
+
+function formatTimeHHMM() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function logMessage(text, type = "system") {
+  if (!chatLogEl) return;
+
+  const line = document.createElement("div");
+  line.className = `chatline ${type}`;
+
+  const time = document.createElement("span");
+  time.className = "time";
+  time.textContent = `[${formatTimeHHMM()}]`;
+
+  const msg = document.createElement("span");
+  msg.textContent = text;
+
+  line.appendChild(time);
+  line.appendChild(msg);
+
+  chatLogEl.appendChild(line);
+
+  // hold max lines
+  while (chatLogEl.children.length > CHAT_MAX_LINES) {
+    chatLogEl.removeChild(chatLogEl.firstChild);
+  }
+}
+
+
+
+// ----------- Input (hold-to-walk) -----------
+const held = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+};
+
+// Prioritet: sist trykte retning føles best.
+// Vi sporer “lastIntent”.
+let lastIntent = null;
+
+function setFacingFromDelta(dx, dy) {
+  if (dx === 1) player.facing = "right";
+  else if (dx === -1) player.facing = "left";
+  else if (dy === 1) player.facing = "down";
+  else if (dy === -1) player.facing = "up";
+}
+
+function intentFromHeld() {
+  // hvis lastIntent fortsatt holdes, bruk den
+  if (lastIntent && held[lastIntent]) return lastIntent;
+
+  // ellers: velg en som holdes (enkelt)
+  if (held.up) return "up";
+  if (held.down) return "down";
+  if (held.left) return "left";
+  if (held.right) return "right";
+  return null;
+}
+
+function dirToDelta(dir) {
+  if (dir === "up") return { dx: 0, dy: -1 };
+  if (dir === "down") return { dx: 0, dy: 1 };
+  if (dir === "left") return { dx: -1, dy: 0 };
+  if (dir === "right") return { dx: 1, dy: 0 };
+  return { dx: 0, dy: 0 };
+}
+
+// -------------------- PAUSE / START MENU --------------------
+let pauseOpen = false;
+let pauseIndex = 0;
+
+const PAUSE_ITEMS = [
+  { id: "resume", label: "Resume" },
+  { id: "save", label: "Save game" },
+];
+
+function isUiBlocked() {
+  const dialogEl = document.getElementById("dialog"); // kan være null
+  const dialogOpen = dialogEl ? !dialogEl.classList.contains("hidden") : false;
+  return pauseOpen || dialogOpen;
+}
+
+function renderPauseMenu() {
+  if (!pauseItemsEl) return;
+  pauseItemsEl.innerHTML = "";
+
+  for (let i = 0; i < PAUSE_ITEMS.length; i++) {
+    const row = document.createElement("div");
+    row.className = "pause-item" + (i === pauseIndex ? " selected" : "");
+    row.textContent = PAUSE_ITEMS[i].label;
+    pauseItemsEl.appendChild(row);
+  }
+}
+
+function openPauseMenu() {
+  pauseOpen = true;
+  pauseIndex = 0;
+  renderPauseMenu();
+
+  pauseMenuEl.classList.remove("hidden");
+  pauseMenuEl.setAttribute("aria-hidden", "false");
+
+  // Slipp bevegelse umiddelbart
+  held.up = held.down = held.left = held.right = false;
+  lastIntent = null;
+
+  // Lukk context menu hvis åpen (actions skal ikke kunne brukes)
+  closeContextMenu?.();
+}
+
+function closePauseMenu() {
+  pauseOpen = false;
+  pauseMenuEl.classList.add("hidden");
+  pauseMenuEl.setAttribute("aria-hidden", "true");
+
+  // Slipp input for sikkerhet
+  held.up = held.down = held.left = held.right = false;
+  lastIntent = null;
+}
+
+function togglePauseMenu() {
+  if (!gameStarted) return; // ikke i main menu / character screen
+  pauseOpen ? closePauseMenu() : openPauseMenu();
+}
+
+function pauseMoveSelection(delta) {
+  pauseIndex = (pauseIndex + delta + PAUSE_ITEMS.length) % PAUSE_ITEMS.length;
+  renderPauseMenu();
+}
+
+function pauseSelect() {
+  const item = PAUSE_ITEMS[pauseIndex];
+  if (!item) return;
+
+  if (item.id === "resume") {
+    closePauseMenu();
+    return;
+  }
+
+  if (item.id === "save") {
+    const ok = saveGame?.();
+    if (ok) logMessage("Game saved.", "system");
+    else logMessage("Could not save right now.", "error");
+    // bli i menyen etter save
+  }
+}
+
+
+function startMove(dx, dy) {
+  if (isUiBlocked()) return;
+  if (player.moving) return;
+  closeContextMenu();
+
+  // oppdater facing med en gang (selv om blokkert)
+  setFacingFromDelta(dx, dy);
+
+  const nx = player.x + dx;
+  const ny = player.y + dy;
+
+  // edge transitions (før vi sjekker walkable)
+  if (nx < 0) {
+    const target = level.edges.west;
+    if (target) setLevel(target, "east");
+    return;
+  }
+  if (nx >= level.width) {
+    const target = level.edges.east;
+    if (target) setLevel(target, "west");
+    return;
+  }
+  if (ny < 0) {
+    const target = level.edges.north;
+    if (target) setLevel(target, "south");
+    return;
+  }
+  if (ny >= level.height) {
+    const target = level.edges.south;
+    if (target) setLevel(target, "north");
+    return;
+  }
+
+  // kollisjon
+  if (!isWalkable(nx, ny)) return;
+
+  // start smooth tween
+  player.moving = true;
+  player.moveElapsed = 0;
+
+  player.fromPx = player.px;
+  player.fromPy = player.py;
+
+  player.toPx = nx * TILE_SIZE;
+  player.toPy = ny * TILE_SIZE;
+
+  // oppdater tile-pos med en gang eller ved slutt?
+  // For kollisjon/logic: vi oppdaterer ved SLUTT (tryggere)
+  player._targetX = nx;
+  player._targetY = ny;
+}
+
+function updateHud() {
+  hudZone.textContent = `${level.name} (${level.id})`;
+  hudPos.textContent = `${player.x}, ${player.y}`;
+}
+
+const HEART_IMG = "assets/ui/heart.png"; // <--- hjerte bildet
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function renderHearts() {
+  if (!heartsEl) return;
+
+  heartsEl.innerHTML = "";
+
+  for (let i = 0; i < player.maxHp; i++) {
+    const img = document.createElement("img");
+    img.src = HEART_IMG;
+    img.alt = i < player.hp ? "Heart" : "Empty heart";
+    if (i >= player.hp) img.classList.add("empty");
+    heartsEl.appendChild(img);
+  }
+}
+
+function damagePlayer(amount = 1) {
+  player.hp = clamp(player.hp - amount, 0, player.maxHp);
+  renderHearts();
+
+  if (player.hp <= 0) {
+    logMessage("You died!", "error");
+    // foreløpig: respawn med full HP (kan endres senere)
+    player.hp = player.maxHp;
+    setLevel(currentLevelId, null);
+    renderHearts();
+  }
+}
+
+function healPlayer(amount = 1) {
+  player.hp = clamp(player.hp + amount, 0, player.maxHp);
+  renderHearts();
+}
+
+
+// -------------------- GAMEPAD (Controller) --------------------
+let gamepadActive = false;
+let lastPadDir = null;
+
+const GAMEPAD_DEADZONE = 0.35;
+
+// Returner {x,y} fra left stick (axes 0/1)
+function getLeftStick(gp) {
+  const ax = gp.axes?.[0] ?? 0;
+  const ay = gp.axes?.[1] ?? 0;
+  return { x: ax, y: ay };
+}
+
+function dirToDelta(dir) {
+  // hvis du allerede har denne funksjonen, IKKE legg inn på nytt
+  // bare bruk din eksisterende
+  if (dir === "up") return { dx: 0, dy: -1 };
+  if (dir === "down") return { dx: 0, dy: 1 };
+  if (dir === "left") return { dx: -1, dy: 0 };
+  if (dir === "right") return { dx: 1, dy: 0 };
+  return { dx: 0, dy: 0 };
+}
+
+// Velg én retning fra stick (prioriter aksen med størst utslag)
+function stickToDir(stick) {
+  const { x, y } = stick;
+  const ax = Math.abs(x);
+  const ay = Math.abs(y);
+
+  if (ax < GAMEPAD_DEADZONE && ay < GAMEPAD_DEADZONE) return null;
+
+  if (ax > ay) return x > 0 ? "right" : "left";
+  return y > 0 ? "down" : "up";
+}
+
+// D-pad mapping (standard mapping på de fleste kontrollere):
+// 12=Up, 13=Down, 14=Left, 15=Right
+function dpadToDir(gp) {
+  const b = gp.buttons || [];
+  const up = b[12]?.pressed;
+  const down = b[13]?.pressed;
+  const left = b[14]?.pressed;
+  const right = b[15]?.pressed;
+
+  // hvis flere holdes: prioriter siste/eller en enkel prioritet
+  if (up) return "up";
+  if (down) return "down";
+  if (left) return "left";
+  if (right) return "right";
+  return null;
+}
+
+function clearHeldDirections() {
+  held.up = held.down = held.left = held.right = false;
+}
+
+
+// Key handling
+function keyToDir(key) {
+  const k = key.toLowerCase();
+  if (k === "arrowup" || k === "w") return "up";
+  if (k === "arrowdown" || k === "s") return "down";
+  if (k === "arrowleft" || k === "a") return "left";
+  if (k === "arrowright" || k === "d") return "right";
+  return null;
+}
+
+function isTypingInInput() {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+}
+
+// -------------------- GAMEPAD MENU INPUT --------------------
+let lastStartPressed = false;
+let lastA = false;
+let lastB = false;
+let lastX = false;
+let lastUp = false;
+let lastDown = false;
+
+// knapp-index (standard mapping):
+// 9 = Start, 0 = A, 1 = B, 12/13 = dpad up/down
+
+window.addEventListener("keydown", (e) => {
+  // Hvis du skriver i input (f.eks. navn), IKKE stjel WASD
+  if (isTypingInInput()) return;
+
+  if (isUiBlocked()) return;
+
+  // Hvis spillet ikke har startet ennå (meny/character screen), IKKE beveg
+  if (!gameStarted) return;
+
+  const dir = keyToDir(e.key);
+  if (!dir) return;
+
+  e.preventDefault();
+
+  held[dir] = true;
+  lastIntent = dir;
+
+  if (!player.moving) {
+    const { dx, dy } = dirToDelta(dir);
+    startMove(dx, dy);
+  }
+});
+
+
+window.addEventListener("keyup", (e) => {
+  if (isTypingInInput()) return;
+  if (!gameStarted) return;
+
+  if (isUiBlocked()) return;
+
+  const dir = keyToDir(e.key);
+  if (!dir) return;
+
+  e.preventDefault();
+  held[dir] = false;
+});
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    togglePauseMenu();
+  }
+});
+
+btnSave.addEventListener("click", () => {
+  saveGame();
+});
+
+window.addEventListener("beforeunload", () => {
+  // Bare autosave hvis det faktisk er et ferdig spill (navn+startet)
+  if (canWriteSave()) saveGame();
+});
+
+// Klikk hvor som helst: lukk meny
+window.addEventListener("mousedown", (e) => {
+  // hvis du klikker inne i menyen, ikke lukk her (knappene håndterer seg selv)
+  if (!contextMenu.classList.contains("hidden") && !contextMenu.contains(e.target)) {
+    closeContextMenu();
+  }
+});
+// Hvis du begynner å gå: lukk meny
+// (legg dette helt i starten av startMove(dx,dy) hvis du har den funksjonen)
+
+
+// ----------- Game loop (update + draw) -----------
+let lastTime = performance.now();
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function update(dtMs) {
+  animTime += dtMs;
+  if (player.moving) {
+    player.moveElapsed += dtMs;
+    const t = Math.min(1, player.moveElapsed / player.moveDuration);
+    // smooth interpolation
+    player.px = lerp(player.fromPx, player.toPx, t);
+    player.py = lerp(player.fromPy, player.toPy, t);
+
+    if (t >= 1) {
+      // bevegelse ferdig: snap og sett tile-pos
+      player.px = player.toPx;
+      player.py = player.toPy;
+
+      player.x = player._targetX;
+      player.y = player._targetY;
+
+      player.moving = false;
+      updateHud();
+
+      // Hvis en retning fortsatt holdes: gå videre uten hakking
+      const nextDir = intentFromHeld();
+      if (nextDir) {
+        const { dx, dy } = dirToDelta(nextDir);
+        if (STEP_REPEAT_DELAY_MS > 0) {
+          setTimeout(() => startMove(dx, dy), STEP_REPEAT_DELAY_MS);
+        } else {
+          startMove(dx, dy);
+        }
+      }
+    }
+  } else {
+    // Hvis ikke moving, men en retning holdes: start walking
+    const nextDir = intentFromHeld();
+    if (nextDir) {
+      const { dx, dy } = dirToDelta(nextDir);
+      startMove(dx, dy);
+    }
+  }
+}
+
+function pollGamepadMovement() {
+  // Ikke beveg i menyer / før spillet har startet
+  if (!gameStarted) return;
+
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = pads && pads[0];
+  if (!gp) {
+    if (gamepadActive) {
+      gamepadActive = false;
+      lastPadDir = null;
+      // slipp held hvis gamepad forsvinner
+      clearHeldDirections();
+    }
+    return;
+  }
+
+  gamepadActive = true;
+
+  // 1) prøv D-pad først (føles mest NES)
+  let dir = dpadToDir(gp);
+
+  // 2) hvis ikke D-pad, bruk stick
+  if (!dir) {
+    dir = stickToDir(getLeftStick(gp));
+  }
+
+  // Oppdater held-states fra gamepad
+  clearHeldDirections();
+  if (dir) {
+    held[dir] = true;
+    lastIntent = dir;
+  }
+
+  // Start bevegelse når vi ikke allerede går
+  if (dir && !player.moving) {
+    const { dx, dy } = dirToDelta(dir);
+    startMove(dx, dy);
+  }
+
+  lastPadDir = dir;
+}
+
+function pollGamepadMenu() {
+  if (!navigator.getGamepads) return;
+  const gp = navigator.getGamepads()[0];
+  if (!gp) return;
+
+  // --- Buttons ---
+  const startPressed = !!gp.buttons?.[9]?.pressed; // Start
+  const aPressed = !!gp.buttons?.[0]?.pressed;     // A
+  const bPressed = !!gp.buttons?.[1]?.pressed;     // B
+  const xPressed = !!gp.buttons?.[2]?.pressed;
+
+  // Start: toggle pause (edge)
+  if (startPressed && !lastStartPressed) {
+    togglePauseMenu();
+  }
+  lastStartPressed = startPressed;
+
+  // X: Inspect/describe faced blocked tile (edge)
+  if (xPressed && !lastX) {
+    describeFacedBlockedTile();
+  }
+  lastX = xPressed;
+
+  // Hvis pause ikke er åpen: ikke gjør meny-navigasjon
+  if (!pauseOpen) {
+    lastA = aPressed;
+    lastB = bPressed;
+    lastUp = false;
+    lastDown = false;
+    return;
+  }
+
+  // Inni pause: B lukker (edge)
+  if (bPressed && !lastB) closePauseMenu();
+  lastB = bPressed;
+
+  // Inni pause: A velger (edge)
+  if (aPressed && !lastA) pauseSelect();
+  lastA = aPressed;
+
+  // --- D-pad navigation (edge) ---
+  const up = !!gp.buttons?.[12]?.pressed;
+  const down = !!gp.buttons?.[13]?.pressed;
+
+  if (up && !lastUp) pauseMoveSelection(-1);
+  if (down && !lastDown) pauseMoveSelection(1);
+
+  lastUp = up;
+  lastDown = down;
+}
+
+
+function loop(now) {
+  const dt = now - lastTime;
+  lastTime = now;
+
+  // Gamepad: Start-meny input + movement
+  pollGamepadMenu();
+  pollGamepadMovement();
+
+  // Når pause er åpen: frys gameplay (ikke update)
+  if (!pauseOpen) {
+    update(dt);
+  }
+
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ----------- Validation -----------
+function validateLevels() {
+  for (const [id, lvl] of Object.entries(LEVELS)) {
+    const grids = ["grid_base", "grid_mid", "grid_top"];
+    for (const g of grids) {
+      if (!lvl[g]) {
+        console.warn(`[${id}] missing ${g}`);
+        continue;
+      }
+      if (lvl.height !== lvl[g].length) {
+        console.warn(`[${id}] ${g} height mismatch: expected=${lvl.height} got=${lvl[g].length}`);
+      }
+      if (lvl[g][0] && lvl.width !== lvl[g][0].length) {
+        console.warn(`[${id}] ${g} width mismatch: expected=${lvl.width} got=${lvl[g][0].length}`);
+      }
+    }
+  }
+}
+
+function ensureGridSize(lvl, gridName, fillKey) {
+  if (!lvl[gridName]) lvl[gridName] = [];
+
+  // Sørg for riktig antall rader
+  while (lvl[gridName].length < lvl.height) {
+    lvl[gridName].push([]);
+  }
+
+  // Sørg for riktig antall kolonner per rad
+  for (let y = 0; y < lvl.height; y++) {
+    if (!Array.isArray(lvl[gridName][y])) lvl[gridName][y] = [];
+    while (lvl[gridName][y].length < lvl.width) {
+      lvl[gridName][y].push(fillKey);
+    }
+  }
+}
+
+function normalizeLevelGrids(lvl) {
+  // Base må alltid ha en gyldig tile (typisk grass)
+  ensureGridSize(lvl, "grid_base", "grass");
+
+  // Mid/top kan være tomt "."
+  ensureGridSize(lvl, "grid_mid", EMPTY);
+  ensureGridSize(lvl, "grid_top", EMPTY);
+}
+
+let gameStarted = false;
+
+async function startGame(opts = { mode: "load" }) {
+  if (gameStarted) return;
+
+  // Hvis du prøver å starte uten gyldig navn: stopp
+  const name = getProfileName();
+  if (!name || name.trim().length < 2) {
+    alert("Du må skrive inn et navn før du kan starte.");
+    return;
+  }
+
+  gameStarted = true;
+  hideAllScreensAndShowGameUI();
+
+  // 1) Først: utvid grids så de matcher width/height (hindrer all “alt blir feil”)
+  for (const lvl of Object.values(LEVELS)) {
+    normalizeLevelGrids(lvl);
+  }
+
+  // 2) Så: valider (nå får du mye færre warnings)
+  validateLevels();
+
+  await loadAllAssets();
+
+  if (opts.mode === "new") {
+    // NY character: start på spawn
+    setLevel(currentLevelId, null);
+  } else {
+    // Last existing save hvis den er gyldig, ellers ny start
+    const ok = loadGame();
+    if (!ok) {
+      setLevel(currentLevelId, null);
+    }
+  }
+  renderHearts();
+
+  logMessage("Welcome to VoidQuest.", "system");
+
+
+  // VIKTIG: lag første save med en gang når spillet starter
+  // (nå er gameStarted=true og name finnes => canWriteSave() blir true)
+  saveGame();
+
+  requestAnimationFrame(loop);
+}
+
+
+// ----------- App start (menu først) -----------
+showMenu();
+
+btnPlay.addEventListener("click", () => {
+  showCharacterScreen();
+});
+
+btnBackMenu.addEventListener("click", () => {
+  showMenu();
+});
+
+btnStartGame.addEventListener("click", () => {
+  // Kun hvis save faktisk er gyldig (har navn)
+  if (!hasSave()) {
+    showCharacterScreen();
+    return;
+  }
+  startGame({ mode: "load" });
+});
+
+
+btnFinishCharacter.addEventListener("click", () => {
+  const name = (inputName.value || "").trim();
+
+  if (name.length < 2) {
+    alert("Navnet må være minst 2 tegn.");
+    return;
+  }
+
+  setProfileName(name);
+
+  // Start som ny character + lag første save før spill
+  startGame({ mode: "new" });
+});
+
+

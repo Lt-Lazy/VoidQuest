@@ -1,0 +1,30 @@
+kjøre python kode som lager kartet fra Tiled[
+  python tools/import_tiled.py maps/spenningsbyen.tmj > tools/spenningsbyen_output.txt
+  kjøres fra rot mappen til spillet "voidquest-mmo"
+]
+
+
+
+Patch Notes:
+- La til inventory
+- La til Minimap
+- La til enemies
+- La til enkel combat
+- La til shop
+- 
+
+================COMBAT================
+- Enemy hitchance og maxhit er en default verdi på alle enemies,
+  men items/armor kan ha stats som endrer hitchance og maxhit til enemy.
+- Combat skill level gjør at hitchance øker
+- strength bestemmer hvor mange hit points man tar,
+  men hvis man har 5 STR så varierer styrken mellom 4-6
+
+================SKILLS================
+copper/tin: 10–15 xp
+iron: 25–35 xp
+silver: 45–60 xp
+gold: 70–90 xp
+platinum: 110–140 xp
+voidshard: 180–250 xp
+
