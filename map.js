@@ -394,7 +394,7 @@ window.TILE_DEFS = {
 
 
   //Signs
-  sig1: { img: "assets/tiles/house/signs/signInnRoofLeft.png", walkable: true, description: "A place to rest and feast." },
+  sig1: { img: "assets/tiles/house/Signs/signInnRoofLeft.png", walkable: true, description: "A place to rest and feast." },
 
 
   flor2: { img: "assets/tiles/house/floorTile.png", walkable: true, description: "Ground, just inside...." },
