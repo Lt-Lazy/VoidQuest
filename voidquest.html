@@ -35,6 +35,9 @@
 
                 <button id="btn-credits" class="menu-btn menu-btn-credits">
                 </button>
+
+                <button id="btn-logout" class="menu-btn-logout">Log out</button>
+
             </div>
 
             <!-- CENTER -->
@@ -66,6 +69,12 @@
 
             <label class="char-label" for="input-name">Name</label>
             <input id="input-name" class="char-input" type="text" maxlength="16" placeholder="Your name." />
+
+            <label class="char-label">Gender</label>
+            <div class="char-gender">
+            <label><input type="radio" name="gender" id="gender-male" value="male" checked> Male</label>
+            <label><input type="radio" name="gender" id="gender-female" value="female"> Female</label>
+            </div>
 
             <div class="modal-actions">
             <button id="btn-finish-character" class="screen-btn">Create</button>
@@ -108,7 +117,8 @@
                 <div class="pause-card">
                     <div class="pause-title">Menu</div>
                     <div id="pause-items" class="pause-items"></div>
-                    <button id="btn-logout" class="screen-btn secondary">Log out</button>
+                    <button id="btn-logout" class="pause-items">Log out</button>
+                    <button id="btnExitToMenu" onclick="exitToMenu()" class="pause-items">Exit</button>
                     <div class="pause-hint"></div>
                 </div>
             </div>
@@ -132,9 +142,9 @@
 
             <div id="skills-window" class="skills hidden" aria-hidden="true">
                 <div class="skills-card">
+                    <button id="btn-skills-close" class="skills-close" type="button">✕</button>
                     <div class="skills-top">
                         <div class="skills-title">Skills</div>
-                        <button id="btn-skills-close" class="skills-close" type="button">✕</button>
                     </div>
 
                     <div id="skills-list" class="skills-list"></div>
@@ -172,7 +182,7 @@
                 </div>
             </div>
 
-            <!-- Bank window overlay (NY) -->
+            <!-- Bank window overlay -->
             <div id="bank-window" class="bank hidden" aria-hidden="true">
                 <div class="bank-card bank-skin">
                     <button id="btn-bank-close" class="bank-close" type="button" aria-label="Close bank">X</button>
@@ -199,6 +209,18 @@
                 </div>
             </div>
 
+            <!-- World Map overlay -->
+            <div id="map-window" class="map hidden" aria-hidden="true">
+            <div class="map-card">
+                <button id="btn-map-close" class="map-close" type="button">✕</button>
+
+                <div class="map-stage">
+                <canvas id="map-canvas"></canvas>
+                <img id="map-frame" src="assets/ui/world_map_frame.png" alt="" draggable="false">
+                </div>
+            </div>
+            </div>
+
         
         </div>
 
@@ -210,17 +232,26 @@
         <!-- Bottom bar / hotbar -->
         <div id="hotbar">
 
-            <button id="btn-skills" class="hotbar-btn" title="Skills">
-                <span class="hotbar-emoji" aria-hidden="true">📜</span> 
-            </button>
+            <div id="bottom-bar">
 
-            <button id="btn-equip" class="hotbar-btn" title="Equipment">
-                <span class="hotbar-emoji" aria-hidden="true">🛡️</span>
-            </button>
+                <button id="btn-map" class="bar-btn">
+                    <img src="assets/icons/map_btn_icon.png" alt="Map">
+                </button>
 
-            <button id="btn-inventory" class="hotbar-btn" title="Inventory">
-                <span class="hotbar-emoji" aria-hidden="true">🎒</span>
-            </button>
+                <button id="btn-skills" class="bar-btn">
+                    <img src="assets/items/tools/pickaxe.png" alt="Skills">
+                </button>
+
+                <button id="btn-equip" class="bar-btn">
+                    <img src="assets/items/armor/bronze_armor_icon.png" alt="Equipped">
+                </button>
+
+                <button id="btn-inventory" class="bar-btn">
+                    <img src="assets/icons/inventory_btn_icon.png" alt="Inventory">
+                </button>
+
+
+            </div>
 
 
         </div>

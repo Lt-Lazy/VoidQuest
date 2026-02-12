@@ -65,6 +65,20 @@ body {
   font-size: 12px;
 }
 
+.hud-btn{
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 9999;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #555;
+  background: #222;
+  color: #fff;
+  cursor: pointer;
+}
+.hud-btn:hover{ opacity: .9; }
+
 /* --- Hotbar: global nederst på skjermen --- */
 #hotbar {
   position: fixed;
@@ -156,25 +170,37 @@ body {
 
   background: rgba(0, 0, 0, 0.55);
   border: 3px solid rgba(255, 255, 255, 0.12);
- 
-  
   padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-
   overflow: hidden;
   z-index: var(--z-hud);
 }
 
 #chatlog-messages {
-  flex: 1;
-  min-height: 0;   
-  overflow: hidden;
+  height: 100%;
+  overflow-y: auto;
+
+  /* litt padding så scrollbar ikke krasjer med tekst */
+  padding-right: 6px;
+
+  /* valgfritt: gjør at tekst ligger pent */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 6px;
+
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* WebKit scrollbar styling (Chrome/Edge/Safari) */
+#chatlog-messages::-webkit-scrollbar { width: 10px; }
+#chatlog-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.25); }
+#chatlog-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 10px; }
+
+#chatMessages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chatMessages::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
 }
 
 .chatline {
@@ -609,8 +635,8 @@ body {
 /* Close-knapp (samme stil som inventory-close) */
 .skills-close {
   position: absolute;
-  top: -20px;
-  right: 25px;
+  top: 1px;
+  right: 14px;
 
   width: 34px;
   height: 34px;
@@ -745,7 +771,7 @@ body {
 .inventory-close {
   position: absolute;
   top: 22px;
-  right: 22px;
+  right: 14px;
 
   width: 34px;
   height: 34px;
@@ -759,8 +785,6 @@ body {
   pointer-events: auto;
 }
 
-/* Grid-laget som ligger oppå scrollen */
-/* VIKTIG: her finjusterer du plasseringen av inventory på scrollen */
 .inventory-grid {
   position: absolute;
 
@@ -1530,6 +1554,19 @@ body {
   height: 180px;
 }
 
+.menu-btn-credits {
+  background-image: url("assets/ui/menyCreditsBtn.png");
+  width: 390px;
+  height: 180px;
+}
+
+.menu-btn-logout {
+  color: #000000;
+  background-color: rgb(230, 23, 23);
+  height: 50px;
+  left: 20px;
+}
+
 .menu-btn:hover {
   transform: translateY(-2px) scale(1.02);
   filter: brightness(1.1);
@@ -1730,4 +1767,106 @@ body {
   height: 34px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+
+.char-gender{
+  display:flex;
+  gap:16px;
+  margin:10px 0 14px 0;
+}
+.char-gender label{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.bar-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.bar-btn img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none; 
+}
+
+.bar-btn:hover {
+  transform: translateY(-1px);
+}
+
+.bar-btn:active {
+  transform: translateY(0);
+}
+
+/* ---------------- WORLD MAP (FINAL, STABIL) ---------------- */
+
+#map-window {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: calc(var(--z-hud) - 1); /* minimap over */
+  pointer-events: none;
+}
+
+#map-window.hidden {
+  display: none !important;
+}
+
+#map-window .map-card {
+  position: relative;
+  width: 900px;
+  height: 900px;
+
+  background: transparent;
+  border: none;
+  padding: 0;
+
+  pointer-events: auto;
+}
+
+#map-window .map-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#map-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#map-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+#map-window .map-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+
+  width: 36px;
+  height: 36px;
+  background: rgb(255, 58, 58);
+  color: #fff;
+  cursor: pointer;
 }

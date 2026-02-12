@@ -39,6 +39,8 @@ const startNoChar = document.getElementById("start-no-char");
 const inputName = document.getElementById("input-name");
 const btnFinishCharacter = document.getElementById("btn-finish-character");
 const btnBackMenu = document.getElementById("btn-back-menu");
+const inputGenderMale = document.getElementById("gender-male");
+const inputGenderFemale = document.getElementById("gender-female");
 
 
 const hudZone = document.getElementById("hud-zone");
@@ -91,6 +93,18 @@ const btnShopClose = document.getElementById("btn-shop-close");
 const bankWindowEl = document.getElementById("bank-window");
 const bankGridEl = document.getElementById("bank-grid");
 const btnBankClose = document.getElementById("btn-bank-close");
+
+// --- Map UI refs (NY) ---
+const btnMap = document.getElementById("btn-map");
+const mapWindowEl = document.getElementById("map-window");
+const mapCanvas = document.getElementById("map-canvas");
+const mapCtx = mapCanvas ? mapCanvas.getContext("2d") : null;
+const btnMapClose = document.getElementById("btn-map-close");
+
+let mapOpen = false;
+
+// cache: vi renderer hele level 1 gang til et offscreen canvas, så vi bare “blitter” det
+let mapCache = null;      // { levelId, canvas }
 
 
 // --- status effect emblemsrefs ---
@@ -189,7 +203,7 @@ const tileImages = {};
 const playerSkins = {};
 const playerImages = {}; // dir -> { idle: Image, walk: Image[] }
 
-const PLAYER_ANIMS = {
+const PLAYER_ANIMS_MALE = {
   down: {
     idle: [ 
       "assets/player/male/pixelmannDown.png",
@@ -232,6 +246,51 @@ const PLAYER_ANIMS = {
     ],
   },
 };
+
+const PLAYER_ANIMS_FEMALE = {
+  down: {
+    idle: [
+      "assets/player/female/female_down.png",
+      "assets/player/female/female_down_idle.png",
+    ],
+    walk: [
+      "assets/player/female/female_down_run1.png",
+      "assets/player/female/female_down.png",
+      "assets/player/female/female_down_run2.png",
+    ],
+  },
+  up: {
+    idle: [
+      "assets/player/female/female_up.png",
+      "assets/player/female/female_up_idle.png",
+    ],
+    walk: [
+      "assets/player/female/female_up_run1.png",
+      "assets/player/female/female_up_run2.png",
+    ],
+  },
+  left: {
+    idle: [
+      "assets/player/female/female_left.png",
+      "assets/player/female/female_left_idle.png",
+    ],
+    walk: [
+      "assets/player/female/female_left_run.png",
+      "assets/player/female/female_left.png",
+    ],
+  },
+  right: {
+    idle: [
+      "assets/player/female/female_right.png",
+      "assets/player/female/female_right_idle.png",
+    ],
+    walk: [
+      "assets/player/female/female_right_run.png",
+      "assets/player/female/female_right.png",
+    ],
+  },
+};
+
 
 
 // hvor “fort” walk-frame bytter mens du går/står
@@ -312,8 +371,9 @@ async function loadAllAssets() {
     playerSkins[skinId] = out;
   }
 
-  // 1) Default skin
-  await loadPlayerAnimSet("default", PLAYER_ANIMS);
+  // 1) Default skins
+  await loadPlayerAnimSet("male", PLAYER_ANIMS_MALE);
+  await loadPlayerAnimSet("female", PLAYER_ANIMS_FEMALE);
 
   // 2) Armor skins (hvis item har playerAnims)
   for (const def of Object.values(ITEM_DEFS)) {
@@ -324,6 +384,9 @@ async function loadAllAssets() {
   await loadNpcAssets();
   await loadFxAssets();
 }
+
+let respawnPoint = null; 
+// format: { levelId: string, x: number, y: number }
 
 let currentLevelId = "spenningsbyen";
 let level = LEVELS[currentLevelId];
@@ -336,6 +399,8 @@ const player = {
   // pixel coords (smooth rendering)
   px: level.spawn.x * TILE_SIZE,
   py: level.spawn.y * TILE_SIZE,
+
+  gender: "male",
 
   level: 1,
   xp: 0,
@@ -360,6 +425,7 @@ const player = {
 let skills = {
   combat: { level: 1, xp: 0 },
   mining: { level: 1, xp: 0 },
+  woodcutting: { level: 1, xp: 0 },
 };
 
 // Skill-curve (litt annerledes enn main level)
@@ -473,6 +539,7 @@ function renderSkillsWindow() {
   const entries = [
     { label: "Combat", s: skills.combat },
     { label: "Mining", s: skills.mining }, 
+    { label: "Woodcutting", s: skills.woodcutting },
   ];
 
   for (const e of entries) {
@@ -571,14 +638,35 @@ const ITEM_DEFS = {
     max_stack: 50,
   },
 
+  woodLog: {
+    id: "woodLog",
+    name: "Wood Log",
+    icon: "assets/items/woodLog.png",
+    type: "misc",
+    description: "Log from a cut down tree.",
+    stackable: true,
+    max_stack: 10,
+  },
+
   pickaxe: {
     id: "pickaxe",
     name: "Pickaxe",
     icon: "assets/items/tools/pickaxe.png",
-    fxSprite: "assets/items/tools/pickaxe.png", // det som vises som "slash" 
+    fxSprite: "assets/items/tools/pickaxe.png",
     type: "tool",
     description: "A pickaxe for mining rocks.",
     toolActions: ["mining"],
+    stackable: false,
+  },
+
+  axe: {
+    id: "axe",
+    name: "Axe",
+    icon: "assets/items/tools/axe.png",
+    fxSprite: "assets/items/tools/axe.png", 
+    type: "tool",
+    description: "Axe for chopping trees.",
+    toolActions: ["woodcutting"],
     stackable: false,
   },
 
@@ -618,7 +706,7 @@ const ITEM_DEFS = {
   bronzeArmor: {
     id: "bronzeArmor",
     name: "Bronze Armor",
-    icon: "assets/items/armor/bronzeArmorIcon.png",
+    icon: "assets/items/armor/bronze_armor_icon.png",
     type: "armor",
     description: "A sturdy set of bronze armor.",
     enemyMaxHitMod: -1, 
@@ -677,15 +765,6 @@ const ITEM_DEFS = {
     stackable: false,
   },
 
-  tool: {
-    id: "tool",
-    name: "Woodcutting Axe",
-    icon: "assets/ui/xp.png",
-    type: "tool",
-    description: "A tool used for chopping trees.",
-    stackable: false,
-  },
-
   //===================FOOD===================
 
   apple: {
@@ -696,6 +775,28 @@ const ITEM_DEFS = {
     stackable: false,
     consumable: true,
     foodPoints: 1,
+    foodCooldownMs: 20000,
+  },
+
+  meat_raw: {
+    id: "meat_raw",
+    name: "Raw Meat",
+    icon: "assets/items/consumables/food/meat_raw.png",
+    description: "Taste better cooked.",
+    stackable: false,
+    consumable: true,
+    foodPoints: 1,
+    foodCooldownMs: 50000,
+  },
+
+  meat_cooked: {
+    id: "meat_cooked",
+    name: "Cooked Meat",
+    icon: "assets/items/consumables/food/meat_cooked.png",
+    description: "Used to eat and cook.",
+    stackable: false,
+    consumable: true,
+    foodPoints: 2,
     foodCooldownMs: 20000,
   },
 
@@ -884,15 +985,6 @@ function closeBankWindow() {
 btnBankClose?.addEventListener("click", closeBankWindow);
 
 
-
-// -------------------- LOOT / DROPS --------------------
-// Drops format per enemy (map.js):
-// npc.drops = [
-//   { itemId: "potion", chance: 0.3 },              // 30%
-//   { itemId: "scroll", chance: 10 },               // 10% (støttes også som prosent)
-//   { itemId: "potion", chance: 0.2, qtyMin: 1, qtyMax: 3 },
-// ]
-
 function normalizeChance(chance) {
   // Støtter både 0..1 og 0..100
   if (typeof chance !== "number" || !Number.isFinite(chance)) return 0;
@@ -916,60 +1008,6 @@ function giveItemToInventoryOrLose(itemId, npcName = "Enemy") {
     logMessage(`No inventory space — you lose ${itemId} from ${npcName}.`, "error");
   }
   return ok;
-}
-
-function rollNpcDrops(npc) {
-  const drops = Array.isArray(npc?.drops) ? npc.drops : [];
-  if (!drops.length) return [];
-
-  const results = [];
-
-  for (const d of drops) {
-    if (!d || typeof d.itemId !== "string") continue;
-
-    // finnes itemen i ITEM_DEFS?
-    if (!ITEM_DEFS[d.itemId]) continue;
-
-    const p = normalizeChance(d.chance);
-    if (p <= 0) continue;
-
-    if (Math.random() < p) {
-      const qtyMin = (typeof d.qtyMin === "number" ? d.qtyMin : 1);
-      const qtyMax = (typeof d.qtyMax === "number" ? d.qtyMax : qtyMin);
-      const qty = randInt(qtyMin, qtyMax);
-
-      for (let i = 0; i < Math.max(1, qty); i++) {
-        results.push(d.itemId);
-      }
-    }
-  }
-
-  return results;
-}
-
-function handleNpcDeathLoot(npc) {
-  const items = rollNpcDrops(npc);
-  if (!items.length) return;
-
-  // Gi items direkte til inventory
-  // (Du kan velge om du vil stoppe på full inv eller fortsette. Her fortsetter vi.)
-  for (const itemId of items) {
-    giveItemToInventoryOrLose(itemId, npc?.name || "Enemy");
-  }
-
-  // logg i chat
-  const counts = {};
-  for (const id of items) {
-    counts[id] = (counts[id] || 0) + 1;
-  }
-
-  const parts = [];
-  for (const [id, qty] of Object.entries(counts)) {
-    const name = ITEM_DEFS[id]?.name || id;
-    parts.push(qty > 1 ? `${name} x${qty}` : name);
-  }
-
-  logMessage(`Loot: ${parts.join(", ")}`, "loot");
 }
 
 
@@ -1134,6 +1172,155 @@ function toggleInventoryWindow() {
   if (!gameStarted) return;
   inventoryOpen ? closeInventoryWindow() : openInventoryWindow();
 }
+
+
+// -------------------- BIG MAP --------------------
+
+
+function setMapOpen(open) {
+  mapOpen = !!open;
+  if (!mapWindowEl) return;
+
+  mapWindowEl.classList.toggle("hidden", !mapOpen);
+  mapWindowEl.setAttribute("aria-hidden", mapOpen ? "false" : "true");
+
+  if (mapOpen) {
+    resizeMapCanvas();
+    buildMapCacheIfNeeded();
+    drawWorldMap();
+  }
+}
+
+function toggleMap() {
+  setMapOpen(!mapOpen);
+}
+
+function resizeMapCanvas() {
+  if (!mapCanvas || !mapCtx) return;
+
+  const rect = mapCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  // faktisk oppløsning (skarpere)
+  mapCanvas.width = Math.max(1, Math.floor(rect.width * dpr));
+  mapCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+
+  mapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  mapCtx.imageSmoothingEnabled = false;
+}
+
+
+function drawFullLayerToCtx(targetCtx, grid, flagsGrid) {
+  if (!grid) return;
+
+  for (let y = 0; y < level.height; y++) {
+    for (let x = 0; x < level.width; x++) {
+      const key = tileAtLayer(grid, x, y);
+      const flags = flagsGrid ? tileAtLayer(flagsGrid, x, y) : 0;
+      if (!key || key === EMPTY) continue;
+
+      const def = TILE_DEFS[key];
+      const imgOrFrames = tileImages[key];
+      if (!imgOrFrames) continue;
+
+      // Kart-cache: vi bruker alltid “første frame” på animasjoner (perf + ryddig kart)
+      if (def?.animated && Array.isArray(imgOrFrames)) {
+        targetCtx.drawImage(imgOrFrames[0], x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        continue;
+      }
+
+      if (def?.animated && typeof def.frames === "number" && imgOrFrames instanceof Image) {
+        targetCtx.drawImage(
+          imgOrFrames,
+          0, 0, TILE_SIZE, TILE_SIZE,
+          x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE
+        );
+        continue;
+      }
+
+      if (imgOrFrames instanceof Image) {
+        const dx = x * TILE_SIZE;
+        const dy = y * TILE_SIZE;
+
+        targetCtx.save();
+        const transformed = applyTiledFlagsTransform(targetCtx, flags, dx, dy, TILE_SIZE, TILE_SIZE);
+        if (transformed) targetCtx.drawImage(imgOrFrames, 0, 0, TILE_SIZE, TILE_SIZE);
+        else targetCtx.drawImage(imgOrFrames, dx, dy, TILE_SIZE, TILE_SIZE);
+        targetCtx.restore();
+      }
+    }
+  }
+}
+
+function buildMapCacheIfNeeded() {
+  // du har alltid "level" i spillet ditt (bredde/høyde osv)
+  if (!level) return;
+
+  // Finn et “level id” vi kan sammenligne på. (bruk det du faktisk har)
+  const levelId = level.id || level.name || levelIdCurrent || "unknown";
+
+  if (mapCache && mapCache.levelId === levelId) return;
+
+  // bygg ny cache
+  const off = document.createElement("canvas");
+  off.width = level.width * TILE_SIZE;
+  off.height = level.height * TILE_SIZE;
+
+  const offCtx = off.getContext("2d");
+  offCtx.imageSmoothingEnabled = false;
+
+  // Hvis du har flags-grids, bruk dem. Hvis ikke: null (map.js nivåene har ofte ikke flags)
+  const baseFlags = level.grid_base_flags || null;
+  const midFlags  = level.grid_mid_flags || null;
+  const topFlags  = level.grid_top_flags || null;
+
+  drawFullLayerToCtx(offCtx, level.grid_base, baseFlags);
+  drawFullLayerToCtx(offCtx, level.grid_mid,  midFlags);
+  drawFullLayerToCtx(offCtx, level.grid_top,  topFlags);
+
+  mapCache = { levelId, canvas: off };
+}
+
+
+function drawWorldMap() {
+  if (!mapOpen || !mapCtx || !mapCanvas || !mapCache?.canvas) return;
+
+  const cssW = mapCanvas.getBoundingClientRect().width;
+  const cssH = mapCanvas.getBoundingClientRect().height;
+
+  const PAD = 121; // TUNE: tilsvarer tykkelsen på ramma di
+  const innerW = Math.max(1, cssW - PAD * 2);
+  const innerH = Math.max(1, cssH - PAD * 2);
+
+  // clear
+  mapCtx.clearRect(0, 0, cssW, cssH);
+
+  const worldW = level.width * TILE_SIZE;
+  const worldH = level.height * TILE_SIZE;
+
+  const scale = Math.min(innerW / worldW, innerH / worldH);
+  const drawW = worldW * scale;
+  const drawH = worldH * scale;
+
+  const ox = Math.floor((innerW - drawW) / 2) + PAD;
+  const oy = Math.floor((innerH - drawH) / 2) + PAD;
+
+  // tegn cached map
+  mapCtx.drawImage(mapCache.canvas, ox, oy, drawW, drawH);
+
+  // spiller-prikk
+  const px = (player.px + TILE_SIZE / 2) * scale + ox;
+  const py = (player.py + TILE_SIZE / 2) * scale + oy;
+
+  mapCtx.save();
+  mapCtx.beginPath();
+  mapCtx.arc(px, py, Math.max(2, 3 * scale), 0, Math.PI * 2);
+  mapCtx.fillStyle = "rgba(255,255,255,0.95)";
+  mapCtx.fill();
+  mapCtx.restore();
+}
+
+
 
 // -------------------- SHOP --------------------
 
@@ -1727,8 +1914,8 @@ function setNpcHp(n, v) {
 // - aldri under 50% hit chance
 // - skalerer pent mot lvl 100 (ikke 100%)
 // Du kan tweake tallene her uten å røre resten av koden.
-const PLAYER_MIN_HIT_CHANCE = 0.50; // 50% ved lavt level
-const PLAYER_MAX_HIT_CHANCE = 0.95; // 95% ved lvl 100
+const PLAYER_MIN_HIT_CHANCE = 0.70; // 70% ved lavt level
+const PLAYER_MAX_HIT_CHANCE = 0.97; // 97% ved lvl 100
 const PLAYER_ACCURACY_EXP = 0.70;   // curve: lavere = mer boost tidlig, høyere = senere boost
 
 function rollHitWithChance(maxHit, hitChance) {
@@ -1862,11 +2049,14 @@ function updateCombat(nowMs) {
       if (getNpcHp(npc) <= 0) {
         logMessage(`${npc.name} dies.`, "loot");
 
-        handleNpcDeathLoot(npc);
-
-        //  COMBAT XP (server-side): ikke await i tick – bare fire-and-forget
-        // Forutsetter at du har laget grantCombatKillXpServer(npcId) fra forrige steg
-        grantCombatKillXpServer?.(npc.id);
+        // Server-autoritet: først registrer kill (setter last_combat_kill_at),
+        // deretter claim loot (leser npc_loot og legger i inventory).
+        void (async () => {
+          const ok = await grantCombatKillXpServer(npc.id);
+          if (ok) {
+            await claimNpcLootServer(npc.id, npc.name);
+          }
+        })();
 
         killNpcAndScheduleRespawn(npc, nowMs);
         stopCombat(null, nowMs);
@@ -1894,8 +2084,8 @@ function updateCombat(nowMs) {
     const baseMaxHit = enemyMaxHit;
 
     // Modifikatorer fra equipped items
-    const hitChanceMod = getEnemyHitChanceMod();   // f.eks -0.10
-    const maxHitMod = getEnemyMaxHitMod();         // f.eks -2
+    const hitChanceMod = getEnemyHitChanceMod();   
+    const maxHitMod = getEnemyMaxHitMod();       
 
     // Effektive stats
     const effectiveHitChance = clamp01(baseHitChance + hitChanceMod);
@@ -1944,6 +2134,31 @@ function updateRespawns(nowMs) {
   }
 }
 
+async function claimNpcLootServer(npcId, npcName = "Enemy") {
+  const { data, error } = await sb.rpc("rpc_claim_npc_loot", { p_npc_id: npcId });
+  if (error) {
+    console.warn("[LOOT RPC]", error);
+    return;
+  }
+
+  if (data?.inventory) {
+    inventory = normalizeInventory(data.inventory);
+    renderInventoryWindow?.();
+  }
+
+  const loot = Array.isArray(data?.loot) ? data.loot : [];
+  if (!loot.length) return;
+
+  // logg i chat
+  const parts = loot.map(x => {
+    const name = ITEM_DEFS?.[x.id]?.name || x.id;
+    const q = Number(x.qty || 1);
+    return q > 1 ? `${name} x${q}` : name;
+  });
+
+  logMessage(`Loot: ${parts.join(", ")}`, "loot");
+}
+
 
 async function grantCombatKillXpServer(npcId) {
   const { data, error } = await sb.rpc("rpc_combat_kill", { npc_id: npcId });
@@ -1960,6 +2175,7 @@ async function grantCombatKillXpServer(npcId) {
   logMessage(`You gain ${data.gain_xp} XP. (${player.xp} XP, lvl ${player.level})`, "loot");
 
   if (skillsOpen) renderSkillsWindow();
+  return true;
 }
 
 async function grantCombatHitXpServer(npcId) {
@@ -2056,6 +2272,7 @@ async function grantMiningServer(nodeKey) {
     }
 
     // (cache)
+    if (skillsOpen) renderSkillsWindow();
     saveGame?.();
     return data;
   } catch (e) {
@@ -2064,9 +2281,6 @@ async function grantMiningServer(nodeKey) {
     return null;
   }
 }
-
-
-
 
 const mining = {
   active: false,
@@ -2181,6 +2395,8 @@ function startMiningNode(tx, ty, layer, key, tileDef) {
   logMessage("You start mining...", "system");
 }
 
+
+
 function stopMining(reason = null) {
   if (reason) logMessage(reason, "system");
   mining.active = false;
@@ -2224,6 +2440,138 @@ function updateMining(nowMs) {
 
   depleteTileForRespawn(mining.layer, mining.tx, mining.ty, mining.originalKey, nowMs, mining.respawnMs);
   stopMining(null);
+}
+
+// -------------------- WOODCUTTING --------------------
+
+const woodcutting = {
+  active: false,
+  tx: 0,
+  ty: 0,
+  layer: "mid",
+  originalKey: null,
+  hitsDone: 0,
+  hitsRequired: 3,
+  nextHitAt: 0,
+  respawnMs: 20000,
+};
+
+async function grantWoodcuttingServer(nodeKey) {
+  try {
+    const { data, error } = await sb.rpc("rpc_woodcutting_complete", { p_node_key: nodeKey })
+
+    if (error) {
+      console.warn("[WOODCUTTING RPC] error", error);
+      logMessage(`Server rejected woodcutting reward: ${error.message || "unknown error"}`, "error");
+      if (error.details) logMessage(`Details: ${error.details}`, "error");
+      return null;
+    }
+
+    if (data?.skill === "woodcutting") {
+      skills.woodcutting.xp = data.xp;
+      skills.woodcutting.level = data.level;
+      logMessage(`+${data.gain} WOODCUTTING XP`, "system");
+    }
+
+    if (data?.inventory) {
+      inventory = normalizeInventory(data.inventory);
+      renderInventoryWindow();
+    }
+
+    const drops = data?.drops || [];
+    for (const d of drops) {
+      const itemName = ITEM_DEFS[d.item_id]?.name || d.item_id;
+      logMessage(`You cut ${d.qty} ${itemName}.`, "loot");
+    }
+
+    if (skillsOpen) renderSkillsWindow();
+    saveGame?.();
+    return data;
+  } catch (e) {
+    console.warn("[WOODCUTTING RPC] failed", e);
+    logMessage("Server error (woodcutting).", "error");
+    return null;
+  }
+}
+
+function startWoodcuttingNode(tx, ty, layer, key, tileDef) {
+  if (!isAdjacentToPlayer(tx, ty)) {
+    logMessage("You need to stand next to the tree.", "error");
+    return;
+  }
+
+  const req = tileDef?.woodcutting?.toolAction || "woodcutting";
+  if (!toolHasAction(req)) {
+    logMessage("You need an axe to cut this.", "error");
+    return;
+  }
+
+  const reqLevel = Math.max(1, Math.floor(tileDef?.woodcutting?.minLevel || 1));
+  const myLevel = skills?.woodcutting?.level || 1;
+  if (myLevel < reqLevel) {
+    logMessage(`You need Woodcutting level ${reqLevel} to cut this.`, "error");
+    return;
+  }
+
+  woodcutting.active = true;
+  woodcutting.tx = tx;
+  woodcutting.ty = ty;
+  woodcutting.layer = layer;
+  woodcutting.originalKey = key;
+  woodcutting.hitsDone = 0;
+
+  woodcutting.hitsRequired = Math.max(1, Math.floor(tileDef.woodcutting.hitsRequired || 3));
+  woodcutting.respawnMs = Math.max(1000, Math.floor(tileDef.woodcutting.respawnMs || 20000));
+
+  const now = performance.now();
+  woodcutting.nextHitAt = now + 250;
+
+  held.up = held.down = held.left = held.right = false;
+  lastIntent = null;
+
+  logMessage("You start cutting...", "system");
+}
+
+function stopWoodcutting(reason = null) {
+  woodcutting.active = false;
+  woodcutting.originalKey = null;
+
+  if (reason) logMessage(reason, "system");
+}
+
+function updateWoodcutting(nowMs) {
+  if (!woodcutting.active) return;
+
+  if (!isAdjacentToPlayer(woodcutting.tx, woodcutting.ty)) {
+    stopWoodcutting(null);
+    return;
+  }
+
+  const gridName = (woodcutting.layer === "mid") ? "grid_mid" : "grid_base";
+  const grid = level[gridName];
+  const currentKey = grid?.[woodcutting.ty]?.[woodcutting.tx];
+  if (currentKey !== woodcutting.originalKey) {
+    stopWoodcutting("The tree is gone.");
+    return;
+  }
+
+  if (nowMs < woodcutting.nextHitAt) return;
+
+  const pC = playerCenterPx();
+  const tC = tileCenterPx(woodcutting.tx, woodcutting.ty);
+  triggerSwing(pC.x, pC.y, tC.x, tC.y, nowMs, getPlayerToolFxSprite());
+
+  woodcutting.hitsDone += 1;
+  woodcutting.nextHitAt = nowMs + 650;
+
+  if (woodcutting.hitsDone < woodcutting.hitsRequired) return;
+
+  (async () => {
+    await grantWoodcuttingServer(woodcutting.originalKey);
+  })();
+
+  depleteTileForRespawn(woodcutting.layer, woodcutting.tx, woodcutting.ty, woodcutting.originalKey, nowMs, woodcutting.respawnMs);
+  stopWoodcutting(null);
 }
 
 
@@ -2341,7 +2689,6 @@ const DIALOGS = {
       },
     }
   },
-
   blacksmith_01: {
     start: "start",
     nodes: {
@@ -2372,6 +2719,30 @@ const DIALOGS = {
       },
     }
   },
+  graveyard_warden: {
+    start: "start",
+    nodes: {
+      start: {
+        speaker: "Warden",
+        text: "Nay a normal sight to mete a warrior alive nigh graves, what bringeth such pleasure?",
+        options: [
+          { label: "I have travelled far, if i should end my days, can i rest here?", next: "warden_intro" },
+          { label: "I have to go", end: true },
+        ]
+      },
+      warden_intro: {
+        speaker: "Warden",
+        text: "Sey the word, and I shal assure that thou rest in pees.",
+        options: [
+          { label: "Yes! I would like to rest here in the after life.", action: "set_respawn_here", end: true },
+          { label: "Back", next: "start" },
+          { label: "No never mind.", end: true },
+        ]
+      },
+    }
+  },
+
+
 };
 
 // Runtime state for dialog 
@@ -2535,18 +2906,23 @@ if (authStatusEl) authStatusEl.textContent = msg || "";
 
 async function requireSession() {
   const { data } = await sb.auth.getSession();
-  return data?.session || null;
+  const s = data?.session || null;
+  myUserId = s?.user?.id || null;
+  return s;
 }
 
 btnLogin?.addEventListener("click", async () => {
-const email = (authEmailEl?.value || "").trim();
-const password = (authPassEl?.value || "").trim();
-setAuthStatus("Logger inn...");
+  const email = (authEmailEl?.value || "").trim();
+  const password = (authPassEl?.value || "").trim();
 
-const { data, error } = await sb.auth.signInWithPassword({ email, password });
-if (error) { setAuthStatus(error.message); return; }
+  setAuthStatus("Logger inn...");
 
-setAuthStatus("Innlogget!");
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { setAuthStatus(error.message); return; }
+
+  await hydrateSaveFromCloud();
+  showMenu();
+  setAuthStatus("Innlogget!");
 });
 
 btnSignup?.addEventListener("click", async () => {
@@ -2560,23 +2936,428 @@ if (error) { setAuthStatus(error.message); return; }
 setAuthStatus("Bruker opprettet! (Sjekk e-post hvis du har email-confirm på)");
 });
 
+
+async function acquireSessionLockOrBlock() {
+  //  Allerede låst i denne taben → OK
+  if (sessionLockAcquired) return true;
+
+  //  Hindrer parallelle kall (dobbeltklikk / to init-funksjoner)
+  if (acquiringSession) return false;
+  acquiringSession = true;
+
+  try {
+    const session = await requireSession();
+    if (!session) {
+      blockGameWithMessage("You must be logged in.");
+      return false;
+    }
+
+    const { data, error } = await sb.rpc("rpc_session_acquire", {
+      p_session_id: clientSessionId,
+      p_stale_seconds: SESSION_STALE_SECONDS,
+    });
+
+    if (error) throw error;
+
+    if (!data?.ok) {
+      // Hard deny
+      const msg =
+        data?.reason === "already_logged_in"
+          ? "You are already logged in somewhere else."
+          : "Could not start session.";
+
+      blockGameWithMessage(msg);
+      return false;
+    }
+
+    //  Vi har lock (eller eier den allerede)
+    sessionLockAcquired = true;
+    startSessionHeartbeat();
+    return true;
+  } catch (e) {
+    console.error("[SESSION] acquire failed:", e);
+    blockGameWithMessage("Could not verify session. Try again.");
+    return false;
+  } finally {
+    acquiringSession = false;
+  }
+}
+
+function startSessionHeartbeat() {
+  stopSessionHeartbeat();
+
+  sessionHeartbeatTimer = setInterval(async () => {
+    if (!sessionLockAcquired) return;
+
+    try {
+      const { data, error } = await sb.rpc("rpc_session_heartbeat", {
+        p_session_id: clientSessionId,
+      });
+
+      if (error) throw error;
+
+      if (!data?.ok) {
+        // Mistet lock (f.eks. logget inn et annet sted, eller stale takeover)
+        sessionLockAcquired = false;
+        stopSessionHeartbeat();
+        blockGameWithMessage("Session lost. You are logged in elsewhere.");
+      }
+    } catch (e) {
+      // Ikke blokker på én feil (nettflak). Heartbeat vil prøve igjen.
+      console.warn("[SESSION] heartbeat failed:", e);
+    }
+  }, SESSION_HEARTBEAT_MS);
+}
+
+function stopSessionHeartbeat() {
+  if (sessionHeartbeatTimer) {
+    clearInterval(sessionHeartbeatTimer);
+    sessionHeartbeatTimer = null;
+  }
+}
+
+async function releaseSessionLock() {
+  if (!sessionLockAcquired) return;
+
+  sessionLockAcquired = false;
+  stopSessionHeartbeat();
+
+  try {
+    await sb.rpc("rpc_session_release", { p_session_id: clientSessionId });
+  } catch (e) {
+    // best effort
+    console.warn("[SESSION] release failed:", e);
+  }
+}
+
+// Enkel “hard block” UI (lag gjerne penere senere)
+function blockGameWithMessage(msg) {
+  console.error(msg);
+  alert(msg);
+
+  // Stoppe spill-loop hvis du har en
+  gameStarted = false;
+
+  // skjul UI / disable input her hvis du har egne flags
+}
+
+// -------------------- MULTIPLAYER: Presence (light) --------------------
+
+let presenceGeneration = 0;
+let presenceSubscribing = false;
+let presenceLastSubAt = 0;
+
+const PRESENCE_STALE_SECONDS = 20;
+const PRESENCE_PUSH_MIN_MS = 120; // throttling
+let presenceLastPushAt = 0;
+
+let presenceChannel = null; // realtime channel
+const otherPlayers = new Map(); // user_id -> state
+
+let presenceHeartbeatTimer = null;
+
+function startPresenceHeartbeat() {
+  stopPresenceHeartbeat();
+  presenceHeartbeatTimer = setInterval(() => {
+    presenceUpsert(false);
+  }, 2000);
+}
+
+function stopPresenceHeartbeat() {
+  if (presenceHeartbeatTimer) {
+    clearInterval(presenceHeartbeatTimer);
+    presenceHeartbeatTimer = null;
+  }
+}
+
+// Hold Realtime JWT i sync med auth
+sb.auth.onAuthStateChange((_event, session) => {
+  try {
+    const token = session?.access_token;
+    if (token) sb.realtime.setAuth(token);
+  } catch (e) {
+    console.warn("[REALTIME] setAuth failed", e);
+  }
+});
+
+function getMyNameForPresence() {
+  // du har profile-name i save/profile flow
+  const s = getSave?.();
+  const fromSave = s?.profile?.name || s?.player?.name;
+  const fromProfile = getProfileName?.();
+  return (fromSave || fromProfile || "Player").toString().slice(0, 16);
+}
+
+function getMyGenderForPresence() {
+  const s = getSave?.();
+  const g = s?.profile?.gender || player?.gender;
+  return (g === "female") ? "female" : "male";
+}
+
+async function presenceUpsert(force = false) {
+  if (!gameStarted) return;
+  if (!sessionLockAcquired) return;
+
+  const now = Date.now();
+  if (!force && (now - presenceLastPushAt) < PRESENCE_PUSH_MIN_MS) return;
+  presenceLastPushAt = now;
+
+  try {
+    await sb.rpc("rpc_presence_upsert", {
+      p_session_id: clientSessionId,
+      p_level_id: currentLevelId,
+      p_x: Math.floor(player.x),
+      p_y: Math.floor(player.y),
+      p_facing: player.facing || null,
+      p_name: getMyNameForPresence(),
+      p_gender: getMyGenderForPresence(),
+    });
+  } catch (e) {
+    console.warn("[PRESENCE] upsert failed", e);
+  }
+}
+
+async function presenceRemove() {
+  try {
+    await sb.rpc("rpc_presence_remove", { p_session_id: clientSessionId });
+  } catch (e) {
+    // best effort
+  }
+}
+
+function clearOtherPlayers() {
+  otherPlayers.clear();
+}
+
+function applyPresenceRow(row) {
+  if (!row?.user_id) return;
+
+  // Lagrer både tile-pos og pixel-pos for “smooth-ish”
+  const x = Number(row.x) || 0;
+  const y = Number(row.y) || 0;
+
+  const prev = otherPlayers.get(row.user_id);
+  const px = x * TILE_SIZE;
+  const py = y * TILE_SIZE;
+
+  otherPlayers.set(row.user_id, {
+    user_id: row.user_id,
+    name: row.name || "Player",
+    gender: row.gender || "male",
+    level_id: row.level_id,
+    x, y,
+    facing: row.facing || "down",
+    // smooth render targets:
+    px: prev?.px ?? px,
+    py: prev?.py ?? py,
+    targetPx: px,
+    targetPy: py,
+    lastUpdateMs: Date.now(),
+  });
+}
+
+function updateOtherPlayersSmooth(dtMs) {
+  // enkel lerp mot target
+  const t = Math.min(1, dtMs / 120);
+  for (const p of otherPlayers.values()) {
+    p.px = p.px + (p.targetPx - p.px) * t;
+    p.py = p.py + (p.targetPy - p.py) * t;
+  }
+}
+
+// Tegn andre spillere (enkelt: bruker samme sprites som deg, basert på gender + facing)
+function getOtherPlayerSprite(p) {
+  const skinId = (p.gender === "female") ? "female" : "male";
+  const skin = playerSkins[skinId];
+  if (!skin) return null;
+
+  const pack = skin[p.facing] || skin.down;
+  if (!pack) return null;
+
+  // idle anim
+  const frames = pack.idle || [];
+  if (!frames.length) return null;
+  const idx = Math.floor(animTime / PLAYER_IDLE_FRAME_MS) % frames.length;
+  return frames[idx];
+}
+
+function drawOtherPlayers(nowMs) {
+  for (const p of otherPlayers.values()) {
+    // safety: bare samme level
+    if (p.level_id !== currentLevelId) continue;
+
+    const img = getOtherPlayerSprite(p);
+    if (img) ctx.drawImage(img, p.px, p.py, TILE_SIZE, TILE_SIZE);
+    else {
+      ctx.fillStyle = "#22c55e";
+      ctx.fillRect(p.px, p.py, TILE_SIZE, TILE_SIZE);
+    }
+
+    // navn over hodet (valgfritt men nyttig)
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(p.px - 2, p.py - 14, TILE_SIZE + 4, 12);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "10px ui-monospace, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText((p.name || "Player").slice(0, 12), p.px + TILE_SIZE / 2, p.py - 4);
+    ctx.restore();
+  }
+}
+
+let myUserId = null;
+
+// sørg for at realtime alltid har riktig JWT
+async function ensureRealtimeAuth() {
+  const { data } = await sb.auth.getSession();
+  const session = data?.session || null;
+  myUserId = session?.user?.id || null;
+
+  // Viktig: realtime trenger JWT for RLS-beskyttede postgres_changes
+  if (session?.access_token) {
+    try { sb.realtime.setAuth(session.access_token); } catch {}
+  }
+  return session;
+}
+
+
+let presenceDesiredLevel = null;
+
+let presenceRetry = 0;
+let presenceRetryTimer = null;
+
+function schedulePresenceResubscribe(reason) {
+  clearTimeout(presenceRetryTimer);
+
+  // enkel exponential backoff: 0.5s, 1s, 2s, 4s, ... max 10s
+  const delay = Math.min(10000, 500 * Math.pow(2, presenceRetry));
+  presenceRetry = Math.min(presenceRetry + 1, 6);
+
+  console.warn(`[PRESENCE] resubscribe in ${delay}ms (${reason})`);
+
+  presenceRetryTimer = setTimeout(() => {
+    if (presenceDesiredLevel) subscribeToPresence(presenceDesiredLevel, true);
+  }, delay);
+}
+
+async function resetRealtimeConnection() {
+  try { sb.realtime.disconnect(); } catch {}
+  try { sb.realtime.connect(); } catch {}
+}
+
+async function subscribeToPresence(levelId, isRetry = false) {
+  presenceDesiredLevel = levelId;
+
+  // anti-spam: ikke start ny subscribe for ofte
+  const now = Date.now();
+  if (now - presenceLastSubAt < 1500) return;
+  presenceLastSubAt = now;
+
+  // hindre overlappende subscribes
+  if (presenceSubscribing) return;
+  presenceSubscribing = true;
+
+  const gen = ++presenceGeneration;
+
+  try {
+    await ensureRealtimeAuth();
+
+    // fjern gammel kanal (CLOSED her er “forventet”)
+    if (presenceChannel) {
+      try { await sb.removeChannel(presenceChannel); } catch {}
+      presenceChannel = null;
+    }
+
+    // bare “hard reconnect” etter noen retries
+    if (isRetry && presenceRetry >= 2) {
+      try { sb.realtime.disconnect(); } catch {}
+      try { sb.realtime.connect(); } catch {}
+      await ensureRealtimeAuth();
+    }
+
+    // snapshot
+    try {
+      const { data, error } = await sb.rpc("rpc_presence_snapshot", {
+        p_level_id: levelId,
+        p_stale_seconds: PRESENCE_STALE_SECONDS,
+      });
+      if (!error && Array.isArray(data)) {
+        clearOtherPlayers();
+        for (const row of data) applyPresenceRow(row);
+      }
+    } catch (e) {
+      console.warn("[PRESENCE] snapshot failed", e);
+    }
+
+    presenceChannel = sb
+      .channel(`presence:${levelId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "player_presence", filter: `level_id=eq.${levelId}` },
+        (payload) => {
+          if (gen !== presenceGeneration) return;
+
+          const ev = payload.eventType;
+          if (ev === "DELETE") {
+            const uid = payload.old?.user_id;
+            if (uid) otherPlayers.delete(uid);
+            return;
+          }
+
+          const row = payload.new;
+          if (myUserId && row?.user_id === myUserId) return;
+          applyPresenceRow(row);
+        }
+      )
+      .subscribe((status) => {
+        if (gen !== presenceGeneration) return;
+
+        console.log("[PRESENCE] channel", status);
+
+        if (status === "SUBSCRIBED") {
+          presenceRetry = 0;
+          return;
+        }
+
+        if (status === "TIMED_OUT" || status === "CHANNEL_ERROR") {
+          schedulePresenceResubscribe(status);
+        }
+
+      });
+
+    await presenceUpsert(true);
+  } finally {
+    presenceSubscribing = false;
+  }
+}
+
+
+
+
+// ---------- Session lock (single-login) ----------
+const SESSION_STALE_SECONDS = 20;
+const SESSION_HEARTBEAT_MS = 5000;
+
+const clientSessionId = crypto.randomUUID();
+let sessionHeartbeatTimer = null;
+let sessionLockAcquired = false;
+let acquiringSession = false;
+
 // -------------------- PROFILE + SAVE KEYS --------------------
 const PROFILE_KEY = "voidquest_profile_v1";
 
-// --- Cloud save cache (source of truth i menyen) ---
+// --- Cloud save cache ---
 let CLOUD_SAVE_CACHE = null;
 
 async function hydrateSaveFromCloud() {
-  // henter cloud save og legger i cache + localStorage (som cache)
   try {
-    const cloud = await cloudGetSave(); // bruker requireSession inni
+    const cloud = await cloudGetSave();
     if (cloud) {
       CLOUD_SAVE_CACHE = cloud;
       localStorage.setItem(SAVE_KEY, JSON.stringify(cloud));
       const cloudName = cloud?.profile?.name;
-      if (cloudName && cloudName.trim().length >= 2) {
-        setProfileName(cloudName);
-      }
+      if (cloudName && cloudName.trim().length >= 2) setProfileName(cloudName);
       return cloud;
     }
   } catch (e) {
@@ -2586,29 +3367,13 @@ async function hydrateSaveFromCloud() {
 }
 
 function getSave() {
-  // 1) først: cache (cloud)
-  if (CLOUD_SAVE_CACHE) return CLOUD_SAVE_CACHE;
-
-  // 2) fallback: localStorage (cache/offline)
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    return s;
-  } catch {
-    return null;
-  }
+  return CLOUD_SAVE_CACHE || null;
 }
-
 
 function hasSave() {
-  const s = getSave();
-  if (!s || typeof s !== "object") return false;
-  if (!s.player) return false;
-
-  // Ikke krev profile.name for at save skal “eksistere”
-  return true;
+  return !!CLOUD_SAVE_CACHE && !!CLOUD_SAVE_CACHE.player;
 }
+
 
 function setProfileName(name) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify({ name }));
@@ -2626,9 +3391,11 @@ function getProfileName() {
 }
 
 function getCharacterNameFromSaveOrProfile() {
+  // Hvis vi ikke har en cloud-save, finnes det ingen character enda
+  if (!hasSave()) return null;
+
   const s = getSave();
-  const fromSave = s?.profile?.name || null;
-  return fromSave || getProfileName();
+  return s?.profile?.name || null;
 }
 
 async function destroyInventorySlotServer(slotIndex, qty = 0) {
@@ -2860,6 +3627,8 @@ function buildSaveData() {
 
     profile: {
       name: getProfileName(),
+      gender: player.gender || "male",
+      respawn: respawnPoint || null,
     },
 
     // hvor du er
@@ -2884,7 +3653,18 @@ function buildSaveData() {
 function applySaveData(data) {
   if (!data || typeof data !== "object") return false;
 
-  //  Hvis levelId er ukjent (du har endret map.js), fallback i stedet for å “miste” save
+  // Gender 
+  player.gender = (data?.profile?.gender === "female" || data?.player?.gender === "female")
+    ? "female"
+    : "male";
+
+  respawnPoint = null;
+  const r = data?.profile?.respawn;
+  if (r && typeof r.levelId === "string" && Number.isFinite(+r.x) && Number.isFinite(+r.y)) {
+    respawnPoint = { levelId: r.levelId, x: Math.floor(+r.x), y: Math.floor(+r.y) };
+  }
+
+  // fallback i stedet for å “miste” save
   let levelId = data.levelId;
   if (!levelId || !LEVELS[levelId]) {
     const fallback = Object.keys(LEVELS)[0]; // eller "spenningsbyen" hvis du vil hardkode
@@ -2918,7 +3698,7 @@ function applySaveData(data) {
 
   // 5) skills
   if (data.skills && typeof data.skills === "object") {
-    for (const id of ["combat", "mining"]) {
+    for (const id of ["combat", "mining", "woodcutting"]) {
       const s = data.skills[id];
       if (s && typeof s === "object") {
         skills[id] = {
@@ -3032,6 +3812,48 @@ async function loadGame() {
   }
 }
 
+// -------- Position autosave (cloud) --------
+let lastPosSaveAt = 0;
+let lastPosSent = { levelId: null, x: null, y: null, facing: null };
+
+async function cloudSavePosition(force = false) {
+  if (!gameStarted) return;
+  const session = await requireSession();
+  if (!session) return;
+
+  const now = Date.now();
+  if (!force && now - lastPosSaveAt < 2500) return; // rate limit: 2.5s
+
+  const x = Math.floor(player.x);
+  const y = Math.floor(player.y);
+  const lvl = currentLevelId;
+  const facing = player.facing || null;
+
+  // Ikke send hvis ingenting har endret seg (spar DB)
+  if (
+    !force &&
+    lastPosSent.levelId === lvl &&
+    lastPosSent.x === x &&
+    lastPosSent.y === y &&
+    lastPosSent.facing === facing
+  ) return;
+
+  try {
+    await sb.rpc("rpc_set_position", {
+      p_level_id: lvl,
+      p_x: x,
+      p_y: y,
+      p_facing: facing,
+    });
+
+    lastPosSaveAt = now;
+    lastPosSent = { levelId: lvl, x, y, facing };
+  } catch (e) {
+    console.warn("[POS SAVE] rpc_set_position failed", e);
+  }
+}
+
+
 // -------------------- MIGRATION: localStorage -> Supabase --------------------
 async function migrateLocalSaveToCloudIfNeeded() {
   const session = await requireSession();
@@ -3103,6 +3925,10 @@ function setLevel(newLevelId, entryFromDirection = null, forcedSpawn = null) {
   player.moveElapsed = 0;
 
   updateHud();
+  cloudSavePosition(true);
+  // Multiplayer presence: resubscribe + push
+  subscribeToPresence(currentLevelId);
+  presenceUpsert(true);
 }
 
 
@@ -3466,7 +4292,7 @@ function drawMinimap() {
 function getActiveSkinId() {
   const armor = equipped?.armor;
   if (armor && playerSkins[armor.id]) return armor.id;
-  return "default";
+  return (player.gender === "female") ? "female" : "male";
 }
 
 function getPlayerSprite() {
@@ -3577,8 +4403,10 @@ function draw() {
         ctx.restore();
       }
     }
+    drawWorldMap();
   }
 
+  drawOtherPlayers(nowMs);
 
   // player
   const pImg = getPlayerSprite();
@@ -3788,10 +4616,21 @@ canvas.addEventListener("contextmenu", (e) => {
     });
   }
 
+  // Cut option hvis tile er cuttable
+  if (tileDef?.woodcutting) {
+    entries.push({
+      label: "Cut",
+      onClick: () => {
+        if (combat.active) stopCombat("You stop fighting.", performance.now());
+        startWoodcuttingNode(tx, ty, target.layer, target.key, tileDef);
+      }
+    });
+  }
+
   openContextMenu(e.clientX, e.clientY, target.key, entries);
 });
 
-const CHAT_MAX_LINES = 8;
+const CHAT_MAX_LINES = 20;
 
 function formatTimeHHMM() {
   const d = new Date();
@@ -3803,26 +4642,26 @@ function formatTimeHHMM() {
 function logMessage(text, type = "system") {
   if (!chatLogEl) return;
 
+  const wasNearBottom =
+    chatLogEl.scrollHeight - chatLogEl.scrollTop - chatLogEl.clientHeight < 12;
+
   const line = document.createElement("div");
   line.className = `chatline ${type}`;
 
-  const time = document.createElement("span");
-  time.className = "time";
-  time.textContent = `[${formatTimeHHMM()}]`;
-
-  const msg = document.createElement("span");
-  msg.textContent = text;
-
-  line.appendChild(time);
-  line.appendChild(msg);
+  line.textContent = text;
 
   chatLogEl.appendChild(line);
 
-  // hold max lines
   while (chatLogEl.children.length > CHAT_MAX_LINES) {
     chatLogEl.removeChild(chatLogEl.firstChild);
   }
+
+  if (wasNearBottom) {
+    chatLogEl.scrollTop = chatLogEl.scrollHeight;
+  }
 }
+
+
 
 
 
@@ -3846,14 +4685,13 @@ function setFacingFromDelta(dx, dy) {
 }
 
 function intentFromHeld() {
-  // hvis lastIntent fortsatt holdes, bruk den
   if (lastIntent && held[lastIntent]) return lastIntent;
 
-  // ellers: velg en som holdes (enkelt)
   if (held.up) return "up";
   if (held.down) return "down";
   if (held.left) return "left";
   if (held.right) return "right";
+
   return null;
 }
 
@@ -3876,7 +4714,7 @@ const PAUSE_ITEMS = [
 function isUiBlocked() {
   const dialogEl = document.getElementById("dialog"); // kan være null
   const dialogOpen = dialogEl ? !dialogEl.classList.contains("hidden") : false;
-  return pauseOpen || dialogOpen ||  shopOpen || bankOpen || mining.active;
+  return pauseOpen || dialogOpen ||  shopOpen || bankOpen || mining.active || woodcutting.active;
 }
 
 function renderPauseMenu() {
@@ -4049,9 +4887,15 @@ function damagePlayer(amount = 1) {
 
   if (player.hp <= 0) {
     logMessage("You died!", "error");
-    // foreløpig: respawn med full HP (kan endres senere)
+    // foreløpig: respawn med full HP
     player.hp = player.maxHp;
-    setLevel(currentLevelId, null);
+
+    if (respawnPoint && LEVELS[respawnPoint.levelId]) {
+      setLevel(respawnPoint.levelId, null, { x: respawnPoint.x, y: respawnPoint.y });
+    } else {
+      setLevel(currentLevelId, null);
+    }
+
     renderHearts();
     saveGame?.();
   }
@@ -4111,7 +4955,6 @@ function closeDialog() {
 }
 
 function runDialogAction(actionId) {
-  // legg actions du vil støtte her
   if (actionId === "heal") {
     healPlayer(1);
     logMessage("You feel slightly healthier.", "system");
@@ -4128,6 +4971,23 @@ function runDialogAction(actionId) {
     if (npc) openBankForNpc(npc);
     return;
   }
+
+  if (actionId === "set_respawn_here") {
+    const npc = getNpcById(dialogState.npcId);
+    if (!npc) return;
+
+    // Bruker npc.respawnPoint
+    const levelId = npc?.respawnPoint?.levelId || currentLevelId;
+    const x = Number.isFinite(npc?.respawnPoint?.x) ? npc.respawnPoint.x : npc.x;
+    const y = Number.isFinite(npc?.respawnPoint?.y) ? npc.respawnPoint.y : npc.y;
+
+    respawnPoint = { levelId, x: Math.floor(x), y: Math.floor(y) };
+
+    saveGame?.(); 
+    logMessage(`Respawn set to this warden in ${LEVELS[levelId]?.name || levelId}.`, "system");
+    return;
+  }
+
 }
 
 function renderDialog() {
@@ -4431,8 +5291,29 @@ window.addEventListener("mousedown", (e) => {
     closeContextMenu();
   }
 });
-// Hvis du begynner å gå: lukk meny
-// (legg dette helt i starten av startMove(dx,dy) hvis du har den funksjonen)
+
+if (btnMap) btnMap.addEventListener("click", toggleMap);
+if (btnMapClose) btnMapClose.addEventListener("click", () => setMapOpen(false));
+
+window.addEventListener("resize", () => {
+    resizeMapCanvas();
+    drawWorldMap(); 
+});
+
+window.addEventListener("keydown", (e) => {
+  // M toggler map (ikke hvis du skriver i input)
+  if ((e.key === "m" || e.key === "M") && document.activeElement?.tagName !== "INPUT") {
+    e.preventDefault();
+    toggleMap();
+  }
+
+  // Escape lukker map hvis åpen
+  if (e.key === "Escape" && mapOpen) {
+    e.preventDefault();
+    setMapOpen(false);
+  }
+});
+
 
 
 // ----------- Game loop (update + draw) -----------
@@ -4444,6 +5325,7 @@ function lerp(a, b, t) {
 
 function update(dtMs) {
   animTime += dtMs;
+  updateOtherPlayersSmooth(dtMs);
 
   const nowMs = performance.now();
   updateEnemyRegens(nowMs); 
@@ -4451,6 +5333,7 @@ function update(dtMs) {
   updateTileRespawns(nowMs);
   updateCombat(nowMs);
   updateMining(nowMs);
+  updateWoodcutting(nowMs);
   if (player.moving) {
     player.moveElapsed += dtMs;
     const t = Math.min(1, player.moveElapsed / player.moveDuration);
@@ -4468,6 +5351,7 @@ function update(dtMs) {
 
       player.moving = false;
       updateHud();
+      presenceUpsert(false);
 
       // Hvis en retning fortsatt holdes: gå videre uten hakking
       const nextDir = intentFromHeld();
@@ -4829,11 +5713,17 @@ async function startGame(opts = { mode: "load" }) {
     return;
   }
 
+  const ok = await acquireSessionLockOrBlock();
+  if (!ok) return; // stopp start hvis allerede logget inn
+
   gameStarted = true;
   hideAllScreensAndShowGameUI();
   await loadAllTiledLevels();
 
-  await migrateLocalSaveToCloudIfNeeded();
+
+  setInterval(() => {
+    cloudSavePosition(false);
+  }, 3000);
 
   // 1) Først: utvid grids så de matcher width/height (hindrer all “alt blir feil”)
   for (const lvl of Object.values(LEVELS)) {
@@ -4852,38 +5742,55 @@ async function startGame(opts = { mode: "load" }) {
     // Last existing save hvis den er gyldig, ellers ny start
     const ok = await loadGame();
     if (!ok) {
-      setLevel(currentLevelId, null);
+      // Hvis cloud-save mangler: gå tilbake til meny og krev character creation
+      showMenu();
+      logMessage("No cloud save found. Create a character first.", "error");
+      gameStarted = false;
+      return;
     }
   }
-  renderHearts();
 
-  logMessage("Welcome to VoidQuest.", "system");
-
-
-  // VIKTIG: lag første save med en gang når spillet starter
-  // (nå er gameStarted=true og name finnes => canWriteSave() blir true)
-  await saveGame();
+  await presenceUpsert(true);
+  startPresenceHeartbeat();
 
   requestAnimationFrame(loop);
 }
 
 // -------------------- LOG OUT --------------------
 const btnLogout = document.getElementById("btn-logout");
+let isLoggingOut = false;
 
 btnLogout?.addEventListener("click", async () => {
+  if (isLoggingOut) return;
+  isLoggingOut = true;
+
   try {
+    // 1) Stopp spillet først (stopper input/loop)
+    gameStarted = false;
+
+    // 2) Prøv å lagre FØR signOut (ellers får du "må være logget inn")
+    if (canWriteSave()) {
+      await saveGame();
+    }
+
+    stopPresenceHeartbeat();
+    await presenceRemove();
+
+    // 3) Slipp session-lock (så du ikke "låser" brukeren)
+    await releaseSessionLock();
+
+    // 4) Logg ut
     if (window.__vq_sb) {
       await window.__vq_sb.auth.signOut();
     }
   } catch (err) {
     console.warn("Logout error:", err);
+  } finally {
+    // 5) Redirect uansett (selv om noe feiler)
+    window.location.href = "index.html";
   }
-  saveGame?.();
-  saveGame();
-
-  // Redirect til login-portal uansett
-  window.location.href = "index.html";
 });
+
 
 
 
@@ -4897,6 +5804,12 @@ function getIdleFramesForPreview() {
   // ALLTID "front" i menyen.
   const dir = "down";
 
+  // 0) Hent gender fra save (profilen din), fallback til player.gender
+  const gender =
+    (s?.profile?.gender === "female" || s?.player?.gender === "female" || player?.gender === "female")
+      ? "female"
+      : "male";
+
   // 1) Hent armorId fra save
   const armorId = s?.equipped?.armor?.id || null;
 
@@ -4907,17 +5820,20 @@ function getIdleFramesForPreview() {
     if (typeof idle === "string" && idle) return [idle];
   }
 
-  // 3) Ellers: fallback til base PLAYER_ANIMS (front)
-  try {
-    const base = PLAYER_ANIMS?.[dir] || PLAYER_ANIMS?.down;
-    const idle = base?.idle;
-    if (Array.isArray(idle) && idle.length) return idle;
-    if (typeof idle === "string" && idle) return [idle];
-  } catch {}
+  // 3) Ellers: bruk riktig base anim-set basert på gender
+  const baseSet = (gender === "female") ? PLAYER_ANIMS_FEMALE : PLAYER_ANIMS_MALE;
+  const base = baseSet?.[dir] || baseSet?.down;
+  const idle = base?.idle;
 
-  // 4) Siste fallback
-  return ["assets/player/male/pixelmannDown.png"];
+  if (Array.isArray(idle) && idle.length) return idle;
+  if (typeof idle === "string" && idle) return [idle];
+
+  // 4) Siste fallback (match gender)
+  return gender === "female"
+    ? ["assets/player/female/female_down.png"]
+    : ["assets/player/male/pixelmannDown.png"];
 }
+
 
 
 function stopPreviewAnim() {
@@ -5012,52 +5928,92 @@ function hideAllScreensAndShowGameUI() {
 }
 
 // Lager en “ny character” save uten å auto-entre spillet
-async function createCharacterSaveOnly(name) {
+async function createCharacterSaveOnly(name, gender = "male") {
+  name = (name || "").trim();
+  if (name.length < 2) return false;
+
+  // Sett profilnavn (dere bruker dette i canWriteSave() osv)
   setProfileName(name);
+  player.gender = (gender === "female") ? "female" : "male";
 
-  // reset basics (trygt/minimalt)
-  player.level = 1;
+  // Reset basics (minimalt og trygt)
   player.xp = 0;
-  player.hp = player.maxHp;
+  player.level = 1;          // dere bruker levelFromXp ved load, men ok å sette her
+  player.hp = player.maxHp;  // full heal på ny character
 
+  // Reset inventory/equip/bank til tomt
   try { inventory = normalizeInventory([]); } catch {}
-  try { equipped = normalizeEquipped({}); } catch {}
-  try { bank = normalizeBank([]); } catch {}
+  try { equipped  = normalizeEquipped({}); } catch {}
+  try { bank      = normalizeBank([]); } catch {}
 
-  // skriv save direkte
+  // Bygg save-objektet
   const data = buildSaveData();
-  try {
-    if (typeof cloudUpsertSave === "function") {
-      await cloudUpsertSave(data);
-      CLOUD_SAVE_CACHE = data;
-      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-    } else {
-      // fallback local
-      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-    }
-  } catch (e) {
-    console.warn("[CREATE] save failed", e);
+
+  // Prøv å skrive til cloud. Dette MÅ lykkes for at character skal finnes.
+  const ok = await cloudUpsertSave(data);
+  if (!ok) {
+    console.warn("[CREATE] cloudUpsertSave failed");
+    logMessage("Cloud save failed. Could not create character.", "error");
+    return false;
   }
+
+  // Cloud ok => oppdater lokal cache (for rask UI)
+  CLOUD_SAVE_CACHE = data;
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+
+  return true;
+}
+
+const btnExitToMenu = document.getElementById("btnExitToMenu");
+
+btnExitToMenu?.addEventListener("click", exitToMenu);
+
+async function exitToMenu() {
+  // stopp spill
+  gameStarted = false;
+
+  // lagre før du går til meny
+  if (canWriteSave()) {
+    await saveGame();
+  }
+
+  // slipp lock så du ikke låser kontoen når du går til meny
+  await releaseSessionLock();
+
+  // gå til menyen (index.html)
+  window.location.href = "index.html";
+}
+
+function showMainMenu() {
+  // Skjul game UI hvis du har
+  const hud = document.getElementById("hud");      // hvis finnes
+  const menu = document.getElementById("menu");    // hvis finnes
+  if (hud) hud.style.display = "none";
+  if (menu) menu.style.display = "block";
+  location.reload();
+
+  // nullstill litt runtime state som kan skape rare ting ved ny start
+  inventory = normalizeInventory([]);
+  equipped = {};
+  bank = [];
+
 }
 
 
 // ----------- App start (menu først) -----------
 (async () => {
-  // 1) hvis cloud ikke finnes ennå men local finnes, last opp local én gang
-  await migrateLocalSaveToCloudIfNeeded();
-
-  // 2) hent cloud -> cache -> localStorage
   await hydrateSaveFromCloud();
-
-  // 3) nå kan UI trygt vise riktig character
   showMenu();
 })();
 
 btnStart.addEventListener("click", () => {
-  // safety
-  if (!hasSave()) return;
+  console.log("[START] clicked", { hasSave: hasSave(), cloud: !!CLOUD_SAVE_CACHE });
 
-  // Start game (load)
+  if (!hasSave()) {
+    logMessage("No cloud save found. Create a character first.", "error");
+    return;
+  }
+
   startGame({ mode: "load" });
 });
 
@@ -5071,16 +6027,29 @@ btnBackMenu.addEventListener("click", () => {
 
 btnFinishCharacter.addEventListener("click", async () => {
   const name = (inputName.value || "").trim();
-
   if (name.length < 2) {
     alert("Navnet må være minst 2 tegn.");
     return;
   }
 
-  await createCharacterSaveOnly(name);
+  const gender =
+    document.querySelector('input[name="gender"]:checked')?.value || "male";
+
+  const ok = await createCharacterSaveOnly(name, gender);
+  if (!ok) return;
 
   closeCreateModal();
   refreshStartHubUI();
 });
 
 
+window.addEventListener("beforeunload", () => {
+  releaseSessionLock();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    // ikke release her hvis tab i bakgrunn skal holde lock
+    // releaseSessionLock();
+  }
+});

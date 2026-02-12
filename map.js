@@ -22,15 +22,15 @@ window.LEVELS = {
         x: 22, //horisontalt +1
         y: 12, //vertikalt +1
         sprites: [
-          "assets/npcs/oleander/oleanderDown.png",
-          "assets/npcs/oleander/oleanderDownIdle1.png"
+          "assets/npcs/oleander/oleander_down.png",
+          "assets/npcs/oleander/oleander_down_idle1.png"
         ],
         trader: true,
         shop: [
           { itemId: "bronzeArmor", cost: { itemId: "club", qty: 2 } },
           { itemId: "apple", cost: { itemId: "coins", qty: 1 } },
         ],
-        idleMs: 540,        // hvor ofte den bytter frame (valgfritt)
+        idleMs: 540,
         dialogId: "trader_01",
       },
 
@@ -40,15 +40,49 @@ window.LEVELS = {
         x: 21, //horisontalt +1
         y: 12, //vertikalt +1
         sprites: [
-          "assets/npcs/oleander/oleanderDown.png",
-          "assets/npcs/oleander/oleanderDownIdle1.png"
+          "assets/npcs/banker/banker_down.png",
+          "assets/npcs/banker/banker_down_idle.png"
         ],
         banker: true,
-        idleMs: 540,        // hvor ofte den bytter frame (valgfritt)
+        idleMs: 500,
         dialogId: "trader_01",
       },
 
-      // --- ENEMY  ---
+      {
+        id: "church_warden_normal",
+        name: "Church Warden",
+        x: 20, //horisontalt +1
+        y: 12, //vertikalt +1
+        sprites: [
+          "assets/npcs/church_warden/church_warden_normal.png",
+          "assets/npcs/church_warden/church_warden_normal_idle.png"
+        ],
+        churchwarden: true,
+        respawnPoint: { levelId: "spenningsbyen", x: 19, y: 12 },
+        idleMs: 600,
+        dialogId: "graveyard_warden",
+      },
+
+        // --- ANIMALS  ---
+      {
+        id: "cow_01",
+        name: "Cow",
+        x: 21, //horisontalt +1
+        y: 16, //vertikalt +1
+        sprites: [
+          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_idle.png"
+        ],
+        idleMs: 500,
+        hostile: true,
+        maxHp: 6,
+        hitChance: 0.1,
+        attackSpeedMs: 7000,
+        maxHit: 1,
+        respawnMs: 20000,
+      },
+
+        // --- ENEMY  ---
       {
         id: "goblin_01",
         name: "Goblin",
@@ -58,16 +92,10 @@ window.LEVELS = {
         // du legger inn assets senere:
         sprites: [
           "assets/npcs/goblin/goblin.png",
-          "assets/npcs/goblin/goblinIdle1.png"
+          "assets/npcs/goblin/goblin_idle1.png"
         ],
         weaponFxSprite: "assets/items/club.png",
         idleMs: 450,
-
-        drops: [
-          { itemId: "club", chance: 0.70 },
-          { itemId: "coins", chance: 1, qtyMin: 1, qtyMax: 10 }, // 100% sjanse for 1-10 coins
-
-        ],
 
         hostile: true,     // enemy :)
         maxHp: 6,
@@ -79,11 +107,11 @@ window.LEVELS = {
       }
 
     ],
-
+      // --------- PORTALS  ---------
     portals: [
       {
         x: 25, y: 12,                 // hvor døra står i denne levelen
-        toLevel: "gatherers_inn",           // nivået du går inn i
+        toLevel: "testMap",           // nivået du går inn i
         toSpawn: { x: 7, y: 2 },       // hvor du spawner inne
         label: "Enter"                // tekst i meny
       }
@@ -111,8 +139,8 @@ window.LEVELS = {
         x: 12, //horisontalt +1
         y: 2, //vertikalt +1
         sprites: [
-          "assets/npcs/oleander/oleanderDown.png",
-          "assets/npcs/oleander/oleanderDownIdle1.png"
+          "assets/npcs/oleander/oleander_down.png",
+          "assets/npcs/oleander/oleander_down_idle1.png"
         ],
         idleMs: 550,        // hvor ofte den bytter frame (valgfritt)
 
@@ -125,14 +153,16 @@ window.LEVELS = {
         x: 4, //horisontalt +1
         y: 8, //vertikalt +1
         sprites: [
-          "assets/npcs/blacksmith/blacksmithIdle1.png",
-          "assets/npcs/blacksmith/blacksmithIdle2.png"
+          "assets/npcs/blacksmith/blacksmith_idle1.png",
+          "assets/npcs/blacksmith/blacksmith_idle2.png"
         ],
         trader: true,
         shop: [
           { itemId: "tinBar", cost: { itemId: "tinOre", qty: 5 } },
           { itemId: "copperBar", cost: { itemId: "copperOre", qty: 5 } },
           { itemId: "pickaxe", cost: { itemId: "coins", qty: 5 } },
+          { itemId: "axe", cost: { itemId: "coins", qty: 5 } },
+
         ],
         idleMs: 540,        // hvor ofte den bytter frame (valgfritt)
         dialogId: "blacksmith_01",
@@ -212,26 +242,26 @@ window.LEVELS = {
     grid_base: [
       ["gras8","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras5","gras9"],
       ["gras2","grass","grass","grass","grass","grass","grass","door","grass","grass","grass","grass","grass","grass","gras3"],
-      ["gras2","grass","mud1","mud1","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
       ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
       ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
       ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","plan2","win01","plank","winfl","plan1","gras3"],
-      ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","plan3","plan5","door","plan7","plan4","gras3"],
-      ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["gras6","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras7"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras7"],
 
     ],
     grid_mid: [
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".","mud9","mud7","mud7","mud8",".",".",".",".",".",".",".",".",".","."],
-      [".","mud5","copst","tinst","mud6",".",".",".",".",".",".",".",".",".","."],
-      [".","mud3","mud2","mud2","mud4",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".","stfl6","stfl4","stfl4","stfl5",".",".",".",".",".",".",".",".",".","."],
-      [".","stfl2","stfl1","stfl1","stfl3",".",".",".",".",".",".",".",".",".","."],
-      [".","stfl2","stfl1","stfl1","stfl3",".",".",".",".",".",".",".",".",".","."],
-      [".","stfl9","stfl7","stfl7","stfl8",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
     ],
     grid_top: [
@@ -240,7 +270,7 @@ window.LEVELS = {
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".",".",".",".",".",".",".",".","sig1","roo2","roof","roof","roof","roo1","brrg"],
+      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
@@ -394,7 +424,7 @@ window.TILE_DEFS = {
 
 
   //Signs
-  sig1: { img: "assets/tiles/house/signs/signInnRoofLeft.png", walkable: true, description: "A place to rest and feast." },
+  sig1: { img: "assets/tiles/house/Signs/signInnRoofLeft.png", walkable: true, description: "A place to rest and feast." },
 
 
   flor2: { img: "assets/tiles/house/floorTile.png", walkable: true, description: "Ground, just inside...." },
@@ -421,15 +451,22 @@ window.TILE_DEFS = {
 
 
 
-
-
-  tre2: { img: "assets/tiles/terrain/tree/treeTop.png", walkable: true, description: "Tree Top!" },
-  tre1: { img: "assets/tiles/terrain/tree/treeMid.png", walkable: true, description: "Middle of the tree." },
-  tree:  {
+  tree: {
     img: "assets/tiles/terrain/tree/treeStomp.png",
     walkable: false,
-    description: "A sturdy tree."
+    description: "A sturdy tree.",
+
+    woodcutting: {
+      toolAction: "woodcutting",
+      minLevel: 1,
+      xp: 10,
+      hitsRequired: 3,
+      respawnMs: 20000,
+      drop: { itemId: "woodLog", qtyMin: 1, qtyMax: 1 }
+    }
   },
+  tre2: { img: "assets/tiles/terrain/tree/treeTop.png", walkable: true, description: "Tree Top!" },
+  tre1: { img: "assets/tiles/terrain/tree/treeMid.png", walkable: true, description: "Middle of the tree." },
   tre3: { img: "assets/tiles/terrain/tree/treeSingle.png", walkable: false, description: "Too small of a tree to get any logs." },
 
 

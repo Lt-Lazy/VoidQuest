@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="Tiles" tilewidth="32" tileheight="32" tilecount="54" columns="0">
+<tileset version="1.10" tiledversion="1.11.2" name="Tiles" tilewidth="32" tileheight="32" tilecount="63" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <properties>
@@ -169,17 +169,11 @@
   </properties>
   <image source="house/floorTile.png" width="32" height="32"/>
  </tile>
- <tile id="27">
+ <tile id="30">
   <properties>
-   <property name="key" value="plank"/>
+   <property name="key" value="brrg"/>
   </properties>
-  <image source="house/plankTile.png" width="32" height="32"/>
- </tile>
- <tile id="28">
-  <properties>
-   <property name="key" value="roof"/>
-  </properties>
-  <image source="house/roofTop01.png" width="32" height="32"/>
+  <image source="house/roofTopBarRight.png" width="32" height="32"/>
  </tile>
  <tile id="29">
   <properties>
@@ -187,17 +181,35 @@
   </properties>
   <image source="house/roofTopBarLeft.png" width="32" height="32"/>
  </tile>
- <tile id="30">
+ <tile id="64">
   <properties>
-   <property name="key" value="brrg"/>
+   <property name="key" value="roo2"/>
   </properties>
-  <image source="house/roofTopBarRight.png" width="32" height="32"/>
+  <image source="house/roofTopEndLeft.png" width="32" height="32"/>
+ </tile>
+ <tile id="28">
+  <properties>
+   <property name="key" value="roof"/>
+  </properties>
+  <image source="house/roofTop01.png" width="32" height="32"/>
+ </tile>
+ <tile id="65">
+  <properties>
+   <property name="key" value="roo1"/>
+  </properties>
+  <image source="house/roofTopEndRight.png" width="32" height="32"/>
  </tile>
  <tile id="31">
   <properties>
    <property name="key" value="win01"/>
   </properties>
   <image source="house/window01.png" width="32" height="32"/>
+ </tile>
+ <tile id="27">
+  <properties>
+   <property name="key" value="plank"/>
+  </properties>
+  <image source="house/plankTile.png" width="32" height="32"/>
  </tile>
  <tile id="32">
   <properties>
@@ -210,6 +222,48 @@
    <property name="key" value="winfl"/>
   </properties>
   <image source="house/window01SunFlower.png" width="32" height="32"/>
+ </tile>
+ <tile id="61">
+  <properties>
+   <property name="key" value="plan3"/>
+  </properties>
+  <image source="house/plankLeftGrass.png" width="32" height="32"/>
+ </tile>
+ <tile id="58">
+  <properties>
+   <property name="key" value="plan7"/>
+  </properties>
+  <image source="house/plankGrassEndLeft.png" width="32" height="32"/>
+ </tile>
+ <tile id="57">
+  <properties>
+   <property name="key" value="plan5"/>
+  </properties>
+  <image source="house/plankGrass.png" width="32" height="32"/>
+ </tile>
+ <tile id="60">
+  <properties>
+   <property name="key" value="plan2"/>
+  </properties>
+  <image source="house/plankLeft.png" width="32" height="32"/>
+ </tile>
+ <tile id="63">
+  <properties>
+   <property name="key" value="plan4"/>
+  </properties>
+  <image source="house/plankRightGrass.png" width="32" height="32"/>
+ </tile>
+ <tile id="59">
+  <properties>
+   <property name="key" value="plan6"/>
+  </properties>
+  <image source="house/plankGrassEndRight.png" width="32" height="32"/>
+ </tile>
+ <tile id="62">
+  <properties>
+   <property name="key" value="plan1"/>
+  </properties>
+  <image source="house/plankRight.png" width="32" height="32"/>
  </tile>
  <tile id="34">
   <properties>

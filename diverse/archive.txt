@@ -11,6 +11,7 @@ Patch Notes:
 - La til enemies
 - La til enkel combat
 - La til shop
+- La til bank
 - 
 
 ================COMBAT================
@@ -27,4 +28,10 @@ silver: 45–60 xp
 gold: 70–90 xp
 platinum: 110–140 xp
 voidshard: 180–250 xp
+
+================NPCS================
+- Banker
+- Trader
+
+
 
