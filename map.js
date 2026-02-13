@@ -16,43 +16,33 @@ window.LEVELS = {
     mapFile: "spenningsbyen.tmj",
 
     npcs: [
+
       {
-        id: "trader_01",
-        name: "Trader",
-        x: 22, //horisontalt +1
-        y: 12, //vertikalt +1
+        id: "blacksmith_01",
+        name: "Blacksmith Yorn",
+        x: 224, //horisontalt 
+        y: 232, //vertikalt 
         sprites: [
-          "assets/npcs/oleander/oleander_down.png",
-          "assets/npcs/oleander/oleander_down_idle1.png"
+          "assets/npcs/blacksmith/blacksmith_idle1.png",
+          "assets/npcs/blacksmith/blacksmith_idle2.png"
         ],
         trader: true,
         shop: [
-          { itemId: "bronzeArmor", cost: { itemId: "club", qty: 2 } },
-          { itemId: "apple", cost: { itemId: "coins", qty: 1 } },
-        ],
-        idleMs: 540,
-        dialogId: "trader_01",
-      },
+          { itemId: "tinBar", cost: { itemId: "tinOre", qty: 5 } },
+          { itemId: "copperBar", cost: { itemId: "copperOre", qty: 5 } },
+          { itemId: "pickaxe", cost: { itemId: "coins", qty: 5 } },
+          { itemId: "axe", cost: { itemId: "coins", qty: 5 } },
 
-      {
-        id: "banker_01",
-        name: "banker",
-        x: 21, //horisontalt +1
-        y: 12, //vertikalt +1
-        sprites: [
-          "assets/npcs/banker/banker_down.png",
-          "assets/npcs/banker/banker_down_idle.png"
         ],
-        banker: true,
-        idleMs: 500,
-        dialogId: "trader_01",
+        idleMs: 540,        // hvor ofte den bytter frame
+        dialogId: "blacksmith_01",
       },
 
       {
         id: "church_warden_normal",
         name: "Church Warden",
-        x: 20, //horisontalt +1
-        y: 12, //vertikalt +1
+        x: 224, //horisontalt +1
+        y: 234, //vertikalt +1
         sprites: [
           "assets/npcs/church_warden/church_warden_normal.png",
           "assets/npcs/church_warden/church_warden_normal_idle.png"
@@ -67,8 +57,59 @@ window.LEVELS = {
       {
         id: "cow_01",
         name: "Cow",
-        x: 21, //horisontalt +1
-        y: 16, //vertikalt +1
+        x: 238, //horisontalt +1
+        y: 248, //vertikalt +1
+        sprites: [
+          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_idle.png"
+        ],
+        idleMs: 500,
+        hostile: true,
+        maxHp: 6,
+        hitChance: 0.1,
+        attackSpeedMs: 7000,
+        maxHit: 1,
+        respawnMs: 20000,
+      },
+      {
+        id: "cow_01",
+        name: "Cow",
+        x: 243, //horisontalt +1
+        y: 247, //vertikalt +1
+        sprites: [
+          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_idle.png"
+        ],
+        idleMs: 500,
+        hostile: true,
+        maxHp: 6,
+        hitChance: 0.1,
+        attackSpeedMs: 7000,
+        maxHit: 1,
+        respawnMs: 20000,
+      },
+      {
+        id: "cow_01",
+        name: "Cow",
+        x: 241, //horisontalt +1
+        y: 245, //vertikalt +1
+        sprites: [
+          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_idle.png"
+        ],
+        idleMs: 500,
+        hostile: true,
+        maxHp: 6,
+        hitChance: 0.1,
+        attackSpeedMs: 7000,
+        maxHit: 1,
+        respawnMs: 20000,
+      },
+      {
+        id: "cow_01",
+        name: "Cow",
+        x: 238, //horisontalt +1
+        y: 246, //vertikalt +1
         sprites: [
           "assets/npcs/animals/cow/cow.png",
           "assets/npcs/animals/cow/cow_idle.png"
@@ -86,8 +127,8 @@ window.LEVELS = {
       {
         id: "goblin_01",
         name: "Goblin",
-        x: 26,
-        y: 13,
+        x: 226,
+        y: 231,
 
         // du legger inn assets senere:
         sprites: [
@@ -110,10 +151,16 @@ window.LEVELS = {
       // --------- PORTALS  ---------
     portals: [
       {
-        x: 25, y: 12,                 // hvor døra står i denne levelen
-        toLevel: "testMap",           // nivået du går inn i
-        toSpawn: { x: 7, y: 2 },       // hvor du spawner inne
+        x: 238, y: 237,                 // hvor døra står i denne levelen
+        toLevel: "gatherers_inn",           // nivået du går inn i
+        toSpawn: { x: 7, y: 1 },       // hvor du spawner inne
         label: "Enter"                // tekst i meny
+      },
+      {
+        x: 229, y: 238,
+        toLevel: "bank_spenningsbyen",
+        toSpawn: { x: 7, y: 1 }, 
+        label: "Enter" 
       }
     ],
 
@@ -123,6 +170,66 @@ window.LEVELS = {
     grid_top: null,
 
   },
+
+  bank_spenningsbyen: {
+    id: "bank_spenningsbyen",
+    name: "Bank",
+    width: 10,
+    height: 5,
+    spawn: { x: 5, y: 5 },
+    edges: { north: null, south: null, west: null, east: null },
+
+    npcs: [
+      {
+        id: "banker_01",
+        name: "banker",
+        x: 5, //horisontalt 
+        y: 2, //vertikalt 
+        sprites: [
+          "assets/npcs/banker/banker_down.png",
+          "assets/npcs/banker/banker_down_idle.png"
+        ],
+        banker: true,
+        idleMs: 500,
+        dialogId: "banker_intro",
+      },
+
+    ],
+
+    // Dør inne som går ut til spenningsbyen
+    portals: [
+      {
+        x: 7, y: 1,                 // dørtile inne i huset
+        toLevel: "spenningsbyen",
+        toSpawn: { x: 229, y: 239 },     // spawner utenfor døra
+        label: "Exit"
+      }
+    ],
+
+    grid_base: [
+      ["plank","plank","plank","plank","plank","plank","plank","plank","plank","plank"],
+      ["plank","plank","plank","plank","plank","plank","plank","door","plank","plank"],
+      ["flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2"],
+      ["flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2"],
+      ["flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2","flor2"],
+    ],
+    grid_mid: [
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+      [".","chai2","tabl1","tabl2","chai1","."],
+
+    ],
+    grid_top: [
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".",".",".",".","."],
+    ],
+  },
+
 
   gatherers_inn: {
     id: "gatherers_inn",
@@ -134,39 +241,19 @@ window.LEVELS = {
 
     npcs: [
       {
-        id: "guide_spenningsbyen",
+        id: "inn_keeper_spenningsbyen",
         name: "Oleander",
-        x: 12, //horisontalt +1
-        y: 2, //vertikalt +1
+        x: 12, //horisontalt 
+        y: 2, //vertikalt 
         sprites: [
           "assets/npcs/oleander/oleander_down.png",
           "assets/npcs/oleander/oleander_down_idle1.png"
         ],
-        idleMs: 550,        // hvor ofte den bytter frame (valgfritt)
+        idleMs: 550,
 
         dialogId: "guide_intro",
       },
 
-      {
-        id: "blacksmith_01",
-        name: "Blacksmith Yorn",
-        x: 4, //horisontalt +1
-        y: 8, //vertikalt +1
-        sprites: [
-          "assets/npcs/blacksmith/blacksmith_idle1.png",
-          "assets/npcs/blacksmith/blacksmith_idle2.png"
-        ],
-        trader: true,
-        shop: [
-          { itemId: "tinBar", cost: { itemId: "tinOre", qty: 5 } },
-          { itemId: "copperBar", cost: { itemId: "copperOre", qty: 5 } },
-          { itemId: "pickaxe", cost: { itemId: "coins", qty: 5 } },
-          { itemId: "axe", cost: { itemId: "coins", qty: 5 } },
-
-        ],
-        idleMs: 540,        // hvor ofte den bytter frame (valgfritt)
-        dialogId: "blacksmith_01",
-      },
 
     ],
 
@@ -175,7 +262,7 @@ window.LEVELS = {
       {
         x: 7, y: 1,                 // dørtile inne i huset
         toLevel: "spenningsbyen",
-        toSpawn: { x: 25, y: 13 },     // spawner utenfor døra
+        toSpawn: { x: 238, y: 237 },     // spawner utenfor døra
         label: "Exit"
       }
     ],
@@ -234,7 +321,7 @@ window.LEVELS = {
       {
         x: 7, y: 1,                 // dørtile inne i huset
         toLevel: "spenningsbyen",
-        toSpawn: { x: 25, y: 13 },     // spawner utenfor døra
+        toSpawn: { x: 236, y: 234 },     // spawner utenfor døra
         label: "Exit"
       }
     ],
@@ -244,12 +331,12 @@ window.LEVELS = {
       ["gras2","grass","grass","grass","grass","grass","grass","door","grass","grass","grass","grass","grass","grass","gras3"],
       ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
       ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["gras2","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["wate0","wate0","wate0","wate0","wate0","wate0","grass","grass","grass","grass","grass","grass","grass","grass","gras3"],
-      ["wate0","wate0","wate0","wate0","wate0","wate0","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras4","gras7"],
+      ["gras2","doc2","dock","dock","dock","dock","dock","dock","dock","dock","dock","dock","dock","doc1","gras3"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0"],
+      ["wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0","wate0"],
 
     ],
     grid_mid: [
@@ -257,11 +344,11 @@ window.LEVELS = {
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
-      [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
+      [".","pole0",".",".",".",".",".",".",".",".",".",".",".","pole0","."],
+      [".","doc7","doc4","doc5","doc5","doc4","doc3","doc5","doc4","doc5","doc5","doc4","doc5","doc6","."],
+      [".",".",".",".",".",".","doc3",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".","doc3",".",".",".",".",".",".",".","."],
+      [".",".",".",".",".",".","doc8",".",".",".",".",".",".",".","."],
       [".",".",".",".",".",".",".",".",".",".",".",".",".",".","."],
     ],
     grid_top: [
@@ -305,7 +392,7 @@ window.TILE_DEFS = {
       "assets/tiles/terrain/water/water2.png",
       "assets/tiles/terrain/water/water3.png",
     ],
-    walkable: false,
+    walkable: true,
     description: "Gently flowing water."
   },
   //wate0: { img: "assets/tiles/terrain/water/water0.png", walkable: false, description: "Soft grass." },
@@ -396,6 +483,20 @@ window.TILE_DEFS = {
   pol14:{ img: "assets/tiles/fence/poleRightLeftUp.png", walkable: false, description: "A sturdy fence." },
   pol15:{ img: "assets/tiles/fence/poleRightLeftUpDown.png", walkable: false, description: "A sturdy fence." },
 
+  //DOCK
+  dock:{ img: "assets/tiles/dock/dock_mid.png", walkable: true, description: "planks built to withstand the power of waves." },
+  doc1:{ img: "assets/tiles/dock/dock_end_right.png", walkable: true, description: "planks built to withstand the power of waves." },
+  doc2:{ img: "assets/tiles/dock/dock_end_left.png", walkable: true, description: "planks built to withstand the power of waves." },
+  doc3:{ img: "assets/tiles/dock/dock_end_left_right.png", walkable: true, description: "planks built to withstand the power of waves." },
+
+  doc4:{ img: "assets/tiles/dock/dock_end_down_mid_beam.png", walkable: false, description: "planks built to withstand the power of waves." },
+  doc5:{ img: "assets/tiles/dock/dock_end_down_mid.png", walkable: false, description: "planks built to withstand the power of waves." },
+  doc6:{ img: "assets/tiles/dock/dock_end_down_right_beam.png", walkable: false, description: "planks built to withstand the power of waves." },
+  doc7:{ img: "assets/tiles/dock/dock_end_down_left_beam.png", walkable: false, description: "planks built to withstand the power of waves." },
+  doc8:{ img: "assets/tiles/dock/dock_end_down_left_right_beam.png", walkable: false, description: "planks built to withstand the power of waves." },
+
+
+
   //HOUSE
   roof:  { img: "assets/tiles/house/roofTop01.png", walkable: false, description: "Waterproof roof." },
   roo1:  { img: "assets/tiles/house/roofTopEndRight.png", walkable: false, description: "Waterproof roof." },
@@ -422,6 +523,20 @@ window.TILE_DEFS = {
   stfl8: { img: "assets/tiles/house/stone/stoneFloorEndDownRight.png", walkable: true, description: "Ground as hards as stone." },
   stfl9: { img: "assets/tiles/house/stone/stoneFloorEndDownLeft.png", walkable: true, description: "Ground as hards as stone." },
 
+  //Bricks/house
+  brcs: { img: "assets/tiles/house/bricks/bricks.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc1: { img: "assets/tiles/house/bricks/bricks_down_end_left.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc2: { img: "assets/tiles/house/bricks/bricks_down_end_right.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc3: { img: "assets/tiles/house/bricks/bricks_down_mid.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc4: { img: "assets/tiles/house/bricks/bricks_mid_left.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc5: { img: "assets/tiles/house/bricks/bricks_mid_right.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc6: { img: "assets/tiles/house/bricks/bricks_top_end_left.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc7: { img: "assets/tiles/house/bricks/bricks_top_end_right.png", walkable: false, description: "Hot clay that has dried up..." },
+  brc8: { img: "assets/tiles/house/bricks/bricks_top_end_mid.png", walkable: false, description: "Hot clay that has dried up..." },
+
+  brrf: { img: "assets/tiles/house/bricks/bricks_roof_top.png", walkable: false, description: "Hot clay that has dried up..." },
+
+  brwn: { img: "assets/tiles/house/bricks/brck_win.png", walkable: false, description: "windproof windows." },
 
   //Signs
   sig1: { img: "assets/tiles/house/Signs/signInnRoofLeft.png", walkable: true, description: "A place to rest and feast." },
@@ -471,7 +586,15 @@ window.TILE_DEFS = {
 
 
   door: {
-    img: "assets/tiles/house/door01.png",   // <- sørg for at denne finnes
+    img: "assets/tiles/house/door01.png",  
+    walkable: false,
+    description: "A sturdy door.",
+    actions: ["enter"]
+  },
+
+  //brick door
+  brdr: {
+    img: "assets/tiles/house/bricks/brick_door.png",   
     walkable: false,
     description: "A sturdy door.",
     actions: ["enter"]

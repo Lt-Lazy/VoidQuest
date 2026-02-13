@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="Tiles" tilewidth="32" tileheight="32" tilecount="63" columns="0">
+<tileset version="1.10" tiledversion="1.11.2" name="Tiles" tilewidth="32" tileheight="32" tilecount="75" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <properties>
@@ -378,5 +378,77 @@
    <property name="key" value="pole7"/>
   </properties>
   <image source="fence/poleUpDownRight.png" width="32" height="32"/>
+ </tile>
+ <tile id="66">
+  <properties>
+   <property name="key" value="brcs"/>
+  </properties>
+  <image source="house/bricks/bricks.png" width="32" height="32"/>
+ </tile>
+ <tile id="67">
+  <properties>
+   <property name="key" value="brc1"/>
+  </properties>
+  <image source="house/bricks/bricks_down_end_left.png" width="32" height="32"/>
+ </tile>
+ <tile id="68">
+  <properties>
+   <property name="key" value="brc2"/>
+  </properties>
+  <image source="house/bricks/bricks_down_end_right.png" width="32" height="32"/>
+ </tile>
+ <tile id="69">
+  <properties>
+   <property name="key" value="brc3"/>
+  </properties>
+  <image source="house/bricks/bricks_down_mid.png" width="32" height="32"/>
+ </tile>
+ <tile id="70">
+  <properties>
+   <property name="key" value="brc4"/>
+  </properties>
+  <image source="house/bricks/bricks_mid_left.png" width="32" height="32"/>
+ </tile>
+ <tile id="71">
+  <properties>
+   <property name="key" value="brc5"/>
+  </properties>
+  <image source="house/bricks/bricks_mid_right.png" width="32" height="32"/>
+ </tile>
+ <tile id="72">
+  <properties>
+   <property name="key" value="brrf"/>
+  </properties>
+  <image source="house/bricks/bricks_roof_top.png" width="32" height="32"/>
+ </tile>
+ <tile id="73">
+  <properties>
+   <property name="key" value="brc6"/>
+  </properties>
+  <image source="house/bricks/bricks_top_end_left.png" width="32" height="32"/>
+ </tile>
+ <tile id="74">
+  <properties>
+   <property name="key" value="brc8"/>
+  </properties>
+  <image source="house/bricks/bricks_top_end_mid.png" width="32" height="32"/>
+ </tile>
+ <tile id="76">
+  <properties>
+   <property name="key" value="brc7"/>
+  </properties>
+  <image source="house/bricks/bricks_top_end_right.png" width="32" height="32"/>
+ </tile>
+ <tile id="77">
+  <properties>
+   <property name="key" value="brdr"/>
+  </properties>
+  <image source="house/bricks/brick_door.png" width="32" height="32"/>
+ </tile>
+ <tile id="78">
+  <properties>
+   <property name="key" value="brwn"/>
+  </properties>
+  <image source="house/bricks/brck_win.png" width="32" height="32"/>
  </tile>
 </tileset>

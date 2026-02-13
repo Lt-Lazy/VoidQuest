@@ -132,8 +132,56 @@ let animTime = 0;
 canvas.width = VIEW_TILES_X * TILE_SIZE;
 canvas.height = VIEW_TILES_Y * TILE_SIZE;
 
+//Loading screen teller
+function collectAllImageUrls() {
+  const urls = new Set();
 
- //--- serviceWorker ---
+  // Tiles
+  for (const def of Object.values(TILE_DEFS)) {
+    if (!def) continue;
+    if (def.animated && Array.isArray(def.frames)) {
+      for (const s of def.frames) if (s) urls.add(s);
+    } else if (def.img) {
+      urls.add(def.img);
+    }
+  }
+
+  // Player anims
+  function addAnimSet(animDef) {
+    for (const d of Object.values(animDef || {})) {
+      if (!d) continue;
+      const idle = d.idle;
+      if (Array.isArray(idle)) idle.forEach(s => s && urls.add(s));
+      else if (idle) urls.add(idle);
+
+      (d.walk || []).forEach(s => s && urls.add(s));
+    }
+  }
+  addAnimSet(PLAYER_ANIMS_MALE);
+  addAnimSet(PLAYER_ANIMS_FEMALE);
+
+  // Armor anims (items)
+  for (const def of Object.values(ITEM_DEFS)) {
+    if (def?.type === "armor" && def?.playerAnims) {
+      addAnimSet(def.playerAnims);
+    }
+  }
+
+  // NPC sprites (fra LEVELS)
+  for (const lvl of Object.values(LEVELS)) {
+    const npcs = lvl?.npcs || [];
+    for (const n of npcs) {
+      if (Array.isArray(n.sprites)) n.sprites.forEach(s => s && urls.add(s));
+      if (n.sprite) urls.add(n.sprite);
+    }
+  }
+
+  return Array.from(urls);
+}
+
+
+
+//--- serviceWorker ---
 //if ("serviceWorker" in navigator) {
 //  window.addEventListener("load", () => {
 //    navigator.serviceWorker.register("./sw.js").catch(console.warn);
@@ -190,14 +238,13 @@ const BASE_MOVE_DURATION_MS = 200;   // hvor lang tid ett tile-steg tar (juster)
 const STEP_REPEAT_DELAY_MS = 0; // 0 = start neste steg umiddelbart
 
 function loadImage(src) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
+    img.onload = () => { bumpLoading(); resolve(img); };
+    img.onerror = () => { bumpLoading(); resolve(img); }; // fortsatt fremdrift selv om en fil feiler
     img.src = src;
   });
 }
-
 const tileImages = {};
 
 const playerSkins = {};
@@ -2742,6 +2789,28 @@ const DIALOGS = {
     }
   },
 
+  banker_intro: {
+    start: "start",
+    nodes: {
+      start: {
+        speaker: "Banker",
+        text: "Good day! Anything i can help you with?",
+        options: [
+          { label: "What is this place for?", next: "banker_intro_howto" },
+          { label: "I have to go", end: true },
+        ]
+      },
+      banker_intro_howto: {
+        speaker: "Banker",
+        text: "We at the bank help the people of voidlore with access and securing assets and items. We are proud of our banking system. You can keep your valuables and items safe here.",
+        options: [
+          { label: "Back", next: "start" },
+          { label: "I have to go.", end: true },
+        ]
+      },
+    }
+  },
+
 
 };
 
@@ -3090,8 +3159,13 @@ function getMyNameForPresence() {
 
 function getMyGenderForPresence() {
   const s = getSave?.();
-  const g = s?.profile?.gender || player?.gender;
-  return (g === "female") ? "female" : "male";
+  const g = s?.profile?.gender;
+
+  if (g === "female" || g === "male") return g;
+
+  if (player?.gender === "female" || player?.gender === "male") return player.gender;
+
+  return null;
 }
 
 async function presenceUpsert(force = false) {
@@ -3102,6 +3176,8 @@ async function presenceUpsert(force = false) {
   if (!force && (now - presenceLastPushAt) < PRESENCE_PUSH_MIN_MS) return;
   presenceLastPushAt = now;
 
+  const gender = getMyGenderForPresence();
+
   try {
     await sb.rpc("rpc_presence_upsert", {
       p_session_id: clientSessionId,
@@ -3111,6 +3187,7 @@ async function presenceUpsert(force = false) {
       p_facing: player.facing || null,
       p_name: getMyNameForPresence(),
       p_gender: getMyGenderForPresence(),
+      
     });
   } catch (e) {
     console.warn("[PRESENCE] upsert failed", e);
@@ -3121,7 +3198,7 @@ async function presenceRemove() {
   try {
     await sb.rpc("rpc_presence_remove", { p_session_id: clientSessionId });
   } catch (e) {
-    // best effort
+
   }
 }
 
@@ -3132,7 +3209,6 @@ function clearOtherPlayers() {
 function applyPresenceRow(row) {
   if (!row?.user_id) return;
 
-  // Lagrer både tile-pos og pixel-pos for “smooth-ish”
   const x = Number(row.x) || 0;
   const y = Number(row.y) || 0;
 
@@ -3208,7 +3284,6 @@ function drawOtherPlayers(nowMs) {
 
 let myUserId = null;
 
-// sørg for at realtime alltid har riktig JWT
 async function ensureRealtimeAuth() {
   const { data } = await sb.auth.getSession();
   const session = data?.session || null;
@@ -3654,9 +3729,10 @@ function applySaveData(data) {
   if (!data || typeof data !== "object") return false;
 
   // Gender 
-  player.gender = (data?.profile?.gender === "female" || data?.player?.gender === "female")
-    ? "female"
-    : "male";
+  const sg = data?.profile?.gender ?? data?.player?.gender;
+  if (sg === "female" || sg === "male") {
+    player.gender = sg;
+  }
 
   respawnPoint = null;
   const r = data?.profile?.respawn;
@@ -3926,9 +4002,25 @@ function setLevel(newLevelId, entryFromDirection = null, forcedSpawn = null) {
 
   updateHud();
   cloudSavePosition(true);
-  // Multiplayer presence: resubscribe + push
-  subscribeToPresence(currentLevelId);
-  presenceUpsert(true);
+
+}
+
+
+
+
+
+async function changeLevel(newLevelId, entryFromDirection = null, forcedSpawn = null) {
+  if (gameStarted && sessionLockAcquired) {
+    await presenceRemove();
+  }
+
+  setLevel(newLevelId, entryFromDirection, forcedSpawn);
+
+  if (gameStarted && sessionLockAcquired) {
+    await subscribeToPresence(currentLevelId);
+    await ensureRealtimeAuth();
+    await presenceUpsert(true);
+  }
 }
 
 
@@ -4588,19 +4680,18 @@ canvas.addEventListener("contextmenu", (e) => {
 
   if (portal) {
     entries.push({
-      label: portal.label || "Enter",
-      onClick: () => {
-        // Må stå ved døra
-        if (!isAdjacentToPlayer(tx, ty)) {
+      label: "Enter",
+      onClick: async () => {
+        if (!isAdjacentToPlayer(portal.x, portal.y)) {
           logMessage("You need to stand next to the door.", "error");
           return;
         }
 
-        setLevel(portal.toLevel, null, portal.toSpawn);
-        logMessage(`You enter ${LEVELS[portal.toLevel]?.name || portal.toLevel}.`, "system");
+        await enterPortal(portal);
       }
     });
   }
+
 
   // Mine option hvis tile er mineable
   if (tileDef?.mining) {
@@ -5718,6 +5809,7 @@ async function startGame(opts = { mode: "load" }) {
 
   gameStarted = true;
   hideAllScreensAndShowGameUI();
+  showLoadingScreen({ backgroundUrl: "assets/ui/testMenyBack.png" });
   await loadAllTiledLevels();
 
 
@@ -5733,42 +5825,72 @@ async function startGame(opts = { mode: "load" }) {
   // 2) Så: valider (nå får du mye færre warnings)
   validateLevels();
 
+  const urls = collectAllImageUrls();
+  __loadingTotal = urls.length;
+  updateLoadingUI(0, __loadingTotal);
+
   await loadAllAssets();
 
   if (opts.mode === "new") {
-    // NY character: start på spawn
     setLevel(currentLevelId, null);
   } else {
-    // Last existing save hvis den er gyldig, ellers ny start
     const ok = await loadGame();
     if (!ok) {
-      // Hvis cloud-save mangler: gå tilbake til meny og krev character creation
       showMenu();
       logMessage("No cloud save found. Create a character first.", "error");
       gameStarted = false;
       return;
     }
   }
-
-  await presenceUpsert(true);
+  await subscribeToPresence(currentLevelId);
+  hideLoadingScreen();
   startPresenceHeartbeat();
-
   requestAnimationFrame(loop);
 }
 
+async function enterPortal(portal) {
+  const targetLevel = portal.toLevel;
+  const spawn = portal.toSpawn;
+
+  // 1) Server: delete old + insert new (gir DELETE-event i gammelt level)
+  const { error } = await sb.rpc("rpc_presence_move_level", {
+    p_session_id: clientSessionId,
+    p_new_level_id: targetLevel,
+    p_x: Math.floor(spawn.x),
+    p_y: Math.floor(spawn.y),
+    p_facing: spawn.facing || null,
+    p_name: getMyNameForPresence(),
+    p_gender: getMyGenderForPresence(),
+  });
+
+  if (error) {
+    console.warn("[PRESENCE] move_level failed", error);
+    logMessage("Could not enter (server error). Try again.", "error");
+    return;
+  }
+
+  // 2) Lokal: bytt level
+  setLevel(targetLevel, null, spawn);
+
+  // 3) Klient: lytt i nytt level + snapshot
+  await subscribeToPresence(currentLevelId);
+
+  closeContextMenu?.();
+}
+
+
 // -------------------- LOG OUT --------------------
-const btnLogout = document.getElementById("btn-logout");
-let isLoggingOut = false;
 
-btnLogout?.addEventListener("click", async () => {
-  if (isLoggingOut) return;
-  isLoggingOut = true;
+const btnLogoutMenu = document.getElementById("btn-logout-menu");
 
+
+btnLogoutMenu?.addEventListener("click", async () => {
+  
   try {
-    // 1) Stopp spillet først (stopper input/loop)
     gameStarted = false;
-
-    // 2) Prøv å lagre FØR signOut (ellers får du "må være logget inn")
+    if (window.__vq_sb) {
+      await window.__vq_sb.auth.signOut();
+    }
     if (canWriteSave()) {
       await saveGame();
     }
@@ -5776,21 +5898,63 @@ btnLogout?.addEventListener("click", async () => {
     stopPresenceHeartbeat();
     await presenceRemove();
 
-    // 3) Slipp session-lock (så du ikke "låser" brukeren)
-    await releaseSessionLock();
-
-    // 4) Logg ut
-    if (window.__vq_sb) {
-      await window.__vq_sb.auth.signOut();
-    }
   } catch (err) {
     console.warn("Logout error:", err);
-  } finally {
-    // 5) Redirect uansett (selv om noe feiler)
-    window.location.href = "index.html";
   }
+  saveGame?.();
+  saveGame();
+  //await forceLogout("Logout."); finnes ikke lenger
+
+  // Redirect til login-portal uansett
+  window.location.href = "index.html";
 });
 
+// --------------------- LOADING SCREEN -------------------------
+
+let __loadingTotal = 0;
+let __loadingDone = 0;
+
+function setLoadingBackground(url) {
+  const bg = document.getElementById("loading-bg");
+  if (!bg) return;
+  bg.style.backgroundImage = url ? `url("${url}")` : "";
+}
+
+function showLoadingScreen({ backgroundUrl } = {}) {
+  const el = document.getElementById("loading-screen");
+  if (!el) return;
+  if (backgroundUrl) setLoadingBackground(backgroundUrl);
+
+  __loadingDone = 0;
+  updateLoadingUI(0, 0);
+
+  el.classList.remove("hidden");
+  el.setAttribute("aria-hidden", "false");
+}
+
+function hideLoadingScreen() {
+  const el = document.getElementById("loading-screen");
+  if (!el) return;
+  el.classList.add("hidden");
+  el.setAttribute("aria-hidden", "true");
+}
+
+function updateLoadingUI(done, total) {
+  const fill = document.getElementById("loading-bar-fill");
+  const txt = document.getElementById("loading-text");
+  const cnt = document.getElementById("loading-count");
+
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  if (fill) fill.style.width = `${pct}%`;
+  if (txt) txt.textContent = `${pct}%`;
+  if (cnt) cnt.textContent = `${done} / ${total}`;
+}
+
+function bumpLoading() {
+  __loadingDone++;
+  updateLoadingUI(__loadingDone, __loadingTotal);
+}
 
 
 
@@ -6053,3 +6217,22 @@ document.addEventListener("visibilitychange", () => {
     // releaseSessionLock();
   }
 });
+
+
+
+// ---------- DEV: teleport via console ----------
+window.tp = function (x, y, levelId = null) {
+  if (!player) {
+    console.warn("[TP] Player not ready");
+    return;
+  }
+
+  player.x = Number(x);
+  player.y = Number(y);
+
+  if (levelId && typeof setLevel === "function") {
+    setLevel(levelId, { x: player.x, y: player.y });
+  }
+
+  console.log(`[TP] Teleported to x=${player.x}, y=${player.y}`, levelId ? `level=${levelId}` : "");
+};

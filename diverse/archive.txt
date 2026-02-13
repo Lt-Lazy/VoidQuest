@@ -34,4 +34,6 @@ voidshard: 180–250 xp
 - Trader
 
 
+================HUSKE!!!================
 
+Må sjekke om det er en begrensning på hvor stort brukernavn man kan lage til karakteren, og at man må ha unikt navn.

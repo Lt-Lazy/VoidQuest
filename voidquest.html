@@ -36,7 +36,7 @@
                 <button id="btn-credits" class="menu-btn menu-btn-credits">
                 </button>
 
-                <button id="btn-logout" class="menu-btn-logout">Log out</button>
+                <button id="btn-logout-menu" class="menu-btn-logout">log out</button>
 
             </div>
 
@@ -88,6 +88,24 @@
         <div id="game-wrap">
             <canvas id="game"></canvas>
 
+            <!------- LOADING SCREEN ----- -->
+            <div id="loading-screen" class="loading-screen hidden" aria-hidden="true">
+                <div class="loading-bg" id="loading-bg"></div>
+
+                <div class="loading-card">
+                    <div class="loading-title">Loading…</div>
+
+                    <div class="loading-bar">
+                        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+                    </div>
+
+                    <div class="loading-meta">
+                        <span id="loading-text">0%</span>
+                        <span id="loading-count">0 / 0</span>
+                    </div>
+                </div>
+            </div>
+
             <div id="minimap-wrap" aria-hidden="true">
             <canvas id="minimap" aria-label="Minimap"></canvas>
             </div>
@@ -117,9 +135,7 @@
                 <div class="pause-card">
                     <div class="pause-title">Menu</div>
                     <div id="pause-items" class="pause-items"></div>
-                    <button id="btn-logout" class="pause-items">Log out</button>
                     <button id="btnExitToMenu" onclick="exitToMenu()" class="pause-items">Exit</button>
-                    <div class="pause-hint"></div>
                 </div>
             </div>
 
