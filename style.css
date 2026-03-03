@@ -160,6 +160,35 @@ body {
   position: fixed; /* eller absolute hvis de ligger inni game-wrap */
 }
 
+.hp-heart {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  margin: 0 18px;
+}
+
+.hp-heart img {
+  width: 46px;
+  height: 46px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+.hp-heart-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.65), 0 0 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
 /* --- Chat log (read-only) --- */
 #chatlog {
   position: fixed;
@@ -443,7 +472,7 @@ body {
   width: 100%;
   background: rgba(17, 24, 39, 0.92);
   border: 2px solid rgba(255,255,255,0.18);
-  border-radius: 14px;
+
   padding: 10px;
   box-shadow: 0 14px 40px rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
@@ -1108,6 +1137,31 @@ body {
   image-rendering: crisp-edges;
 }
 
+.equip-stats {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 54px;            /* over hint */
+  font-size: 12px;
+  color: rgba(0,0,0,0.8);
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.equip-stats .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.equip-stats .label {
+  font-weight: 700;
+}
+
+.equip-stats .value {
+  font-weight: 700;
+}
+
 .equip-hint {
   position: absolute;
   left: 10px;
@@ -1454,10 +1508,12 @@ body {
 }
 
 .start-sprite{
-  width: 350px;   /* juster: 220–360 */
-  height: 350px;
+  width: 350px;
+  height: 700px; 
+
   image-rendering: pixelated;
-  transform: translateZ(0);
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 .start-nochar{
@@ -1931,3 +1987,12 @@ body {
   font-size: 12px;
 }
 
+.start-preview{
+  position: relative;
+}
+
+.start-sprite-overlay{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

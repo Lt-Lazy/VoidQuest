@@ -20,8 +20,8 @@ window.LEVELS = {
       {
         id: "blacksmith_01",
         name: "Blacksmith Yorn",
-        x: 224, //horisontalt 
-        y: 232, //vertikalt 
+        x: 263, //horisontalt 
+        y: 245, //vertikalt 
         sprites: [
           "assets/npcs/blacksmith/blacksmith_idle1.png",
           "assets/npcs/blacksmith/blacksmith_idle2.png"
@@ -30,12 +30,18 @@ window.LEVELS = {
         shop: [
           { itemId: "tinBar", cost: { itemId: "tinOre", qty: 5 } },
           { itemId: "copperBar", cost: { itemId: "copperOre", qty: 5 } },
+          { itemId: "bronzeBar", cost: { itemId: "coins", qty: 100 } },
+          { itemId: "bronzeArmor", cost: { itemId: "bronzeBar", qty: 5 } },
           { itemId: "pickaxe", cost: { itemId: "coins", qty: 5 } },
           { itemId: "axe", cost: { itemId: "coins", qty: 5 } },
+          { itemId: "fishingRod", cost: { itemId: "coins", qty: 5 } },
+
 
         ],
         idleMs: 540,        // hvor ofte den bytter frame
         dialogId: "blacksmith_01",
+        drawWTiles:1, 
+        drawHTiles:1
       },
 
       {
@@ -48,9 +54,11 @@ window.LEVELS = {
           "assets/npcs/church_warden/church_warden_normal_idle.png"
         ],
         churchwarden: true,
-        respawnPoint: { levelId: "spenningsbyen", x: 19, y: 12 },
+        respawnPoint: { levelId: "spenningsbyen", x: 233, y: 236 },
         idleMs: 600,
         dialogId: "graveyard_warden",
+        drawWTiles:1, 
+        drawHTiles:1
       },
 
         // --- ANIMALS  ---
@@ -59,8 +67,9 @@ window.LEVELS = {
         name: "Cow",
         x: 238, //horisontalt +1
         y: 248, //vertikalt +1
+
         sprites: [
-          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_left.png",
           "assets/npcs/animals/cow/cow_idle.png"
         ],
         idleMs: 500,
@@ -70,6 +79,12 @@ window.LEVELS = {
         attackSpeedMs: 7000,
         maxHit: 1,
         respawnMs: 20000,
+        roaming: false,
+        roamRadius: 4,             // tiles
+        roamMinWaitMs: 900,
+        roamMaxWaitMs: 5000,
+        drawWTiles:1, 
+        drawHTiles:1
       },
       {
         id: "cow_01",
@@ -77,7 +92,7 @@ window.LEVELS = {
         x: 243, //horisontalt +1
         y: 247, //vertikalt +1
         sprites: [
-          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_left.png",
           "assets/npcs/animals/cow/cow_idle.png"
         ],
         idleMs: 500,
@@ -87,6 +102,8 @@ window.LEVELS = {
         attackSpeedMs: 7000,
         maxHit: 1,
         respawnMs: 20000,
+        drawWTiles:1, 
+        drawHTiles:1
       },
       {
         id: "cow_01",
@@ -94,7 +111,7 @@ window.LEVELS = {
         x: 241, //horisontalt +1
         y: 245, //vertikalt +1
         sprites: [
-          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_left.png",
           "assets/npcs/animals/cow/cow_idle.png"
         ],
         idleMs: 500,
@@ -104,6 +121,8 @@ window.LEVELS = {
         attackSpeedMs: 7000,
         maxHit: 1,
         respawnMs: 20000,
+        drawWTiles:1, 
+        drawHTiles:1
       },
       {
         id: "cow_01",
@@ -111,7 +130,7 @@ window.LEVELS = {
         x: 238, //horisontalt +1
         y: 246, //vertikalt +1
         sprites: [
-          "assets/npcs/animals/cow/cow.png",
+          "assets/npcs/animals/cow/cow_left.png",
           "assets/npcs/animals/cow/cow_idle.png"
         ],
         idleMs: 500,
@@ -121,6 +140,8 @@ window.LEVELS = {
         attackSpeedMs: 7000,
         maxHit: 1,
         respawnMs: 20000,
+        drawWTiles:1, 
+        drawHTiles:1
       },
 
         // --- ENEMY  ---
@@ -144,7 +165,8 @@ window.LEVELS = {
         attackSpeedMs: 3000,
         maxHit: 1,
         respawnMs: 20000,
-
+        drawWTiles:1, 
+        drawHTiles:1
       }
 
     ],
@@ -192,6 +214,13 @@ window.LEVELS = {
         banker: true,
         idleMs: 500,
         dialogId: "banker_intro",
+        //roaming
+        roaming: false,
+        roamRadius: 4,             // tiles
+        roamMinWaitMs: 900,
+        roamMaxWaitMs: 5000,
+        drawWTiles:1, 
+        drawHTiles:1,
       },
 
     ],
@@ -230,7 +259,6 @@ window.LEVELS = {
     ],
   },
 
-
   gatherers_inn: {
     id: "gatherers_inn",
     name: "Gatherers Inn",
@@ -250,10 +278,10 @@ window.LEVELS = {
           "assets/npcs/oleander/oleander_down_idle1.png"
         ],
         idleMs: 550,
-
+        drawWTiles:1, 
+        drawHTiles:1,
         dialogId: "guide_intro",
       },
-
 
     ],
 
@@ -392,7 +420,7 @@ window.TILE_DEFS = {
       "assets/tiles/terrain/water/water2.png",
       "assets/tiles/terrain/water/water3.png",
     ],
-    walkable: true,
+    walkable: false,
     description: "Gently flowing water."
   },
   //wate0: { img: "assets/tiles/terrain/water/water0.png", walkable: false, description: "Soft grass." },
@@ -456,6 +484,32 @@ window.TILE_DEFS = {
       hitsRequired: 3,           // hvor mange "slag" for å mine den
       respawnMs: 20000,          // 20 sek respawn
       drop: { itemId: "tinOre", qtyMin: 1, qtyMax: 1 }
+    }
+  },
+
+  // -------------------- FISHING SPOTS --------------------
+  // NB: Dette er kun tile-definisjon (grafikk + krav + respawn).
+  // nodeKey (= tile key) brukes som nøkkel
+
+  fish1: {
+    //img: "assets/tiles/terrain/fishing/fishingSpot1.png",
+
+    animated: true,
+    frameDuration: 720, // ms per frame
+    frames: [
+      "assets/tiles/terrain/water/fish_spot_1/1.png",
+      "assets/tiles/terrain/water/fish_spot_1/2.png",
+      "assets/tiles/terrain/water/fish_spot_1/3.png",
+      "assets/tiles/terrain/water/fish_spot_1/4.png",
+    ],
+    walkable: false,
+    description: "There is plenty of fish here!",
+    fishing: {
+      toolAction: "fishing",
+      minLevel: 1,
+      xp: 10,
+      catchesRequired: 4,   // hvor mange fisk/junk før spot går i cooldown
+      respawnMs: 12000      // spot kommer tilbake etter 12s
     }
   },
 
@@ -541,6 +595,17 @@ window.TILE_DEFS = {
   //Signs
   sig1: { img: "assets/tiles/house/Signs/signInnRoofLeft.png", walkable: true, description: "A place to rest and feast." },
 
+  //MISC
+  //camfr: { img: "assets/tiles/terrain/misc/campfire.png", walkable: false, description: "Eternal campfire for cooking and resting." },
+
+  camfr: {
+    name: "Campfire",
+    description: "Eternal campfire for cooking and resting.",
+    img: "assets/tiles/terrain/misc/campfire.png",
+    walkable: false,
+    useShopId: "campfire_01",
+    useLabel: "Use",
+  },
 
   flor2: { img: "assets/tiles/house/floorTile.png", walkable: true, description: "Ground, just inside...." },
   win01: { img: "assets/tiles/house/window01.png", walkable: false, description: "windproof windows." },

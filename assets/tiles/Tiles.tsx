@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="Tiles" tilewidth="32" tileheight="32" tilecount="75" columns="0">
+<tileset version="1.10" tiledversion="1.11.2" name="Tiles" tilewidth="32" tileheight="32" tilecount="77" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <properties>
@@ -144,6 +144,12 @@
    <property name="key" value="wate0"/>
   </properties>
   <image source="terrain/water/water0.png" width="32" height="32"/>
+ </tile>
+ <tile id="80">
+  <properties>
+   <property name="key" value="fish1"/>
+  </properties>
+  <image source="terrain/water/fish_spot_1/1.png" width="32" height="32"/>
  </tile>
  <tile id="23">
   <properties>
@@ -450,5 +456,11 @@
    <property name="key" value="brwn"/>
   </properties>
   <image source="house/bricks/brck_win.png" width="32" height="32"/>
+ </tile>
+ <tile id="79">
+  <properties>
+   <property name="key" value="camfr"/>
+  </properties>
+  <image source="terrain/misc/campfire.png" width="32" height="32"/>
  </tile>
 </tileset>

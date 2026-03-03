@@ -15,51 +15,52 @@
 
         <!-- SCREEN: Start / Character Hub -->
         <div id="screen-menu" class="screen">
-        <div class="start-card">
+            <div class="start-card">
 
-            <div class="start-top">
-            <div class="start-brand">
-                <img class="start-logo" src="assets/ui/logo.png" alt="VoidQuest logo" />
-                <div class="start-title">VOIDQUEST</div>
-            </div>
-            </div>
-
-            <div class="start-grid">
-            <!-- LEFT -->
-            <div class="start-left">
-                <button id="btn-start" class="menu-btn menu-btn-start">
-                </button>
-
-                <button id="btn-settings" class="menu-btn menu-btn-settings">
-                </button>
-
-                <button id="btn-credits" class="menu-btn menu-btn-credits">
-                </button>
-
-                <button id="btn-logout-menu" class="menu-btn-logout">log out</button>
-
-            </div>
-
-            <!-- CENTER -->
-            <div class="start-center">
-                <div class="start-preview">
-                <img id="start-char-sprite" class="start-sprite hidden" alt="Character" />
-                <div id="start-no-char" class="start-nochar">No character</div>
+                <div class="start-top">
+                <div class="start-brand">
+                    <img class="start-logo" src="assets/ui/logo.png" alt="VoidQuest logo" />
+                    <div class="start-title">VOIDQUEST</div>
                 </div>
-            </div>
-
-            <!-- RIGHT -->
-            <div class="start-right">
-                <div id="start-char-box" class="start-charbox hidden">
-                <div class="start-charname" id="start-char-name">-</div>
-                <div class="start-charlvl">LVL: <span id="start-char-lvl">1</span></div>
                 </div>
 
-                <button id="btn-create-character" class="start-btn hidden">CREATE CHARACTER</button>
-            </div>
-            </div>
+                <div class="start-grid">
+                    <!-- LEFT -->
+                    <div class="start-left">
+                        <button id="btn-start" class="menu-btn menu-btn-start">
+                        </button>
 
-        </div>
+                        <button id="btn-settings" class="menu-btn menu-btn-settings">
+                        </button>
+
+                        <button id="btn-credits" class="menu-btn menu-btn-credits">
+                        </button>
+
+                        <button id="btn-logout-menu" class="menu-btn-logout">log out</button>
+
+                    </div>
+
+                    <!-- CENTER -->
+                    <div class="start-center">
+                        <div class="start-preview">
+                            <img id="start-char-sprite" class="start-sprite hidden" alt="Character" />
+                            <img id="start-char-armor" class="start-sprite start-sprite-overlay hidden" alt="Armor" />
+                            <div id="start-no-char" class="start-nochar">No character</div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT -->
+                    <div class="start-right">
+                        <div id="start-char-box" class="start-charbox hidden">
+                            <div class="start-charname" id="start-char-name">-</div>
+                            <div class="start-charlvl">LVL: <span id="start-char-lvl">1</span></div>
+                        </div>
+
+                        <button id="btn-create-character" class="start-btn hidden">CREATE CHARACTER</button>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
         <!-- MODAL: Create character -->
@@ -72,13 +73,15 @@
 
             <label class="char-label">Gender</label>
             <div class="char-gender">
-            <label><input type="radio" name="gender" id="gender-male" value="male" checked> Male</label>
-            <label><input type="radio" name="gender" id="gender-female" value="female"> Female</label>
+                <label><input type="radio" name="gender" id="gender-male" value="male" checked> Male</label>
+                <label><input type="radio" name="gender" id="gender-female" value="female"> Female</label>
+                <label><input type="radio" name="gender" id="gender-gnome" value="gnome"> Gnome</label>
+
             </div>
 
             <div class="modal-actions">
-            <button id="btn-finish-character" class="screen-btn">Create</button>
-            <button id="btn-back-menu" class="screen-btn secondary">Cancel</button>
+                <button id="btn-finish-character" class="screen-btn">Create</button>
+                <button id="btn-back-menu" class="screen-btn secondary">Cancel</button>
             </div>
         </div>
         </div>
@@ -111,7 +114,7 @@
             </div>
 
             <!-- Hearts / HP (top-left over canvas) -->
-            <div id="hearts" class="hearts" aria-label="Health"></div>
+            <!-- <div id="hearts" class="hearts" aria-label="Health"></div> -->
 
             <div id="xp-pop" class="xp-pop hidden" aria-hidden="true">
 
@@ -194,6 +197,9 @@
                         <div class="equip-slot" data-eq="ring" aria-label="Ring slot"></div>
                     </div>
 
+                    <!-- PLAYER STATS -->
+                    <div id="equip-stats" class="equip-stats" aria-label="Player combat stats"></div>
+
                     <div class="equip-hint"></div>
                 </div>
             </div>
@@ -266,9 +272,12 @@
                     <img src="assets/icons/inventory_btn_icon.png" alt="Inventory">
                 </button>
 
-
             </div>
 
+            <div id="hp-heart" class="hp-heart" aria-label="HP">
+                <img src="assets/ui/heart.png" alt="HP">
+                <div id="hp-heart-text" class="hp-heart-text">0</div>
+            </div>
 
         </div>
 

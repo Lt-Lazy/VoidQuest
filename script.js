@@ -33,6 +33,7 @@ const startCharName = document.getElementById("start-char-name");
 const startCharLvl = document.getElementById("start-char-lvl");
 
 const startSpriteImg = document.getElementById("start-char-sprite");
+const startArmorImg = document.getElementById("start-char-armor");
 const startNoChar = document.getElementById("start-no-char");
 
 // modal create
@@ -80,6 +81,7 @@ const btnInventoryClose = document.getElementById("btn-inventory-close");
 // --- Equipment UI refs ---
 const btnEquip = document.getElementById("btn-equip");
 const equipWindowEl = document.getElementById("equip-window");
+const equipStatsEl = document.getElementById("equip-stats");
 const btnEquipClose = document.getElementById("btn-equip-close");
 
 // --- Shop UI refs ---
@@ -118,7 +120,7 @@ let xpEmblemActive = false;
 
 
 // --- Player hearts ---
-const heartsEl = document.getElementById("hearts");
+const hpHeartTextEl = document.getElementById("hp-heart-text");
 
 // --- Mat Cooldown ---
 let foodCooldownUntilMs = 0;
@@ -126,6 +128,14 @@ let foodCooldownUntilMs = 0;
 // viktig
 const VIEW_TILES_X = 20;
 const VIEW_TILES_Y = 12;
+
+// ---- PLAYER/NPC RENDER SIZE (visual only) ----
+// Logisk størrelse (kollisjon) er fortsatt 1 tile.
+const PLAYER_DRAW_W = TILE_SIZE;
+const PLAYER_DRAW_H = TILE_SIZE * 2;
+
+// Hvor mye vi flytter sprite opp (ankre ved føtter)
+const PLAYER_DRAW_Y_OFFSET = TILE_SIZE;
 
 let animTime = 0;
 
@@ -248,48 +258,50 @@ function loadImage(src) {
 const tileImages = {};
 
 const playerSkins = {};
-const playerImages = {}; // dir -> { idle: Image, walk: Image[] }
+// Armor-overlay anims (separate fra base-skins)
+const armorSkins = {}; // armorId { down/up/left/right: {idle: Image[], walk: Image[]} }
+const playerImages = {}; // { idle: Image, walk: Image[] }
 
 const PLAYER_ANIMS_MALE = {
   down: {
     idle: [ 
-      "assets/player/male/pixelmannDown.png",
-      "assets/player/male/pixelmannDownIdle.png",
+      "assets/player/male/male_down.png",
+      "assets/player/male/male_down_idle.png",
     ],
     walk: [
-      "assets/player/male/pixelmannDownRun1.png",
-      "assets/player/male/pixelmannDown.png",
-      "assets/player/male/pixelmannDownRun2.png",
+      "assets/player/male/male_down_run_1.png",
+      
+      "assets/player/male/male_down_run_2.png",
     ],
   },
   up: {
     idle: [ 
-      "assets/player/male/pixelmannUp.png",
-      "assets/player/male/pixelmannUpIdle.png",
+      "assets/player/male/male_up.png",
+      "assets/player/male/male_up_idle.png",
     ],
     walk: [
-      "assets/player/male/pixelmannUpRun1.png",
-      "assets/player/male/pixelmannUpRun2.png",
+      "assets/player/male/male_up_run_1.png",
+      "assets/player/male/male_up_run_2.png",
     ],
   },
   left: {
     idle: [ 
-      "assets/player/male/pixelmannLeft.png",
-      "assets/player/male/pixelmannLeftIdle.png",
+      "assets/player/male/male_left.png",
+      "assets/player/male/male_left_idle.png",
     ],
     walk: [
-      "assets/player/male/pixelmannLeftRun1.png",
-      "assets/player/male/pixelmannLeft.png",
+      "assets/player/male/male_left_run.png",
+      "assets/player/male/male_left_idle.png",
     ],
   },
   right: {
     idle: [ 
-      "assets/player/male/pixelmannRight.png",
-      "assets/player/male/pixelmannRightIdle.png",
+      "assets/player/male/male_right.png",
+      "assets/player/male/male_right_idle.png",
     ],
     walk: [
-      "assets/player/male/pixelmannRightRun1.png",
-      "assets/player/male/pixelmannRight.png",
+      "assets/player/male/male_right_run.png",
+      "assets/player/male/male_right.png",
     ],
   },
 };
@@ -301,9 +313,9 @@ const PLAYER_ANIMS_FEMALE = {
       "assets/player/female/female_down_idle.png",
     ],
     walk: [
-      "assets/player/female/female_down_run1.png",
+      "assets/player/female/female_down_run_1.png",
       "assets/player/female/female_down.png",
-      "assets/player/female/female_down_run2.png",
+      "assets/player/female/female_down_run_2.png",
     ],
   },
   up: {
@@ -312,8 +324,8 @@ const PLAYER_ANIMS_FEMALE = {
       "assets/player/female/female_up_idle.png",
     ],
     walk: [
-      "assets/player/female/female_up_run1.png",
-      "assets/player/female/female_up_run2.png",
+      "assets/player/female/female_up_run_1.png",
+      "assets/player/female/female_up_run_2.png",
     ],
   },
   left: {
@@ -322,7 +334,7 @@ const PLAYER_ANIMS_FEMALE = {
       "assets/player/female/female_left_idle.png",
     ],
     walk: [
-      "assets/player/female/female_left_run.png",
+      "assets/player/female/female_left_run_1.png",
       "assets/player/female/female_left.png",
     ],
   },
@@ -332,8 +344,51 @@ const PLAYER_ANIMS_FEMALE = {
       "assets/player/female/female_right_idle.png",
     ],
     walk: [
-      "assets/player/female/female_right_run.png",
+      "assets/player/female/female_right_run_1.png",
       "assets/player/female/female_right.png",
+    ],
+  },
+};
+
+const PLAYER_ANIMS_GNOME = {
+  down: {
+    idle: [
+      "assets/player/gnome/gnome_down.png",
+      "assets/player/gnome/gnome_down_idle.png",
+    ],
+    walk: [
+      "assets/player/gnome/gnome_down_run_1.png",
+      "assets/player/gnome/gnome_down_run_2.png",
+    ],
+  },
+  up: {
+    idle: [
+      "assets/player/gnome/gnome_up.png",
+      "assets/player/gnome/gnome_up_idle.png",
+    ],
+    walk: [
+      "assets/player/gnome/gnome_up_run_1.png",
+      "assets/player/gnome/gnome_up_run_2.png",
+    ],
+  },
+  left: {
+    idle: [
+      "assets/player/gnome/gnome_left.png",
+      "assets/player/gnome/gnome_left_idle.png",
+    ],
+    walk: [
+      "assets/player/gnome/gnome_left_run.png",
+      "assets/player/gnome/gnome_left.png",
+    ],
+  },
+  right: {
+    idle: [
+      "assets/player/gnome/gnome_right.png",
+      "assets/player/gnome/gnome_right_idle.png",
+    ],
+    walk: [
+      "assets/player/gnome/gnome_right_run.png",
+      "assets/player/gnome/gnome_right.png",
     ],
   },
 };
@@ -392,7 +447,7 @@ async function loadAllAssets() {
     return imgCache[src];
   }
 
-  async function loadPlayerAnimSet(skinId, animDef) {
+  async function loadPlayerAnimSet(targetDict, skinId, animDef) {
     const out = {};
     for (const [dir, def] of Object.entries(animDef)) {
 
@@ -404,7 +459,7 @@ async function loadAllAssets() {
         }
       } else {
         const img = await loadCached(def.idle);
-        if (img) idleFrames = [img]; // wrap single idle into array
+        if (img) idleFrames = [img];
       }
 
       const walkFrames = [];
@@ -415,19 +470,34 @@ async function loadAllAssets() {
 
       out[dir] = { idle: idleFrames, walk: walkFrames };
     }
-    playerSkins[skinId] = out;
+
+    targetDict[skinId] = out;
   }
 
   // 1) Default skins
-  await loadPlayerAnimSet("male", PLAYER_ANIMS_MALE);
-  await loadPlayerAnimSet("female", PLAYER_ANIMS_FEMALE);
+  await loadPlayerAnimSet(playerSkins, "male", PLAYER_ANIMS_MALE);
+  await loadPlayerAnimSet(playerSkins, "female", PLAYER_ANIMS_FEMALE);
+  await loadPlayerAnimSet(playerSkins, "gnome", PLAYER_ANIMS_GNOME);
 
-  // 2) Armor skins (hvis item har playerAnims)
+  // Armor overlays (bruker samme playerAnims, men lagres i armorSkins)
   for (const def of Object.values(ITEM_DEFS)) {
-    if (def?.type === "armor" && def?.playerAnims) {
-      await loadPlayerAnimSet(def.id, def.playerAnims);
+    if (def?.type !== "armor") continue;
+
+    // playerAnimsByGender
+    if (def.playerAnimsByGender?.male) {
+      await loadPlayerAnimSet(armorSkins, armorKey(def.id, "male"), def.playerAnimsByGender.male);
+    }
+    if (def.playerAnimsByGender?.female) {
+      await loadPlayerAnimSet(armorSkins, armorKey(def.id, "female"), def.playerAnimsByGender.female);
+    }
+
+    // Bakoverkompatibel fallback: hvis det fortsatt er gamle armor som bare har playerAnims :)
+    if (!def.playerAnimsByGender && def.playerAnims) {
+      await loadPlayerAnimSet(armorSkins, armorKey(def.id, "male"), def.playerAnims);
+      await loadPlayerAnimSet(armorSkins, armorKey(def.id, "female"), def.playerAnims);
     }
   }
+
   await loadNpcAssets();
   await loadFxAssets();
 }
@@ -438,22 +508,36 @@ let respawnPoint = null;
 let currentLevelId = "spenningsbyen";
 let level = LEVELS[currentLevelId];
 
-const player = {
-  // tile coords (logisk)
-  x: level.spawn.x,
-  y: level.spawn.y,
+// -------------------- DEFAULT SPAWN (per race) --------------------
+const DEFAULT_SPAWNS = {
+  // male/female starter her
+  human: { levelId: "spenningsbyen", x: 233, y: 236 },
 
-  // pixel coords (smooth rendering)
-  px: level.spawn.x * TILE_SIZE,
-  py: level.spawn.y * TILE_SIZE,
+  // gnome starter her (annen lokasjon) husk å endre!
+  gnome: { levelId: "spenningsbyen", x: 233, y: 236 },
+};
+
+function getDefaultSpawnForGender(gender) {
+  const g = normalizeGender(gender);
+  if (g === "gnome") return DEFAULT_SPAWNS.gnome;
+  return DEFAULT_SPAWNS.human;
+}
+
+const __bootSpawn = { levelId: "spenningsbyen", x: 233, y: 236 };
+
+const player = {
+  x: __bootSpawn.x,
+  y: __bootSpawn.y,
+  px: __bootSpawn.x * TILE_SIZE,
+  py: __bootSpawn.y * TILE_SIZE,
 
   gender: "male",
 
   level: 1,
   xp: 0,
 
-  maxHp: 5,
-  hp: 3,
+  maxHp: 6,
+  hp: 6,
 
   facing: "down",
 
@@ -473,7 +557,40 @@ let skills = {
   combat: { level: 1, xp: 0 },
   mining: { level: 1, xp: 0 },
   woodcutting: { level: 1, xp: 0 },
+  fishing: { level: 1, xp: 0 },
 };
+
+// Total level = summen av alle skill-levels 
+function getTotalSkillLevel(srcSkills = skills) {
+  if (!srcSkills || typeof srcSkills !== "object") return 0;
+  let sum = 0;
+  for (const id of ["combat", "mining", "woodcutting", "fishing"]) {
+    const s = srcSkills[id];
+    const lvl = Number(s?.level);
+    if (Number.isFinite(lvl) && lvl > 0) sum += Math.floor(lvl);
+  }
+  return sum;
+}
+
+// hent total level fra save (bruk xp hvis det finnes, ellers level)
+function getTotalSkillLevelFromSave(saveObj) {
+  const sk = saveObj?.skills;
+  if (!sk || typeof sk !== "object") return 0;
+
+  let sum = 0;
+  for (const id of ["combat", "mining", "woodcutting", "fishing"]) {
+    const s = sk[id];
+    if (!s || typeof s !== "object") continue;
+
+    const xp = Number(s.xp);
+    const lvl = Number(s.level);
+
+    if (Number.isFinite(xp) && xp >= 0) sum += skillLevelFromXp(xp);
+    else if (Number.isFinite(lvl) && lvl > 0) sum += Math.floor(lvl);
+    else sum += 1;
+  }
+  return sum;
+}
 
 // Skill-curve (litt annerledes enn main level)
 // Level 2 = 50xp, Level 3 = 200xp, Level 4 = 450xp, ...
@@ -564,19 +681,13 @@ let skillsOpen = false;
 function renderSkillsWindow() {
   if (!skillsListEl) return;
 
-  // Header: player level + STR
+  // Header: total level (sum av skills) + STR
   if (skillsTitleEl) {
     const str = (typeof getPlayerStrength === "function") ? getPlayerStrength() : 1;
-
-    // XP til neste player level (total XP curve)
-    const nextPlayerTotalXp = totalXpForLevel(Math.min(MAX_LEVEL, player.level + 1));
-    const playerXpText = (player.level >= MAX_LEVEL)
-      ? `${player.xp} XP (MAX)`
-      : `${player.xp}/${nextPlayerTotalXp} XP`;
+    const totalLvl = getTotalSkillLevel();
 
     skillsTitleEl.innerHTML = `
-      Skills • Lvl ${player.level} <span class="skills-subline">${playerXpText}</span>
-      
+      Skills • Total lvl ${totalLvl}
       <span class="skills-subline skills-subline--str">STR: ${str}</span>
     `;
   }
@@ -587,6 +698,7 @@ function renderSkillsWindow() {
     { label: "Combat", s: skills.combat },
     { label: "Mining", s: skills.mining }, 
     { label: "Woodcutting", s: skills.woodcutting },
+    { label: "Fishing", s: skills.fishing },
   ];
 
   for (const e of entries) {
@@ -653,7 +765,7 @@ const ITEM_DEFS = {
     type: "misc",
     description: "Used for trading and crafting.",
     stackable: true,
-    max_stack: 20,
+    max_stack: 10,
   },
   copperOre: {
     id: "copperOre",
@@ -664,7 +776,6 @@ const ITEM_DEFS = {
     stackable: true,
     max_stack: 50,
   },
-
   tinBar: {
     id: "tinBar",
     name: "Tin Bar",
@@ -672,9 +783,8 @@ const ITEM_DEFS = {
     type: "misc",
     description: "Used for trading and crafting.",
     stackable: true,
-    max_stack: 20,
+    max_stack: 10,
   },
-
   tinOre: {
     id: "tinOre",
     name: "Tin Ore",
@@ -683,6 +793,15 @@ const ITEM_DEFS = {
     description: "A chunk of tin ore.",
     stackable: true,
     max_stack: 50,
+  },
+  bronzeBar: {
+    id: "bronzeBar",
+    name: "Bronze Bar",
+    icon: "assets/items/metals/bronzeBar.png",
+    type: "misc",
+    description: "Used for trading and crafting.",
+    stackable: true,
+    max_stack: 10,
   },
 
   woodLog: {
@@ -714,6 +833,17 @@ const ITEM_DEFS = {
     type: "tool",
     description: "Axe for chopping trees.",
     toolActions: ["woodcutting"],
+    stackable: false,
+  },
+
+  fishingRod: {
+    id: "fishingRod",
+    name: "Fishing Rod",
+    icon: "assets/items/tools/fishingRod.png",
+    fxSprite: "assets/items/tools/fishingRod.png",
+    type: "tool",
+    description: "A fishing rod for catching fish.",
+    toolActions: ["fishing"],
     stackable: false,
   },
 
@@ -759,58 +889,95 @@ const ITEM_DEFS = {
     enemyMaxHitMod: -1, 
     enemyHitChanceMod: -2,  
     stackable: false,
-    playerAnims: {
-      down: {
-        idle: [ 
-          "assets/player/bronzeArmor/bronzeArmorDown.png",
-          "assets/player/bronzeArmor/bronzeArmorDownIdle.png",
-        ],
-        walk: [
-          "assets/player/bronzeArmor/bronzeArmorDownRun1.png",
-          "assets/player/bronzeArmor/bronzeArmorDownRun2.png",
-        ],
+    playerAnimsByGender: {
+      male: {
+        down: {
+          idle: [ 
+            "assets/armor/metals/bronze_armor/male/bronze_armor_down.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_down_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/male/bronze_armor_down_run_1.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_down_run_2.png",
+          ],
+        },
+        up: {
+          idle: [  
+            "assets/armor/metals/bronze_armor/male/bronze_armor_up.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_up_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/male/bronze_armor_up_run_1.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_up_run_2.png",
+          ],
+        },
+        left: {
+          idle: [ 
+            "assets/armor/metals/bronze_armor/male/bronze_armor_left.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_left_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/male/bronze_armor_left_run_1.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_left_idle.png",
+          ],
+        },
+        right: {
+          idle: [ 
+            "assets/armor/metals/bronze_armor/male/bronze_armor_right.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_right_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/male/bronze_armor_right_run_1.png",
+            "assets/armor/metals/bronze_armor/male/bronze_armor_right_idle.png",
+          ],
+        },
       },
-      up: {
-        idle: [  
-          "assets/player/bronzeArmor/bronzeArmorUp.png",
-          "assets/player/bronzeArmor/bronzeArmorUpIdle.png",
-        ],
-        walk: [
-          "assets/player/bronzeArmor/bronzeArmorUpRun1.png",
-          "assets/player/bronzeArmor/bronzeArmorUpRun2.png",
-        ],
-      },
-      left: {
-        idle: [ 
-          "assets/player/bronzeArmor/bronzeArmorLeft.png",
-          "assets/player/bronzeArmor/bronzeArmorLeftIdle.png",
-        ],
-        walk: [
-          "assets/player/bronzeArmor/bronzeArmorLeftRun1.png",
-          "assets/player/bronzeArmor/bronzeArmorLeft.png",
-        ],
-      },
-      right: {
-        idle: [ 
-          "assets/player/bronzeArmor/bronzeArmorRight.png",
-          "assets/player/bronzeArmor/bronzeArmorRightIdle.png",
-        ],
-        walk: [
-          "assets/player/bronzeArmor/bronzeArmorRightRun1.png",
-          "assets/player/bronzeArmor/bronzeArmorRight.png",
-        ],
+      
+      female: {
+        down: {
+          idle: [ 
+            "assets/armor/metals/bronze_armor/female/bronze_armor_down.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_down_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/female/bronze_armor_down_run_1.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_down.png",
+          ],
+        },
+        up: {
+          idle: [  
+            "assets/armor/metals/bronze_armor/female/bronze_armor_up.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_up_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/female/bronze_armor_up_run_1.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_up_run_2.png",
+          ],
+        },
+        left: {
+          idle: [ 
+            "assets/armor/metals/bronze_armor/female/bronze_armor_left.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_left_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/female/bronze_armor_left_run_1.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_left_idle.png",
+          ],
+        },
+        right: {
+          idle: [ 
+            "assets/armor/metals/bronze_armor/female/bronze_armor_right.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_right_idle.png",
+          ],
+          walk: [
+            "assets/armor/metals/bronze_armor/female/bronze_armor_right_run_1.png",
+            "assets/armor/metals/bronze_armor/female/bronze_armor_right_idle.png",
+          ],
+        },
       },
     },
   },
 
-  ring: {
-    id: "ring",
-    name: "Copper Ring",
-    icon: "assets/ui/xp.png",
-    type: "ring",
-    description: "A small ring with a faint glow.",
-    stackable: false,
-  },
 
   //===================FOOD===================
 
@@ -845,6 +1012,28 @@ const ITEM_DEFS = {
     consumable: true,
     foodPoints: 2,
     foodCooldownMs: 20000,
+  },
+
+  shrimp_raw: {
+    id: "shrimp_raw",
+    name: "Shrimp",
+    icon: "assets/items/consumables/food/ocean/shrimp_raw.png",
+    consumable: true,
+    foodPoints: 1,
+    foodCooldownMs: 20000,
+    description: "Happy living shrimp.",
+    stackable: false,
+  },
+
+  shrimp_cooked: {
+    id: "shrimp_cooked",
+    name: "Cooked Shrimp",
+    icon: "assets/items/consumables/food/ocean/shrimp_cooked.png",
+    consumable: true,
+    foodPoints: 2,
+    foodCooldownMs: 10000,
+    description: "Sad cooked shrimp.",
+    stackable: false,
   },
 
 };
@@ -1445,8 +1634,8 @@ function renderShopWindow() {
     const def = ITEM_DEFS[s.itemId];
     if (!def) continue;
 
-    const costList = normalizeShopCost(s);
-    const costText = formatCostText(costList);
+    const costList = getShopCosts(s);
+    const costText = formatCostsText(costList);
 
     const row = document.createElement("div");
     row.className = "shop-row";
@@ -1568,6 +1757,84 @@ function formatCostText(costList) {
 
 function canAffordCost(costList) {
   return costList.every(c => countItemInInventory(c.itemId) >= c.qty);
+}
+
+function getShopCosts(entry) {
+
+  const out = [];
+
+  if (Array.isArray(entry?.costs)) {
+    for (const c of entry.costs) {
+      const id = c?.itemId;
+      const qty = Number(c?.qty);
+      if (id && Number.isFinite(qty) && qty > 0) out.push({ itemId: id, qty });
+    }
+    return out;
+  }
+
+  // Gammel: entry.cost = {itemId, qty}
+  if (entry?.cost?.itemId) {
+    const qty = Number(entry.cost.qty ?? 1);
+    out.push({ itemId: entry.cost.itemId, qty: Number.isFinite(qty) && qty > 0 ? qty : 1 });
+  }
+
+  if (entry?.cost_item_id_2) {
+    const qty2 = Number(entry.cost_qty_2 ?? 1);
+    out.push({ itemId: entry.cost_item_id_2, qty: Number.isFinite(qty2) && qty2 > 0 ? qty2 : 1 });
+  }
+
+  return out;
+}
+
+function formatCostsText(costs) {
+  if (!Array.isArray(costs) || costs.length === 0) return "Free";
+
+  return costs
+    .map(c => {
+      const def = ITEM_DEFS?.[c.itemId];
+      const name = def?.name || c.itemId;
+      return `${c.qty} ${name}`;
+    })
+    .join(" + ");
+}
+
+// -------------------- STATIC SHOPS (tile-based) --------------------
+const STATIC_SHOPS = {
+  campfire_01: {
+    id: "campfire_01",
+    name: "Campfire",
+    shop: [
+      {
+        itemId: "meat_cooked",
+        costs: [
+          { itemId: "meat_raw", qty: 1 },
+          { itemId: "woodLog", qty: 1 },
+        ],
+      },
+    ],
+  },
+};
+
+function openShopForStaticShopId(shopId) {
+  const s = STATIC_SHOPS[shopId];
+  if (!s) {
+    logMessage("This object doesn't have a shop.", "system");
+    return;
+  }
+
+  // Vi bruker samme shop UI som NPC-shop, men med en "fake npc ref"
+  shopOpen = true;
+  shopNpcRef = { id: s.id, name: s.name, trader: true, shop: s.shop };
+
+  renderShopWindow();
+  shopWindowEl.classList.remove("hidden");
+  shopWindowEl.setAttribute("aria-hidden", "false");
+
+  // slipp input
+  held.up = held.down = held.left = held.right = false;
+  lastIntent = null;
+
+  closeContextMenu?.();
 }
 
 
@@ -1742,6 +2009,20 @@ function renderEquipWindow() {
 
     slotEl.appendChild(wrap);
   });
+
+  // ---- Player stats (shown in equipment window) ----
+  if (equipStatsEl) {
+    const maxHp = player?.maxHp ?? 0;
+    const { maxHit } = getPlayerHitRange();
+    const hitChancePct = Math.round(getPlayerHitChance() * 100);
+
+    equipStatsEl.innerHTML = `
+      <div class="row"><span class="label">Max health</span><span class="value">${maxHp}</span></div>
+      <div class="row"><span class="label">Max hit</span><span class="value">${maxHit}</span></div>
+      <div class="row"><span class="label">Hit chance</span><span class="value">${hitChancePct}%</span></div>
+    `;
+  }
+
 }
 
 function openEquipWindow() {
@@ -1797,47 +2078,32 @@ const PLAYER_COMBAT = {
 
 };
 
-// -------------------- XP / LEVEL --------------------
-// Enkel curve: total XP for level L = (L-1)^2 * 100
-// Level 1 = 0xp, Level 2 = 100xp, Level 3 = 400xp, Level 4 = 900xp, osv.
-const MAX_LEVEL = 99;
 
-function totalXpForLevel(level) {
-  const L = Math.max(1, Math.min(MAX_LEVEL, level));
-  return (L - 1) * (L - 1) * 100;
+// -------------------- MAX HP (derived from combat level) --------------------
+// Design: starts at 6 HP at combat lvl 1.
+// Smooth scaling with a hard cap of 100:
+// maxHP = min(100, 6 + floor((combatLevel - 1) * 0.8))
+function computeMaxHpFromCombatLevel(combatLevel) {
+  const L = Math.max(1, Math.floor(Number(combatLevel) || 1));
+  const raw = 6 + Math.floor((L - 1) * 0.8);
+  return clamp(raw, 1, 100);
 }
-
-function levelFromXp(xp) {
-  const x = Math.max(0, xp);
-  const L = Math.floor(Math.sqrt(x / 100)) + 1;
-  return Math.max(1, Math.min(MAX_LEVEL, L));
-}
-
-function xpToNextLevel() {
-  const next = Math.min(MAX_LEVEL, player.level + 1);
-  return Math.max(0, totalXpForLevel(next) - player.xp);
-}
-
-function addXp(amount) {
-  const gain = Math.max(0, Math.floor(amount || 0));
-  if (gain <= 0) return;
-
-  const beforeLevel = player.level;
-  player.xp += gain;
-
-  const afterLevel = levelFromXp(player.xp);
-  if (afterLevel > beforeLevel) {
-    player.level = afterLevel;
-    logMessage(`LEVEL UP! You are now level ${player.level}.`, "loot");
-  }
-
-  if (skillsOpen) renderSkillsWindow();
-  logMessage(`You gain ${gain} XP. (${player.xp} XP, lvl ${player.level})`, "loot");
-}
-
 
 // --- Enemy regen når combat avsluttes (anti hit-and-run) ---
 const ENEMY_DISENGAGE_REGEN_MS = 1200; // hvor fort den går tilbake til full
+
+function renderHpHeart() {
+  if (!hpHeartTextEl) return;
+  hpHeartTextEl.textContent = String(player.hp ?? 0);
+}
+
+function syncDerivedPlayerHpLimits() {
+  const combatLvl = Number(skills?.combat?.level) || 1;
+  const newMax = computeMaxHpFromCombatLevel(combatLvl);
+  player.maxHp = newMax;
+  player.hp = clamp(player.hp, 0, player.maxHp);
+  renderHpHeart();
+}
 
 function startEnemyDisengageRegen(npc, nowMs) {
   if (!npc || npc.dead) return;
@@ -2149,9 +2415,7 @@ function updateCombat(nowMs) {
       logMessage(`${npc.name} hits you for ${dmg}.`, "error");
       damagePlayer(dmg);
 
-      //  COMBAT SKILL XP (server-side): server bestemmer 50% chance + reward
-      // Forutsetter at du har grantCombatHitXpServer(npcId)
-      grantCombatHitXpServer?.(npc.id);
+      //grantCombatHitXpServer?.(npc.id); ???
     }
 
     combat.nextEnemyHitAt = nowMs + enemySpeed;
@@ -2214,12 +2478,18 @@ async function grantCombatKillXpServer(npcId) {
     return;
   }
 
-  // Oppdater lokal state fra server
-  player.xp = data.player_xp;
-  player.level = data.player_level;
+  // data: { skill:'combat', gain, xp, level }
+  if (!data) return;
+
+  // Oppdater combat skill lokalt (samme pattern som mining/woodcutting/fishing)
+  skills.combat = skills.combat || {};
+  skills.combat.xp = data.xp;
+  skills.combat.level = data.level;
+
+  syncDerivedPlayerHpLimits();
 
   showXpEmblem();
-  logMessage(`You gain ${data.gain_xp} XP. (${player.xp} XP, lvl ${player.level})`, "loot");
+  logMessage(`+${data.gain} COMBAT XP`, "loot");
 
   if (skillsOpen) renderSkillsWindow();
   return true;
@@ -2235,6 +2505,8 @@ async function grantCombatHitXpServer(npcId) {
 
   skills.combat.xp = data.combat_xp;
   skills.combat.level = data.combat_level;
+
+  syncDerivedPlayerHpLimits();
 
   showXpEmblem();
   logMessage(`+${data.gain} COMBAT XP`, "loot");
@@ -2264,6 +2536,8 @@ async function consumeFromInventoryServer(slotIndex) {
     if (typeof data?.hp === "number") player.hp = data.hp;
     if (typeof data?.maxHp === "number") player.maxHp = data.maxHp;
 
+    syncDerivedPlayerHpLimits();
+
     if (typeof data?.food_until_ms === "number") {
       foodCooldownUntilMs = data.food_until_ms;
 
@@ -2272,7 +2546,7 @@ async function consumeFromInventoryServer(slotIndex) {
     }
 
     renderInventoryWindow?.();
-    renderHearts?.();
+    renderHpHeart?.();
 
     const name = ITEM_DEFS[data?.item_id]?.name || data?.item_id || "food";
     logMessage(`You consume ${name} (+${data.healed} HP).`, "loot");
@@ -2619,6 +2893,163 @@ function updateWoodcutting(nowMs) {
 
   depleteTileForRespawn(woodcutting.layer, woodcutting.tx, woodcutting.ty, woodcutting.originalKey, nowMs, woodcutting.respawnMs);
   stopWoodcutting(null);
+}
+
+
+// -------------------- FISHING --------------------
+
+const fishing = {
+  active: false,
+  tx: 0,
+  ty: 0,
+  layer: "mid",
+  originalKey: null,
+  catchesDone: 0,
+  catchesRequired: 4,
+  nextCatchAt: 0,
+  respawnMs: 12000,
+};
+
+async function grantFishingServer(spotKey) {
+  try {
+    const { data, error } = await sb.rpc("rpc_fishing_complete", { p_spot_key: spotKey });
+    if (error) {
+      console.warn("[FISHING RPC] error", error);
+      logMessage(`Server rejected fishing reward: ${error.message || "unknown error"}`, "error");
+      return null;
+    }
+
+    if (data?.skill === "fishing") {
+      if (!skills.fishing) skills.fishing = { xp: 0, level: 1 };
+      skills.fishing.xp = data.xp;
+      skills.fishing.level = data.level;
+      logMessage(`+${data.gain} FISHING XP`, "system");
+    }
+
+    if (data?.inventory) {
+      inventory = normalizeInventory(data.inventory);
+      renderInventoryWindow();
+    }
+
+    const drops = data?.drops || [];
+    for (const d of drops) {
+      const itemName = ITEM_DEFS[d.item_id]?.name || d.item_id;
+      logMessage(`You catch ${d.qty} ${itemName}.`, "loot");
+    }
+
+    if (skillsOpen) renderSkillsWindow();
+    saveGame?.();
+    return data;
+  } catch (e) {
+    console.warn("[FISHING RPC] failed", e);
+    logMessage("Server error (fishing).", "error");
+    return null;
+  }
+}
+
+function hasFreeInventorySlot() {
+  return Array.isArray(inventory) && inventory.some(s => s === null);
+}
+
+function startFishingSpot(tx, ty, layer, key, tileDef) {
+  if (!isAdjacentToPlayer(tx, ty)) {
+    logMessage("You need to stand next to the fishing spot.", "error");
+    return;
+  }
+
+  // må ha plass før vi starter
+  if (!hasFreeInventorySlot()) {
+    logMessage("Inventory is full.", "error");
+    return;
+  }
+
+  // krever fishing rod (tool action)
+  const req = tileDef?.fishing?.toolAction || "fishing";
+  if (!toolHasAction(req)) {
+    logMessage("You need a fishing rod to fish here.", "error");
+    return;
+  }
+
+  // level gate
+  const reqLevel = Math.max(1, Math.floor(tileDef?.fishing?.minLevel || 1));
+  const myLevel = skills?.fishing?.level || 1;
+  if (myLevel < reqLevel) {
+    logMessage(`You need Fishing level ${reqLevel} to fish here.`, "error");
+    return;
+  }
+
+  fishing.active = true;
+  fishing.tx = tx;
+  fishing.ty = ty;
+  fishing.layer = layer;
+  fishing.originalKey = key;
+  fishing.catchesDone = 0;
+  fishing.catchesRequired = Math.max(1, Math.floor(tileDef?.fishing?.catchesRequired || 4));
+  fishing.respawnMs = Math.max(1000, Math.floor(tileDef?.fishing?.respawnMs || 12000));
+
+  const now = performance.now();
+  fishing.nextCatchAt = now + 350;
+
+  // stopp bevegelse
+  held.up = held.down = held.left = held.right = false;
+  lastIntent = null;
+
+  logMessage("You start fishing.", "system");
+}
+
+function stopFishing(reason = null) {
+  fishing.active = false;
+  fishing.originalKey = null;
+  if (reason) logMessage(reason, "system");
+}
+
+function updateFishing(nowMs) {
+  if (!fishing.active) return;
+
+  if (!isAdjacentToPlayer(fishing.tx, fishing.ty)) {
+    stopFishing("You stop fishing.");
+    return;
+  }
+
+  const gridName = (fishing.layer === "mid") ? "grid_mid" : "grid_base";
+  const grid = level[gridName];
+  const currentKey = grid?.[fishing.ty]?.[fishing.tx];
+  if (currentKey !== fishing.originalKey) {
+    stopFishing("The fishing spot is gone.");
+    return;
+  }
+
+  // Hvis inventory blir fullt mens du fisker -> stopp
+  if (!hasFreeInventorySlot()) {
+    stopFishing("Inventory is full.");
+    return;
+  }
+
+  if (nowMs < fishing.nextCatchAt) return;
+
+  // "bob"-FX: vi bruker swing FX sprite (fishing rod) mot tilen (samme system som mining/woodcutting)
+  const pC = playerCenterPx();
+  const tC = tileCenterPx(fishing.tx, fishing.ty);
+  triggerSwing(pC.x, pC.y, tC.x, tC.y, nowMs, getPlayerToolFxSprite());
+
+  fishing.catchesDone += 1;
+  fishing.nextCatchAt = nowMs + 1100; // fishing tick speed (juster)
+
+  // Award fra server hver catch (server bestemmer fish vs junk)
+  void (async () => {
+    await grantFishingServer(fishing.originalKey);
+
+    // etter serveroppdatering: hvis inventory nå er fullt -> stopp
+    if (!hasFreeInventorySlot() && fishing.active) {
+      stopFishing("Inventory is full.");
+    }
+  })();
+
+  // Etter N catches: spot går i cooldown (forsvinner og respawner)
+  if (fishing.catchesDone >= fishing.catchesRequired) {
+    depleteTileForRespawn(fishing.layer, fishing.tx, fishing.ty, fishing.originalKey, nowMs, fishing.respawnMs);
+    stopFishing(null);
+  }
 }
 
 
@@ -3159,13 +3590,8 @@ function getMyNameForPresence() {
 
 function getMyGenderForPresence() {
   const s = getSave?.();
-  const g = s?.profile?.gender;
-
-  if (g === "female" || g === "male") return g;
-
-  if (player?.gender === "female" || player?.gender === "male") return player.gender;
-
-  return null;
+  const g = s?.profile?.gender ?? s?.player?.gender ?? player?.gender;
+  return normalizeGender(g);
 }
 
 async function presenceUpsert(force = false) {
@@ -3177,6 +3603,7 @@ async function presenceUpsert(force = false) {
   presenceLastPushAt = now;
 
   const gender = getMyGenderForPresence();
+  const armorId = getMyArmorIdForPresence();
 
   try {
     await sb.rpc("rpc_presence_upsert", {
@@ -3186,14 +3613,13 @@ async function presenceUpsert(force = false) {
       p_y: Math.floor(player.y),
       p_facing: player.facing || null,
       p_name: getMyNameForPresence(),
-      p_gender: getMyGenderForPresence(),
-      
+      p_gender: gender,
+      p_armor_id: armorId,
     });
   } catch (e) {
     console.warn("[PRESENCE] upsert failed", e);
   }
 }
-
 async function presenceRemove() {
   try {
     await sb.rpc("rpc_presence_remove", { p_session_id: clientSessionId });
@@ -3209,78 +3635,163 @@ function clearOtherPlayers() {
 function applyPresenceRow(row) {
   if (!row?.user_id) return;
 
+  // Hvis denne raden gjelder et annet level enn jeg er i, skal den ikke ligge i otherPlayers
+  if (row.level_id !== currentLevelId) {
+    otherPlayers.delete(row.user_id);
+    return;
+  }
+
   const x = Number(row.x) || 0;
   const y = Number(row.y) || 0;
 
   const prev = otherPlayers.get(row.user_id);
+
   const px = x * TILE_SIZE;
   const py = y * TILE_SIZE;
 
-  otherPlayers.set(row.user_id, {
+  const prevTargetPx = prev?.targetPx ?? px;
+  const prevTargetPy = prev?.targetPy ?? py;
+
+  const changedTile = (px !== prevTargetPx) || (py !== prevTargetPy);
+
+  // Startpos for smooth
+  const startPx = prev?.px ?? px;
+  const startPy = prev?.py ?? py;
+
+  const next = {
     user_id: row.user_id,
     name: row.name || "Player",
-    gender: row.gender || "male",
+    gender: normalizeGender(row.gender),
     level_id: row.level_id,
     x, y,
     facing: row.facing || "down",
-    // smooth render targets:
-    px: prev?.px ?? px,
-    py: prev?.py ?? py,
+    armor_id: row.armor_id || null,
+
+    // render state
+    px: startPx,
+    py: startPy,
     targetPx: px,
     targetPy: py,
+
+    // step state
+    moving: prev?.moving ?? false,
+    fromPx: prev?.fromPx ?? startPx,
+    fromPy: prev?.fromPy ?? startPy,
+    toPx: prev?.toPx ?? px,
+    toPy: prev?.toPy ?? py,
+    moveElapsed: prev?.moveElapsed ?? 0,
+    moveDuration: prev?.moveDuration ?? BASE_MOVE_DURATION_MS,
+
     lastUpdateMs: Date.now(),
-  });
+  };
+
+  if (changedTile) {
+    // Start ny step
+    next.moving = true;
+    next.fromPx = startPx;
+    next.fromPy = startPy;
+    next.toPx = px;
+    next.toPy = py;
+    next.moveElapsed = 0;
+    next.moveDuration = BASE_MOVE_DURATION_MS;
+  }
+
+  otherPlayers.set(row.user_id, next);
 }
 
 function updateOtherPlayersSmooth(dtMs) {
-  // enkel lerp mot target
-  const t = Math.min(1, dtMs / 120);
   for (const p of otherPlayers.values()) {
-    p.px = p.px + (p.targetPx - p.px) * t;
-    p.py = p.py + (p.targetPy - p.py) * t;
+    // Hvis vi er i en "step"
+    if (p.moving) {
+      p.moveElapsed += dtMs;
+      const t = Math.min(1, p.moveElapsed / (p.moveDuration || BASE_MOVE_DURATION_MS));
+
+      p.px = lerp(p.fromPx, p.toPx, t);
+      p.py = lerp(p.fromPy, p.toPy, t);
+
+      if (t >= 1) {
+        p.px = p.toPx;
+        p.py = p.toPy;
+        p.moving = false;
+      }
+
+      continue;
+    }
+
+    // Hvis ikke moving, men ikke helt i mål (rare case):
+    if (p.px !== p.targetPx || p.py !== p.targetPy) {
+      // snap forsiktig, eller start en step
+      p.moving = true;
+      p.fromPx = p.px;
+      p.fromPy = p.py;
+      p.toPx = p.targetPx;
+      p.toPy = p.targetPy;
+      p.moveElapsed = 0;
+      p.moveDuration = BASE_MOVE_DURATION_MS;
+    }
   }
 }
 
-// Tegn andre spillere (enkelt: bruker samme sprites som deg, basert på gender + facing)
-function getOtherPlayerSprite(p) {
-  const skinId = (p.gender === "female") ? "female" : "male";
+function getOtherPlayerBaseSprite(p) {
+  const skinId = normalizeGender(p.gender);
   const skin = playerSkins[skinId];
   if (!skin) return null;
 
   const pack = skin[p.facing] || skin.down;
-  if (!pack) return null;
-
-  // idle anim
-  const frames = pack.idle || [];
-  if (!frames.length) return null;
-  const idx = Math.floor(animTime / PLAYER_IDLE_FRAME_MS) % frames.length;
-  return frames[idx];
+  return pickAnimFrame(pack, !!p.moving, p.moveElapsed || 0);
 }
+
+function armorKey(armorId, gender) {
+  return `${armorId}::${gender}`;
+}
+
+function getOtherPlayerArmorSprite(p) {
+  const armorId = p.armor_id;
+  if (!armorId) return null;
+
+  const gender = normalizeGender(p.gender);
+  const skin = armorSkins[armorKey(armorId, gender)];
+  if (!skin) return null;
+
+  const pack = skin[p.facing] || skin.down;
+  return pickAnimFrame(pack, !!p.moving, p.moveElapsed || 0);
+}
+
 
 function drawOtherPlayers(nowMs) {
   for (const p of otherPlayers.values()) {
-    // safety: bare samme level
     if (p.level_id !== currentLevelId) continue;
 
-    const img = getOtherPlayerSprite(p);
-    if (img) ctx.drawImage(img, p.px, p.py, TILE_SIZE, TILE_SIZE);
+    const { w, h, xOffset, yOffset } = getPlayerDrawSpec(p.gender);
+
+    const baseImg = getOtherPlayerBaseSprite(p);
+    const armorImg = getOtherPlayerArmorSprite(p);
+
+    const drawX = p.px - xOffset;
+    const drawY = p.py - yOffset;
+
+    if (baseImg) ctx.drawImage(baseImg, drawX, drawY, w, h);
     else {
       ctx.fillStyle = "#22c55e";
-      ctx.fillRect(p.px, p.py, TILE_SIZE, TILE_SIZE);
+      ctx.fillRect(drawX, drawY, w, h);
     }
 
-    // navn over hodet (valgfritt men nyttig)
+    if (armorImg) ctx.drawImage(armorImg, drawX, drawY, w, h);
+        
+    const nameBoxY = drawY - 14;
+
     ctx.save();
     ctx.globalAlpha = 0.95;
     ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(p.px - 2, p.py - 14, TILE_SIZE + 4, 12);
+    ctx.fillRect(drawX - 2, nameBoxY, TILE_SIZE + 4, 12);
     ctx.fillStyle = "#ffffff";
     ctx.font = "10px ui-monospace, monospace";
     ctx.textAlign = "center";
-    ctx.fillText((p.name || "Player").slice(0, 12), p.px + TILE_SIZE / 2, p.py - 4);
+    ctx.fillText((p.name || "Player").slice(0, 12), drawX + TILE_SIZE / 2, nameBoxY + 10);
     ctx.restore();
   }
 }
+
 
 let myUserId = null;
 
@@ -3366,14 +3877,16 @@ async function subscribeToPresence(levelId, isRetry = false) {
     }
 
     presenceChannel = sb
-      .channel(`presence:${levelId}`)
+      .channel(`presence:${levelId}`) // navnet kan være som før, men vi filtrerer ikke i realtime lenger
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "player_presence", filter: `level_id=eq.${levelId}` },
+        { event: "*", schema: "public", table: "player_presence" }, // <-- fjernet filter
         (payload) => {
           if (gen !== presenceGeneration) return;
 
           const ev = payload.eventType;
+
+          // DELETE: alltid fjern
           if (ev === "DELETE") {
             const uid = payload.old?.user_id;
             if (uid) otherPlayers.delete(uid);
@@ -3381,7 +3894,18 @@ async function subscribeToPresence(levelId, isRetry = false) {
           }
 
           const row = payload.new;
-          if (myUserId && row?.user_id === myUserId) return;
+          if (!row?.user_id) return;
+
+          // ignorer meg selv
+          if (myUserId && row.user_id === myUserId) return;
+
+          // VIKTIG: hvis spilleren er i et annet level nå, fjern den lokalt
+          if (row.level_id !== currentLevelId) {
+            otherPlayers.delete(row.user_id);
+            return;
+          }
+
+          // ellers: oppdater/lagre for rendering
           applyPresenceRow(row);
         }
       )
@@ -3398,7 +3922,6 @@ async function subscribeToPresence(levelId, isRetry = false) {
         if (status === "TIMED_OUT" || status === "CHANNEL_ERROR") {
           schedulePresenceResubscribe(status);
         }
-
       });
 
     await presenceUpsert(true);
@@ -3407,7 +3930,292 @@ async function subscribeToPresence(levelId, isRetry = false) {
   }
 }
 
+// ---------- NPC MULTIPLAYER (roaming sync) ----------
+const NPC_DRIVER_STALE_SECONDS = 20;
+const NPC_DRIVER_HEARTBEAT_MS = 5000;
 
+const NPC_ACTIVE_RADIUS = 18;      // tiles: NPC oppdateres bare nær spillere
+const NPC_SNAPSHOT_STALE_SECONDS = 60;
+
+let npcChannel = null;
+let npcGeneration = 0;
+let npcDesiredLevel = null;
+
+let npcIsDriver = false;
+let npcDriverHeartbeatTimer = null;
+let npcRoamTimer = null;
+let npcLastTickById = new Map(); // npc_id -> nextTickAt (ms)
+
+function distTiles(ax, ay, bx, by) {
+  const dx = ax - bx;
+  const dy = ay - by;
+  return Math.max(Math.abs(dx), Math.abs(dy)); // "chebyshev" (grid-følelse)
+}
+
+function anyPlayerNearTile(levelId, x, y, radius) {
+  // sjekk meg selv
+  if (currentLevelId === levelId) {
+    if (distTiles(player.x, player.y, x, y) <= radius) return true;
+  }
+
+  // sjekk andre spillere du allerede har i otherPlayers
+  for (const p of otherPlayers.values()) {
+    if (p.level_id !== levelId) continue;
+    if (distTiles(p.x, p.y, x, y) <= radius) return true;
+  }
+  return false;
+}
+
+function applyNpcRowToLocalLevel(row) {
+  const id = row?.npc_id;
+  if (!id) return;
+
+  // kun relevant level
+  if (row.level_id !== currentLevelId) return;
+
+  const npc = (level.npcs || []).find(n => n.id === id);
+  if (!npc) return;
+
+  npc.x = row.x;
+  npc.y = row.y;
+  if (row.facing) npc.facing = row.facing;
+}
+
+async function subscribeToNpcPresence(levelId) {
+  npcDesiredLevel = levelId;
+  const gen = ++npcGeneration;
+
+  await ensureRealtimeAuth();
+
+  if (npcChannel) {
+    try { await sb.removeChannel(npcChannel); } catch {}
+    npcChannel = null;
+  }
+
+  // snapshot -> synk pos inn i level.npcs
+  try {
+    const { data, error } = await sb.rpc("rpc_npc_snapshot", {
+      p_level_id: levelId,
+      p_stale_seconds: NPC_SNAPSHOT_STALE_SECONDS,
+    });
+
+    if (!error && Array.isArray(data)) {
+      for (const row of data) applyNpcRowToLocalLevel(row);
+    }
+  } catch (e) {
+    console.warn("[NPC] snapshot failed", e);
+  }
+
+  npcChannel = sb
+    .channel(`npc:${levelId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "npc_presence", filter: `level_id=eq.${levelId}` },
+      (payload) => {
+        if (gen !== npcGeneration) return;
+
+        const ev = payload.eventType;
+        if (ev === "DELETE") return; // vi sletter ikke NPC-er foreløpig
+        applyNpcRowToLocalLevel(payload.new);
+      }
+    )
+    .subscribe((status) => {
+      console.log("[NPC] channel", status);
+    });
+}
+
+let npcAcquireTimer = null;
+
+async function npcDriverStart(levelId) {
+  npcIsDriver = false;
+
+  async function tryAcquire() {
+    const { data, error } = await sb.rpc("rpc_npc_driver_acquire", {
+      p_level_id: levelId,
+      p_session_id: clientSessionId,
+      p_stale_seconds: NPC_DRIVER_STALE_SECONDS,
+    });
+    if (!error) npcIsDriver = !!data?.is_driver;
+    return npcIsDriver;
+  }
+
+  // prøv med en gang
+  await tryAcquire();
+
+  // hvis ikke driver, prøv igjen hvert 2. sekund til takeover skjer
+  clearInterval(npcAcquireTimer);
+  npcAcquireTimer = setInterval(async () => {
+    if (currentLevelId !== levelId) return;
+    if (npcIsDriver) return;
+
+    const ok = await tryAcquire();
+    if (ok) {
+      // vi ble driver -> seed + start roaming
+      const roamingNpcs = (level.npcs || [])
+        .filter(n => n.roaming)
+        .map(n => ({ id: n.id, x: n.x, y: n.y, facing: n.facing || null }));
+
+      await sb.rpc("rpc_npc_init_level", {
+        p_level_id: levelId,
+        p_session_id: clientSessionId,
+        p_npcs: roamingNpcs,
+      });
+
+      startNpcRoamingLoop(levelId);
+    }
+  }, 2000);
+
+  // heartbeat som før
+  clearInterval(npcDriverHeartbeatTimer);
+  npcDriverHeartbeatTimer = setInterval(async () => {
+    if (!npcIsDriver) return;
+    await sb.rpc("rpc_npc_driver_heartbeat", {
+      p_level_id: levelId,
+      p_session_id: clientSessionId,
+    });
+  }, NPC_DRIVER_HEARTBEAT_MS);
+
+  // hvis vi var driver allerede:
+  if (npcIsDriver) {
+    const roamingNpcs = (level.npcs || [])
+      .filter(n => n.roaming)
+      .map(n => ({ id: n.id, x: n.x, y: n.y, facing: n.facing || null }));
+
+    await sb.rpc("rpc_npc_init_level", {
+      p_level_id: levelId,
+      p_session_id: clientSessionId,
+      p_npcs: roamingNpcs,
+    });
+
+    startNpcRoamingLoop(levelId);
+  }
+}
+
+
+function npcDriverStop(levelId) {
+  clearInterval(npcDriverHeartbeatTimer);
+  npcDriverHeartbeatTimer = null;
+
+  clearInterval(npcAcquireTimer);
+  npcAcquireTimer = null;
+
+  clearTimeout(npcRoamTimer);
+  npcRoamTimer = null;
+
+  if (npcIsDriver && levelId) {
+    (async () => {
+      try {
+        await sb.rpc("rpc_npc_driver_release", {
+          p_level_id: levelId,
+          p_session_id: clientSessionId,
+        });
+      } catch (_) {
+        // Ignorer 
+      }
+    })();
+  }
+
+  npcIsDriver = false;
+}
+
+function startNpcRoamingLoop(levelId) {
+  clearTimeout(npcRoamTimer);
+
+  const tick = async () => {
+    npcRoamTimer = setTimeout(tick, 250); // sjekk ofte, men flytt sjeldent per npc
+
+    if (!npcIsDriver) return;
+    if (currentLevelId !== levelId) return;
+    if (isUiBlocked()) return;
+
+    const now = performance.now();
+    const updates = [];
+
+    for (const n of (level.npcs || [])) {
+      if (!n.roaming) continue;
+      if (n.dead) continue;
+
+      // ikke flytt NPC vi er i dialog med
+      if (dialogState?.open && dialogState?.npcId === n.id) continue;
+
+      // ikke flytt hvis den er combat target akkurat nå
+      if (combat?.active && combat?.targetRef === n) continue;
+
+      // proximity gating: ingen spillere nær -> ikke gjør noe
+      if (!anyPlayerNearTile(levelId, n.x, n.y, NPC_ACTIVE_RADIUS)) continue;
+
+      // per-npc timing (random wait)
+      const nextAt = npcLastTickById.get(n.id) || 0;
+      if (now < nextAt) continue;
+
+      const minW = Number.isFinite(n.roamMinWaitMs) ? n.roamMinWaitMs : 900;
+      const maxW = Number.isFinite(n.roamMaxWaitMs) ? n.roamMaxWaitMs : 1400;
+      const wait = minW + Math.random() * Math.max(0, maxW - minW);
+      npcLastTickById.set(n.id, now + wait);
+
+      // velg et steg
+      const originX = Number.isFinite(n.originX) ? n.originX : n._originX ?? n.x;
+      const originY = Number.isFinite(n.originY) ? n.originY : n._originY ?? n.y;
+      n._originX = originX;
+      n._originY = originY;
+
+      const r = Number.isFinite(n.roamRadius) ? n.roamRadius : 3;
+
+      const dirs = [
+        { dx: 0, dy: -1, facing: "up" },
+        { dx: 0, dy:  1, facing: "down" },
+        { dx: -1, dy: 0, facing: "left" },
+        { dx:  1, dy: 0, facing: "right" },
+      ];
+
+      // shuffle litt
+      for (let i = dirs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+      }
+
+      let moved = false;
+
+      for (const d of dirs) {
+        const nx = n.x + d.dx;
+        const ny = n.y + d.dy;
+
+        // innenfor roam radius
+        if (distTiles(originX, originY, nx, ny) > r) continue;
+
+        // kollisjon (bruker din eksisterende isWalkable som allerede sjekker NPC blocking)
+        if (!isWalkable(nx, ny)) continue;
+
+        n.x = nx;
+        n.y = ny;
+        n.facing = d.facing;
+
+        updates.push({ npc_id: n.id, x: nx, y: ny, facing: d.facing });
+        moved = true;
+        break;
+      }
+
+      // hvis den ikke fant move: gjør ingenting (står stille)
+      if (!moved) {
+        // valgfritt: bare snu litt (ikke nødvendig)
+      }
+    }
+
+    if (updates.length) {
+      try {
+        await sb.rpc("rpc_npc_update_batch", {
+          p_level_id: levelId,
+          p_session_id: clientSessionId,
+          p_updates: updates,
+        });
+      } catch (e) {
+        console.warn("[NPC] update_batch failed", e);
+      }
+    }
+  };
+
+  tick();
+}
 
 
 // ---------- Session lock (single-login) ----------
@@ -3711,8 +4519,8 @@ function buildSaveData() {
     player: {
       x: player.x,
       y: player.y,
-      level: player.level,
-      xp: player.xp,
+      level: getTotalSkillLevel(),
+      xp: 0,
       hp: player.hp,
       maxHp: player.maxHp,
       facing: player.facing,
@@ -3730,8 +4538,8 @@ function applySaveData(data) {
 
   // Gender 
   const sg = data?.profile?.gender ?? data?.player?.gender;
-  if (sg === "female" || sg === "male") {
-    player.gender = sg;
+  if (sg) {
+    player.gender = normalizeGender(sg);
   }
 
   respawnPoint = null;
@@ -3748,33 +4556,30 @@ function applySaveData(data) {
     levelId = fallback;
   }
   // 0) Player core stats
-  if (Number.isFinite(data.player?.maxHp)) player.maxHp = clamp(data.player.maxHp, 1, 99);
+  player.maxHp = clamp(data.player.maxHp, 1, 100);
   if (Number.isFinite(data.player?.hp)) player.hp = clamp(data.player.hp, 0, player.maxHp);
 
-  // 1) LOAD XP først
-  if (Number.isFinite(data.player?.xp)) player.xp = Math.max(0, Math.floor(data.player.xp));
-  else player.xp = 0;
+  // 1) Total level = sum av skills.
+  player.xp = 0;
+  player.level = 1;
 
-  // 2) Level er avledet av XP
-  player.level = levelFromXp(player.xp);
+  renderHpHeart();
 
-  renderHearts();
-
-  // 3) Flytt til riktig level + pos
+  // 2) Flytt til riktig level + pos
   const px = Number(data.player?.x);
   const py = Number(data.player?.y);
   if (!Number.isFinite(px) || !Number.isFinite(py)) return false;
 
   setLevel(levelId, null, { x: px, y: py });
 
-  // 4) facing
+  // 3) facing
   if (typeof data.player?.facing === "string") {
     player.facing = data.player.facing;
   }
 
-  // 5) skills
+  // 4) skills
   if (data.skills && typeof data.skills === "object") {
-    for (const id of ["combat", "mining", "woodcutting"]) {
+    for (const id of ["combat", "mining", "woodcutting", "fishing"]) {
       const s = data.skills[id];
       if (s && typeof s === "object") {
         skills[id] = {
@@ -3782,23 +4587,28 @@ function applySaveData(data) {
           level: 1,
         };
         skills[id].level = skillLevelFromXp(skills[id].xp);
+        player.level = Math.max(1, getTotalSkillLevel());
+        syncDerivedPlayerHpLimits();
       }
     }
   }
 
-  // 6) inventory
+  // Total level (for UI/backwards compat)
+  player.level = Math.max(1, getTotalSkillLevel());
+  
+  // 5) inventory
   inventory = normalizeInventory(data.inventory);
   if (inventoryOpen) renderInventoryWindow();
 
-  // 7) equipped
+  // 6) equipped
   equipped = normalizeEquipped(data.equipped);
   if (equipOpen) renderEquipWindow();
 
-  // 8) bank 
+  // 7) bank 
   bank = normalizeBank(data.bank);
   if (bankOpen) renderBankWindow();
 
-  // 9) Consumable cooldown
+  // 8) Consumable cooldown
   foodCooldownUntilMs = Number(data?.cooldowns?.food_until_ms || 0) || 0;
   if (Date.now() < foodCooldownUntilMs) startFoodCooldownLoop();
 
@@ -4003,25 +4813,53 @@ function setLevel(newLevelId, entryFromDirection = null, forcedSpawn = null) {
   updateHud();
   cloudSavePosition(true);
 
+  // Multiplayer subscriptions for new level
+  subscribeToPresence(currentLevelId, false);
+  subscribeToNpcPresence(currentLevelId);
+  npcDriverStop("__old__"); 
+  npcDriverStart(currentLevelId);
+
 }
 
 
-
-
-
 async function changeLevel(newLevelId, entryFromDirection = null, forcedSpawn = null) {
+  const oldLevelId = currentLevelId;
+
+  // Player presence
   if (gameStarted && sessionLockAcquired) {
     await presenceRemove();
   }
 
+  // NPC roaming/driver for gammelt level
+  npcDriverStop(oldLevelId);
+
+  // unsub realtime for npc presence på gammelt level
+  if (npcChannel) {
+    try { await sb.removeChannel(npcChannel); } catch {}
+    npcChannel = null;
+  }
+
+  // ---- BYTT LEVEL ----
   setLevel(newLevelId, entryFromDirection, forcedSpawn);
 
+  // ---- START ting for nytt level ----
   if (gameStarted && sessionLockAcquired) {
+    // Player presence
     await subscribeToPresence(currentLevelId);
     await ensureRealtimeAuth();
     await presenceUpsert(true);
+
+    // NPC presence + driver (roaming)
+    await subscribeToNpcPresence(currentLevelId);
+    await npcDriverStart(currentLevelId);
+  } else {
+    // Hvis du støtter "singleplayer før login" eller lignende:
+    // Start NPC-sync uansett (om du vil at roaming skal virke uten presence)
+    await subscribeToNpcPresence(currentLevelId);
+    await npcDriverStart(currentLevelId);
   }
 }
+
 
 
 function tileAtLayer(grid, x, y) {
@@ -4381,10 +5219,89 @@ function drawMinimap() {
   mm.restore();
 }
 
+function normalizeGender(g) {
+  if (g === "female") return "female";
+  if (g === "gnome") return "gnome";
+  return "male";
+}
+
+function getMyArmorIdForPresence() {
+  const s = getSave?.();
+  return s?.equipped?.armor?.id || equipped?.armor?.id || null;
+}
+
+function pickAnimFrame(pack, isMoving, moveElapsedMs) {
+  if (!pack) return null;
+
+  if (!isMoving) {
+    const frames = pack.idle || [];
+    if (!frames.length) return null;
+    const idx = Math.floor(animTime / PLAYER_IDLE_FRAME_MS) % frames.length;
+    return frames[idx];
+  }
+
+  if (pack.walk && pack.walk.length > 0) {
+    const idx = Math.floor(moveElapsedMs / PLAYER_WALK_FRAME_MS) % pack.walk.length;
+    return pack.walk[idx];
+  }
+
+  // fallback
+  const frames = pack.idle || [];
+  if (!frames.length) return null;
+  const idx = Math.floor(animTime / PLAYER_IDLE_FRAME_MS) % frames.length;
+  return frames[idx];
+}
+
 function getActiveSkinId() {
-  const armor = equipped?.armor;
-  if (armor && playerSkins[armor.id]) return armor.id;
-  return (player.gender === "female") ? "female" : "male";
+  return normalizeGender(player.gender);
+}
+
+function getPlayerDrawSpec(gender) {
+  const g = normalizeGender(gender);
+
+  // default: male/female = 1x2 tiles
+  let wTiles = 1;
+  let hTiles = 2;
+
+  // gnome = 1x1 tile
+  if (g === "gnome") {
+    wTiles = 1;
+    hTiles = 1;
+  }
+
+  const w = TILE_SIZE * wTiles;
+  const h = TILE_SIZE * hTiles;
+
+  // Ankres ved føtter: trekk opp (hTiles - 1)
+  const yOffset = TILE_SIZE * (hTiles - 1);
+
+  // (Hvis du senere vil ha bredere raser, kan du sentrere på samme måte)
+  const xOffset = (w - TILE_SIZE) / 2;
+
+  return { w, h, xOffset, yOffset };
+}
+
+function getPlayerBaseSprite() {
+  const baseId = getActiveSkinId(); 
+  const skin = playerSkins[baseId];
+  if (!skin) return null;
+
+  const pack = skin[player.facing];
+  return pickAnimFrame(pack, player.moving, player.moveElapsed);
+}
+
+function getPlayerArmorSprite() {
+  const armorId = equipped?.armor?.id;
+  if (!armorId) return null;
+
+  const s = getSave?.(); 
+  const gender = normalizeGender(s?.profile?.gender ?? s?.player?.gender ?? player?.gender);
+
+  const skin = armorSkins[armorKey(armorId, gender)];
+  if (!skin) return null;
+
+  const pack = skin[player.facing] || skin.down;
+  return pickAnimFrame(pack, player.moving, player.moveElapsed);
 }
 
 function getPlayerSprite() {
@@ -4411,6 +5328,38 @@ function getPlayerSprite() {
   }
 
   return pack.idle;
+}
+
+// --- NPC RENDER SIZE (visual only) ---
+function getNpcDrawSpec(n) {
+
+  const preset = n.sizePreset || null;
+
+  let wTiles = 1;
+  let hTiles = 2;
+
+  if (preset === "big") {
+    wTiles = 2;
+    hTiles = 2;
+  } else if (preset === "tall") {
+    wTiles = 1;
+    hTiles = 2;
+  }
+
+  // Direkte override hvis du heller vil styre selv
+  if (Number.isFinite(n.drawWTiles)) wTiles = n.drawWTiles;
+  if (Number.isFinite(n.drawHTiles)) hTiles = n.drawHTiles;
+
+  const w = TILE_SIZE * wTiles;
+  const h = TILE_SIZE * hTiles;
+
+  // Vi ankrer på "føtter" (n.x/n.y er bunn-tile)
+  const yOffset = TILE_SIZE * (hTiles - 1);
+
+  // Hvis den er bredere enn 1 tile: senter den rundt tile’n
+  const xOffset = (w - TILE_SIZE) / 2;
+
+  return { w, h, xOffset, yOffset };
 }
 
 
@@ -4444,12 +5393,16 @@ function draw() {
     const nx = n.x * TILE_SIZE;
     const ny = n.y * TILE_SIZE;
 
+    const { w, h, xOffset, yOffset } = getNpcDrawSpec(n);
+    const drawX = nx - xOffset;
+    const drawY = ny - yOffset;
+
     // --- draw npc sprite ---
     if (img) {
-      ctx.drawImage(img, nx, ny, TILE_SIZE, TILE_SIZE);
+      ctx.drawImage(img, drawX, drawY, w, h);
     } else {
       ctx.fillStyle = "#f59e0b";
-      ctx.fillRect(nx, ny, TILE_SIZE, TILE_SIZE);
+      ctx.fillRect(drawX, drawY, w, h);
     }
 
     // --- HIT FLASH (NPC) ---
@@ -4457,64 +5410,99 @@ function draw() {
       ctx.save();
       ctx.globalAlpha = 0.55;
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(nx, ny, TILE_SIZE, TILE_SIZE);
+      ctx.fillRect(drawX, drawY, w, h);
       ctx.restore();
     }
 
-    // --- ENEMY HEALTH BAR (vises kun hvis mistet HP) ---
-    // Vi viser kun for fiender (hostile) og kun når de har maxHp satt
+    // --- ENEMY HEALTH BAR ---
     if (n.hostile && typeof n.maxHp === "number") {
       const hp = getNpcHp(n);
       const max = n.maxHp;
 
       if (hp < max) {
-        const barW = TILE_SIZE - 8;
+        const barW = TILE_SIZE - 8; // behold samme bredde som før (ser ryddig ut)
         const barH = 5;
 
-        // litt over hodet
-        const bx = nx + 4;
-        const by = ny - 8;
+        const bx = nx + 4;        // låst til tile
+        const by = drawY - 8;     // over hodet (bruk drawY)
 
         const pct = Math.max(0, Math.min(1, hp / max));
         const fillW = Math.floor(barW * pct);
 
-        // bakgrunn
         ctx.save();
         ctx.globalAlpha = 0.9;
         ctx.fillStyle = "#000000";
         ctx.fillRect(bx - 1, by - 1, barW + 2, barH + 2);
 
-        // tom bar (mørk)
         ctx.fillStyle = "#400000";
         ctx.fillRect(bx, by, barW, barH);
 
-        // fylt del
         ctx.fillStyle = "#00c853";
         ctx.fillRect(bx, by, fillW, barH);
-
         ctx.restore();
       }
     }
+
     drawWorldMap();
   }
 
+
   drawOtherPlayers(nowMs);
 
-  // player
-  const pImg = getPlayerSprite();
-  if (pImg) {
-    ctx.drawImage(pImg, player.px, player.py, TILE_SIZE, TILE_SIZE);
+  // player (base + armor overlay)
+  const baseImg = getPlayerBaseSprite();
+  const armorImg = getPlayerArmorSprite();
+
+  const { w, h, xOffset, yOffset } = getPlayerDrawSpec(player.gender);
+
+  const drawX = player.px - xOffset;
+  const drawY = player.py - yOffset;
+
+  if (baseImg) {
+    ctx.drawImage(baseImg, drawX, drawY, w, h);
   } else {
     ctx.fillStyle = "#4cc9f0";
-    ctx.fillRect(player.px, player.py, TILE_SIZE, TILE_SIZE);
+    ctx.fillRect(drawX, drawY, w, h);
   }
 
-  // HIT FLASH (player)
+  // armor oppå base
+  if (armorImg) {
+    ctx.drawImage(armorImg, drawX, drawY, w, h);
+  }
+
+  // HIT FLASH (player) – bruk samme w/h og drawX/drawY
   if (player._hitFlashUntil && nowMs < player._hitFlashUntil) {
     ctx.save();
     ctx.globalAlpha = 0.55;
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(player.px, player.py, TILE_SIZE, TILE_SIZE);
+    ctx.fillRect(drawX, drawY, w, h);
+    ctx.restore();
+  }
+
+  // --- FISHING TOOL (blink over player) ---
+  // Forskjell fra mining/woodcutting: vi tegner selve fishing rod over hodet
+  // og lar den fade sakte inn/ut for å vise at du fisker.
+  if (fishing.active) {
+    const t = equipped?.tool;
+    const path = t?.icon || t?.fxSprite;
+    const img = path ? fxImages[path] || tileImages[path] || null : null;
+
+    // slow fade: 0.35..0.95
+    const a = 0.35 + 0.60 * (0.5 + 0.5 * Math.sin(nowMs / 420));
+
+    const size = 26; // px
+    const ox = player.px + (TILE_SIZE / 2) - (size / 2);
+    const oy = player.py - 18; // litt over hodet
+
+    ctx.save();
+    ctx.globalAlpha = a;
+    if (img) {
+      ctx.drawImage(img, ox, oy, size, size);
+    } else {
+      // fallback: liten prikk hvis bildet ikke finnes ennå
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fillRect(ox, oy, size, size);
+    }
     ctx.restore();
   }
 
@@ -4692,6 +5680,25 @@ canvas.addEventListener("contextmenu", (e) => {
     });
   }
 
+  // shop on campfire etc
+  if (tileDef?.useShopId) {
+    entries.push({
+      label: tileDef.useLabel || "Use",
+      onClick: () => {
+        // krever at du står ved siden av tile
+        if (!isAdjacentToPlayer(tx, ty)) {
+          logMessage("You need to stand next to it.", "error");
+          return;
+        }
+
+        // stopp combat hvis aktiv
+        if (combat.active) stopCombat("You stop fighting.", performance.now());
+
+        openShopForStaticShopId(tileDef.useShopId);
+      }
+    });
+  }
+
 
   // Mine option hvis tile er mineable
   if (tileDef?.mining) {
@@ -4714,6 +5721,17 @@ canvas.addEventListener("contextmenu", (e) => {
       onClick: () => {
         if (combat.active) stopCombat("You stop fighting.", performance.now());
         startWoodcuttingNode(tx, ty, target.layer, target.key, tileDef);
+      }
+    });
+  }
+
+  // Fish option hvis tile er fishable
+  if (tileDef?.fishing) {
+    entries.push({
+      label: "Fish",
+      onClick: () => {
+        if (combat.active) stopCombat("You stop fighting.", performance.now());
+        startFishingSpot(tx, ty, target.layer, target.key, tileDef);
       }
     });
   }
@@ -4805,7 +5823,7 @@ const PAUSE_ITEMS = [
 function isUiBlocked() {
   const dialogEl = document.getElementById("dialog"); // kan være null
   const dialogOpen = dialogEl ? !dialogEl.classList.contains("hidden") : false;
-  return pauseOpen || dialogOpen ||  shopOpen || bankOpen || mining.active || woodcutting.active;
+  return pauseOpen || dialogOpen ||  shopOpen || bankOpen || mining.active || woodcutting.active || fishing.active;
 }
 
 function renderPauseMenu() {
@@ -4958,44 +5976,82 @@ function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
-function renderHearts() {
-  if (!heartsEl) return;
 
-  heartsEl.innerHTML = "";
+// -------------------- HP SYNC (server) --------------------
+let hpSyncTimer = null;
+let pendingHpValue = null;
 
-  for (let i = 0; i < player.maxHp; i++) {
-    const img = document.createElement("img");
-    img.src = HEART_IMG;
-    img.alt = i < player.hp ? "Heart" : "Empty heart";
-    if (i >= player.hp) img.classList.add("empty");
-    heartsEl.appendChild(img);
-  }
+function queueHpSyncToServer(newHp) {
+  pendingHpValue = newHp;
+
+  // debounce: ikke spam server på hvert combat-tick
+  if (hpSyncTimer) return;
+
+  hpSyncTimer = setTimeout(async () => {
+    hpSyncTimer = null;
+
+    const hpToSend = pendingHpValue;
+    pendingHpValue = null;
+
+    try {
+      const { data, error } = await sb.rpc("rpc_set_player_hp", { p_hp: hpToSend });
+      if (error) {
+        console.warn("[HP SYNC RPC]", error);
+        return;
+      }
+
+      // Server er “source of truth”
+      if (typeof data?.hp === "number") player.hp = data.hp;
+      if (typeof data?.maxHp === "number") player.maxHp = data.maxHp;
+
+      renderHpHeart?.();
+    } catch (e) {
+      console.warn("[HP SYNC RPC] failed", e);
+    }
+  }, 250); // 250ms er fint (kan økes til 500ms)
 }
 
 function damagePlayer(amount = 1) {
   player.hp = clamp(player.hp - amount, 0, player.maxHp);
-  renderHearts();
+  renderHpHeart();
+
+  // synk HP raskt til server, så consume-RPC ser riktig hp
+  queueHpSyncToServer(player.hp);
 
   if (player.hp <= 0) {
     logMessage("You died!", "error");
-    // foreløpig: respawn med full HP
+
+    // respawn med full HP
     player.hp = player.maxHp;
+
+    const fallback = getDefaultSpawnForGender(player.gender);
 
     if (respawnPoint && LEVELS[respawnPoint.levelId]) {
       setLevel(respawnPoint.levelId, null, { x: respawnPoint.x, y: respawnPoint.y });
+    } else if (fallback && LEVELS[fallback.levelId]) {
+
+      setLevel(fallback.levelId, null, { x: fallback.x, y: fallback.y });
     } else {
-      setLevel(currentLevelId, null);
+      // hard-safe
+      setLevel("spenningsbyen", null, { x: 233, y: 236 });
     }
 
-    renderHearts();
+    player.hp = clamp(player.hp - amount, 0, player.maxHp);
+    renderHpHeart();
+
+    // synk respawn-hp også
+    queueHpSyncToServer(player.hp);
+
     saveGame?.();
+    return;
   }
+
   saveGame?.();
 }
 
 function healPlayer(amount = 1) {
   player.hp = clamp(player.hp + amount, 0, player.maxHp);
-  renderHearts();
+  renderHpHeart();
   saveGame?.();
 }
 
@@ -5067,10 +6123,10 @@ function runDialogAction(actionId) {
     const npc = getNpcById(dialogState.npcId);
     if (!npc) return;
 
-    // Bruker npc.respawnPoint
-    const levelId = npc?.respawnPoint?.levelId || currentLevelId;
-    const x = Number.isFinite(npc?.respawnPoint?.x) ? npc.respawnPoint.x : npc.x;
-    const y = Number.isFinite(npc?.respawnPoint?.y) ? npc.respawnPoint.y : npc.y;
+    // Sett respawn til der spilleren står nå 
+    const levelId = currentLevelId;
+    const x = player.x;
+    const y = player.y;
 
     respawnPoint = { levelId, x: Math.floor(x), y: Math.floor(y) };
 
@@ -5425,6 +6481,7 @@ function update(dtMs) {
   updateCombat(nowMs);
   updateMining(nowMs);
   updateWoodcutting(nowMs);
+  updateFishing(nowMs);
   if (player.moving) {
     player.moveElapsed += dtMs;
     const t = Math.min(1, player.moveElapsed / player.moveDuration);
@@ -5883,29 +6940,34 @@ async function enterPortal(portal) {
 
 const btnLogoutMenu = document.getElementById("btn-logout-menu");
 
-
 btnLogoutMenu?.addEventListener("click", async () => {
-  
   try {
+    // 1) stopp spillet
     gameStarted = false;
-    if (window.__vq_sb) {
-      await window.__vq_sb.auth.signOut();
-    }
+
+    // 2) stopp heartbeat 
+    stopPresenceHeartbeat();
+
+    // 3) fjern presence 
+    await presenceRemove();
+
+    // 4) slipp session-lock 
+    await releaseSessionLock();
+
+    // 5) lagre 
     if (canWriteSave()) {
       await saveGame();
     }
 
-    stopPresenceHeartbeat();
-    await presenceRemove();
-
+    // 6) sign out
+    if (window.__vq_sb) {
+      await window.__vq_sb.auth.signOut();
+    }
   } catch (err) {
     console.warn("Logout error:", err);
   }
-  saveGame?.();
-  saveGame();
-  //await forceLogout("Logout."); finnes ikke lenger
 
-  // Redirect til login-portal uansett
+  // Redirect til login-portal 
   window.location.href = "index.html";
 });
 
@@ -5969,10 +7031,7 @@ function getIdleFramesForPreview() {
   const dir = "down";
 
   // 0) Hent gender fra save (profilen din), fallback til player.gender
-  const gender =
-    (s?.profile?.gender === "female" || s?.player?.gender === "female" || player?.gender === "female")
-      ? "female"
-      : "male";
+  const gender = normalizeGender(s?.profile?.gender ?? s?.player?.gender ?? player?.gender);
 
   // 1) Hent armorId fra save
   const armorId = s?.equipped?.armor?.id || null;
@@ -5999,25 +7058,89 @@ function getIdleFramesForPreview() {
 }
 
 
-
 function stopPreviewAnim() {
   if (previewTimer) clearInterval(previewTimer);
   previewTimer = null;
 }
 
+function getIdleFramesForPreviewBase() {
+  const s = getSave?.();
+  const dir = "down";
+
+  const gender = normalizeGender(s?.profile?.gender ?? s?.player?.gender ?? player?.gender);
+
+  const baseSet =
+    (gender === "female") ? PLAYER_ANIMS_FEMALE :
+    (gender === "gnome")  ? PLAYER_ANIMS_GNOME  :
+    PLAYER_ANIMS_MALE;
+
+  const base = baseSet?.[dir] || baseSet?.down;
+  const idle = base?.idle;
+
+  if (Array.isArray(idle) && idle.length) return idle;
+  if (typeof idle === "string" && idle) return [idle];
+
+  // fallback
+  if (gender === "female") return ["assets/player/female/female_down.png"];
+  if (gender === "gnome")  return ["assets/player/male/male_old/pixelmannDown.png"]; // din gnome fallback path
+  return ["assets/player/male/male_down.png"];
+}
+
+function getIdleFramesForPreviewArmor() {
+  const s = getSave?.();
+  const dir = "down";
+
+  const armorId = s?.equipped?.armor?.id || null;
+  if (!armorId) return null;
+
+  const gender = normalizeGender(s?.profile?.gender ?? s?.player?.gender ?? player?.gender);
+
+  const def = ITEM_DEFS?.[armorId];
+
+  const idle = def?.playerAnimsByGender?.[gender]?.[dir]?.idle;
+  if (Array.isArray(idle) && idle.length) return idle;
+  if (typeof idle === "string" && idle) return [idle];
+
+  // fallback gammel struktur
+  const oldIdle = def?.playerAnims?.[dir]?.idle;
+  if (Array.isArray(oldIdle) && oldIdle.length) return oldIdle;
+  if (typeof oldIdle === "string" && oldIdle) return [oldIdle];
+
+  return null;
+}
+
 function startPreviewAnim() {
   stopPreviewAnim();
 
-  const frames = getIdleFramesForPreview();
-  if (!frames || frames.length === 0) return;
+  const baseFrames = getIdleFramesForPreviewBase();
+  const armorFrames = getIdleFramesForPreviewArmor(); // kan være null
+
+  if (!baseFrames || baseFrames.length === 0) return;
 
   previewFrame = 0;
-  startSpriteImg.src = frames[0];
 
-  // bytt frame ca hver 450ms (samme feeling som npc idle)
+  // base
+  startSpriteImg.src = baseFrames[0];
+  startSpriteImg.classList.remove("hidden");
+
+  // armor overlay
+  if (startArmorImg) {
+    if (armorFrames && armorFrames.length) {
+      startArmorImg.src = armorFrames[0];
+      startArmorImg.classList.remove("hidden");
+    } else {
+      startArmorImg.classList.add("hidden");
+    }
+  }
+
   previewTimer = setInterval(() => {
-    previewFrame = (previewFrame + 1) % frames.length;
-    startSpriteImg.src = frames[previewFrame];
+    previewFrame = (previewFrame + 1) % baseFrames.length;
+    startSpriteImg.src = baseFrames[previewFrame];
+
+    if (startArmorImg && armorFrames && armorFrames.length) {
+      const af = armorFrames[previewFrame % armorFrames.length];
+      startArmorImg.src = af;
+    }
   }, 450);
 }
 
@@ -6039,7 +7162,7 @@ function refreshStartHubUI() {
 
   if (has) {
     const nm = getCharacterNameFromSaveOrProfile() || "Unknown";
-    const lvl = s?.player?.level ?? 1;
+    const lvl = getTotalSkillLevelFromSave(s) || 1;
 
     startCharBox.classList.remove("hidden");
     startCharName.textContent = nm;
@@ -6058,6 +7181,7 @@ function refreshStartHubUI() {
     btnCreateCharacter.classList.remove("hidden");
 
     startSpriteImg.classList.add("hidden");
+    if (startArmorImg) startArmorImg.classList.add("hidden");
     startNoChar.classList.remove("hidden");
     stopPreviewAnim();
 
@@ -6098,12 +7222,27 @@ async function createCharacterSaveOnly(name, gender = "male") {
 
   // Sett profilnavn (dere bruker dette i canWriteSave() osv)
   setProfileName(name);
-  player.gender = (gender === "female") ? "female" : "male";
+  player.gender = normalizeGender(gender);
 
-  // Reset basics (minimalt og trygt)
+  // Sett default spawn basert på rase/gender
+  const sp = getDefaultSpawnForGender(player.gender);
+
+  // Bytt level + pos (lagrer dette i save under)
+  currentLevelId = sp.levelId;
+  setLevel(sp.levelId, null, { x: sp.x, y: sp.y });
+
+  // Total level kommer fra skills.
   player.xp = 0;
-  player.level = 1;          // dere bruker levelFromXp ved load, men ok å sette her
+  player.level = 1;
   player.hp = player.maxHp;  // full heal på ny character
+
+  // Reset skills
+  skills = {
+    combat: { level: 1, xp: 0 },
+    mining: { level: 1, xp: 0 },
+    woodcutting: { level: 1, xp: 0 },
+    fishing: { level: 1, xp: 0 },
+  };
 
   // Reset inventory/equip/bank til tomt
   try { inventory = normalizeInventory([]); } catch {}
@@ -6136,15 +7275,21 @@ async function exitToMenu() {
   // stopp spill
   gameStarted = false;
 
+  // stopp presence heartbeat 
+  stopPresenceHeartbeat();
+
+  // fjern presence 
+  await presenceRemove();
+
   // lagre før du går til meny
   if (canWriteSave()) {
     await saveGame();
   }
 
-  // slipp lock så du ikke låser kontoen når du går til meny
+  // slipp lock 
   await releaseSessionLock();
 
-  // gå til menyen (index.html)
+  // gå til menyen 
   window.location.href = "index.html";
 }
 
